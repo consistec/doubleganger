@@ -99,7 +99,9 @@ public class HttpServletProcessor {
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, DatabaseAdapterException,
         SerializationException {
 
-        MDC.put("thread-id", req.getParameter(THREAD_ID.name()));
+        if (!StringUtil.isNullOrEmpty(req.getParameter(THREAD_ID.name()))) {
+            MDC.put("thread-id", req.getParameter(THREAD_ID.name()));
+        }
 
         if (!StringUtil.isNullOrEmpty(req.getParameter(ACTION.name()))) {
 
