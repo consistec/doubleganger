@@ -25,21 +25,13 @@ import org.junit.Test;
 public abstract class DefaultSyncTest extends AbstractSyncTest {
 
 //<editor-fold defaultstate="expanded" desc=" Class fields " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
 //</editor-fold>
-
     private void UcUc() throws SyncException, SQLException,
         ContextException {
         populateWithTestData();
@@ -64,18 +56,20 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testAddUc() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, CLIENT, CLIENT);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, CLIENT, SERVER);
+        String query = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        initAndSyncClient(query, BIDIRECTIONAL, SERVER_WINS, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, SERVER);
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, FIRE_EVENT, CLIENT);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddUcInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        testInvalidState(resource);
+        String query = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        testInvalidState(query);
     }
 
     /**
@@ -83,9 +77,9 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
      * @throws SQLException
      * @throws ContextException
      */
-    public void testInvalidState(String resource) throws SyncException, SQLException, ContextException {
-        initAndSync(resource, CLIENT_TO_SERVER, SERVER_WINS, CLIENT, CLIENT);
-        initAndSync(resource, SERVER_TO_CLIENT, CLIENT_WINS, CLIENT, CLIENT);
+    public void testInvalidState(String query) throws SyncException, SQLException, ContextException {
+        initAndSyncClient(query, CLIENT_TO_SERVER, SERVER_WINS, CLIENT);
+        initAndSyncClient(query, SERVER_TO_CLIENT, CLIENT_WINS, CLIENT);
     }
 
     /**
@@ -93,10 +87,10 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
      * @throws SQLException
      * @throws ContextException
      */
-    public void testInvalidState(String resource1, String resource2) throws SyncException, SQLException,
+    public void testInvalidState(String query1, String query2) throws SyncException, SQLException,
         ContextException {
-        initClientAndServerWithSync(resource1, resource2, CLIENT_TO_SERVER, SERVER_WINS, CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SERVER_TO_CLIENT, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, CLIENT_TO_SERVER, SERVER_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SERVER_TO_CLIENT, CLIENT_WINS, CLIENT);
     }
 
     /**
@@ -107,19 +101,23 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testModUc() throws SyncException, SQLException, ContextException {
         String resource = "category6_b_update.xml";
+        String query = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
 
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, CLIENT, CLIENT);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, CLIENT, SERVER);
+        initAndSyncClient(query, BIDIRECTIONAL, SERVER_WINS, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, SERVER);
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, FIRE_EVENT, CLIENT);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testModUcInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category6_b_update.xml";
-        testInvalidState(resource);
+        String query = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
+        testInvalidState(query);
     }
 
     /**
@@ -130,18 +128,22 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testDelUc() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, CLIENT, CLIENT);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, CLIENT);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, CLIENT, SERVER);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, SERVER_WINS, CLIENT);
+        initAndSyncClient(query, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+        initAndSyncClient(query, SERVER_TO_CLIENT, SERVER_WINS, CLIENT, SERVER);
+
+        initAndSyncClient(query, BIDIRECTIONAL, FIRE_EVENT, CLIENT);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testDelUcInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        testInvalidState(resource);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
+
+        testInvalidState(query);
     }
 
     /**
@@ -152,18 +154,22 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testUcAdd() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, SERVER, SERVER);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, SERVER, SERVER);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, SERVER, CLIENT, SERVER);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, SERVER, SERVER);
+        String query = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, SERVER, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, CLIENT_WINS, SERVER);
+        initAndSyncServer(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, SERVER);
+        initAndSyncServer(query, SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+
+        initAndSyncServer(query, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUcAddInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        testInvalidState(resource);
+        String query = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+
+        testInvalidState(query);
     }
 
     /**
@@ -174,26 +180,23 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testAddAdd() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, SERVER_WINS,
-            SERVER);
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, CLIENT_WINS,
-            CLIENT);
-        initClientAndServerAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS,
-            CLIENT);
+        String query = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        initClientAndServerAndSync(query, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerAndSync(query, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerAndSync(query, SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerAndSync(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
 
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, SERVER);
+        initClientAndServerAndSync(query, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddAddInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category7_a_insert.xml";
-        testInvalidState(resource, resource);
+        String query = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        testInvalidState(query, query);
     }
 
     // was already ignored
-
     /**
      * @throws SyncException
      * @throws SQLException
@@ -202,29 +205,29 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Ignore
     public void testModAdd() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 7, categoryname = 'Cat7b', description = 'uhhhhhhh 7b' "
+            + "WHERE categoryid = 7";
         String resource2 = "category7_a_insert.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testModAddInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 7, categoryname = 'Cat7b', description = 'uhhhhhhh 7b' "
+            + "WHERE categoryid = 7";
         String resource2 = "category7_a_insert.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
+        testInvalidState(query1, query2);
     }
 
     // was already ignored
-
     /**
      * @throws SyncException
      * @throws SQLException
@@ -233,25 +236,26 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Ignore
     public void testDelAdd() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_a_insert.xml";
+        String query1 = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_a_delete.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "DELETE FROM categories WHERE categoryid = 7";
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testDelAddInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_a_insert.xml";
+        String query1 = " INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_a_delete.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "DELETE FROM categories WHERE categoryid = 7";
+
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -262,22 +266,25 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testUcMod() throws SyncException, SQLException, ContextException {
         String resource = "category6_b_update.xml";
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, SERVER, SERVER);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, SERVER, SERVER);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, SERVER, SERVER);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, SERVER, CLIENT, SERVER);
+        String query = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
+        initAndSyncServer(query, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, CLIENT_WINS, SERVER);
+        initAndSyncServer(query, SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initAndSyncServer(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, SERVER);
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, SERVER, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUcModInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category6_b_update.xml";
-        testInvalidState(resource);
+        String query = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
+        testInvalidState(query);
     }
 
     // was already ignored
-
     /**
      * @throws SyncException
      * @throws SQLException
@@ -286,25 +293,26 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Ignore
     public void testAddMod() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_a_insert.xml";
+        String query1 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_b_update.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "UPDATE categories SET categoryid = 7, categoryname = 'Cat7b', description = 'uhhhhhhh 7b' "
+            + "WHERE categoryid = 7";
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddModInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_a_insert.xml";
+        String query1 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_b_update.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "UPDATE categories SET categoryid = 7, categoryname = 'Cat7b', description = 'uhhhhhhh 7b' "
+            + "WHERE categoryid = 7";
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -315,25 +323,29 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testModMod() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
         String resource2 = "category6_c_update.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6c', description = 'uhhhhhhh 6c' "
+            + "WHERE categoryid = 6";
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testModModInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
         String resource2 = "category6_c_update.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6c', description = 'uhhhhhhh 6c' "
+            + "WHERE categoryid = 6";
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -344,25 +356,28 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testDelMod() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
         String resource2 = "category6_a_delete.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "DELETE FROM categories WHERE categoryid = 6";
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testDelModInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_b_update.xml";
+        String query1 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
         String resource2 = "category6_a_delete.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "DELETE FROM categories WHERE categoryid = 6";
+
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -373,22 +388,25 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testUcDel() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        initAndSync(resource, BIDIRECTIONAL, SERVER_WINS, SERVER, SERVER);
-        initAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, SERVER, SERVER);
-        initAndSync(resource, SERVER_TO_CLIENT, SERVER_WINS, SERVER, SERVER);
-        initAndSync(resource, CLIENT_TO_SERVER, CLIENT_WINS, SERVER, CLIENT, SERVER);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
 
-        initAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, SERVER, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initAndSyncServer(query, BIDIRECTIONAL, CLIENT_WINS, SERVER);
+        initAndSyncServer(query, SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initAndSyncServer(query, CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, SERVER);
+
+        initAndSyncServer(query, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUcDelInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        testInvalidState(resource);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
+
+        testInvalidState(query);
     }
 
     // was already ignored
-
     /**
      * @throws SyncException
      * @throws SQLException
@@ -398,25 +416,25 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     public void testAddDel() throws SyncException, SQLException, ContextException {
         // pass if Add and Del passes
         String resource1 = "category7_a_insert.xml";
+        String query1 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_a_delete.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "DELETE FROM categories WHERE categoryid = 7";
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testAddDelInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category7_a_insert.xml";
+        String query1 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (7, 'Cat7a', 'uhhhhhhh 7a')";
         String resource2 = "category7_a_delete.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "DELETE FROM categories WHERE categoryid = 7";
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -427,25 +445,26 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testModDel() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_a_delete.xml";
+        String query1 = "DELETE FROM categories WHERE categoryid = 6";
         String resource2 = "category6_b_update.xml";
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, CLIENT_WINS,
-            ConnectionType.CLIENT);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS,
-            ConnectionType.SERVER);
-        initClientAndServerWithSync(resource1, resource2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS,
-            ConnectionType.CLIENT);
+        String query2 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerWithSync(query1, query2, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerWithSync(query1, query2, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
 
-        initClientAndServerWithSync(resource1, resource2, BIDIRECTIONAL, FIRE_EVENT,
-            ConnectionType.SERVER);
+        initClientAndServerWithSync(query1, query2, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testModDelInvalidState() throws SyncException, SQLException, ContextException {
         String resource1 = "category6_a_delete.xml";
+        String query1 = "DELETE FROM categories WHERE categoryid = 6";
         String resource2 = "category6_b_update.xml";
-        testInvalidState(resource1, resource2);
+        String query2 = "UPDATE categories SET categoryid = 6, categoryname = 'Cat6b', description = 'uhhhhhhh 6b' "
+            + "WHERE categoryid = 6";
+        testInvalidState(query1, query2);
     }
 
     /**
@@ -456,18 +475,20 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
     @Test
     public void testDelDel() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, SERVER_WINS, SERVER);
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
-        initClientAndServerAndSync(resource, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
-        initClientAndServerAndSync(resource, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
+        initClientAndServerAndSync(query, BIDIRECTIONAL, SERVER_WINS, SERVER);
+        initClientAndServerAndSync(query, BIDIRECTIONAL, CLIENT_WINS, CLIENT);
+        initClientAndServerAndSync(query, SyncDirection.SERVER_TO_CLIENT, SERVER_WINS, SERVER);
+        initClientAndServerAndSync(query, SyncDirection.CLIENT_TO_SERVER, CLIENT_WINS, CLIENT);
 
 
-        initClientAndServerAndSync(resource, BIDIRECTIONAL, FIRE_EVENT, SERVER);
+        initClientAndServerAndSync(query, BIDIRECTIONAL, FIRE_EVENT, SERVER);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testDelDelInvalidState() throws SyncException, SQLException, ContextException {
         String resource = "category6_a_delete.xml";
-        testInvalidState(resource);
+        String query = "DELETE FROM categories WHERE categoryid = 6";
+        testInvalidState(query);
     }
 }

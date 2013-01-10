@@ -55,11 +55,6 @@ public interface ISyncTests {
      */
     InputStream getResourceAsStream(String resourceName) throws SyncException;
 
-    /**
-     * @throws Exception
-     */
-    void resetClientAndServerDatabase() throws Exception;
-
 //    /**
 //     * Test client unchanged - server unchanged case.
 //     * @throws Exception

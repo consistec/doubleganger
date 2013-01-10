@@ -3,8 +3,6 @@ package de.consistec.syncframework.impl.adapter;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
-import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
-import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
@@ -17,7 +15,6 @@ import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -52,10 +49,7 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractSyncTest implements ISyncTests {
 
-    /**
-     * Test watcher, with methods invoked before and after of each tests.
-     * This "watcher" prints test name populateWithTestData and after each test.
-     */
+    // This test watcher prints a test's name before and after each test.
     @Rule
     public TestRule watchman2 = new TestWatcher() {
         @Override
@@ -70,26 +64,39 @@ public abstract class AbstractSyncTest implements ISyncTests {
                 description.getTestClass().getCanonicalName());
         }
     };
+    String[] tableNames = new String[]{"categories_md", "categories", "items", "items_md"};
+    String[] insertDataQueries = new String[]{
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (1, 'Beverages', 'Soft drinks, coffees, teas, beers, and ales')",
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (2, 'Condiments', 'Sweet and savory sauces, relishes, spreads, and seasonings')",
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (3, 'Confections', 'Desserts, candies, and sweet breads')",
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (4, 'Dairy Products', 'Cheeses')",
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (5, 'Grains', 'Breads, crackers, pasta, and cereal')",
+        "INSERT INTO categories (\"categoryid\", \"categoryname\", \"description\") "
+        + "VALUES (6, 'Cat6a', 'uhhhhhhh 6a')",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, 'B4F135B634EDA2894254E5205F401E90', 1, 0)",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, 'B9CBF2C3AA1964E3A752F4C34E07369D', 2, 0)",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, 'A359E8A01ED93D37C0BF6DB13CC74488', 3, 0)",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, '0DA3D1A2A2539E864D2D1B6636898395', 4, 0)",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, 'A52D87B86798B317A7C1C01837290D2F', 5, 0)",
+        "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") "
+        + "VALUES (1, '0D9F6F55D5BF5190D2B8C1105AE21325', 6, 0)"
+    };
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
-    /**
-     * Framework configuration singleton.
-     */
     protected static final Config CONF = Config.getInstance();
-    /**
-     * Jdbc connection for client database.
-     * Use this connection to prepare the data for tests.
-     */
     protected static Connection clientConnection;
-    /**
-     * Jdbc connection for server database.
-     * Use this connection to prepare the data for tests.
-     */
     protected static Connection serverConnection;
     private final transient ExecuteStatementHelper helper;
 
-    /**
-     * This constructor initialize log4j framework.
-     */
     public AbstractSyncTest() {
         // initialize logging framework
         DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
@@ -126,30 +133,22 @@ public abstract class AbstractSyncTest implements ISyncTests {
     }
 
     /**
-     * Populates client and server database with test data.
+     * Populates client and server database with test insertDataQueries.
      *
      * @throws SyncException
      * @throws SQLException
      * @throws ContextException
      */
-    public void populateWithTestData() throws SyncException, SQLException, ContextException {
-        InputStream stream = null;
-        try {
-            resetClientAndServerDatabase();
-            stream = getResourceAsStream("server_data.xml");
-            helper.executeUpdate(SERVER, stream);
+    public void populateWithTestData() throws SyncException, ContextException, SQLException {
 
-            stream = getResourceAsStream("client_data.xml");
-            helper.executeUpdate(CLIENT, stream);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot close server input stream!");
-                }
-            }
-        }
+        helper.dropTablesOnServer(tableNames);
+        helper.dropTablesOnClient(tableNames);
+
+        helper.executeQueriesOnServer(getCreateTableQueries());
+        syncWithoutCompare(SERVER_WINS);
+
+        helper.executeQueriesOnServer(insertDataQueries);
+        helper.executeQueriesOnClient(insertDataQueries);
     }
 
     /**
@@ -161,136 +160,59 @@ public abstract class AbstractSyncTest implements ISyncTests {
         return ClassLoader.getSystemResourceAsStream(resourceName);
     }
 
-    /**
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    @Override
-    public void resetClientAndServerDatabase() throws SyncException, SQLException, ContextException {
-        Statement stmt = null;
-        String[] tables = new String[]{"categories_md", "categories", "items", "items_md"};
 
-        try {
-            LOGGER.info("Dropping tables...");
-
-            helper.createAndExecuteDropBatch(SERVER, tables);
-            helper.createAndExecuteDropBatch(ConnectionType.CLIENT, tables);
-
-            LOGGER.info("Creating tables...");
-
-            helper.createAndExecuteBatch(SERVER, getCreateTableStatement());
-
-            syncWithoutCompare(SERVER_WINS);
-
-        } finally {
-            if (stmt != null) {
-                stmt.close();
-            }
-        }
-    }
-
-    /**
-     * @return CREATE TABLE sql statements for test tables.
-     */
-    protected String[] getCreateTableStatement() {
+    protected String[] getCreateTableQueries() {
         return new String[]{
-            "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" VARCHAR (30000),\"description\" VARCHAR (30000));",
-            "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
+                "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" VARCHAR (30000),\"description\" VARCHAR (30000));",
+                "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
     }
 
-    protected void initAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                               ConnectionType dbToUpdate, ConnectionType type, ConnectionType type2
-    ) throws SyncException,
-        SQLException, ContextException {
-        InputStream stream = null;
-        try {
-            populateWithTestData();
-            stream = getResourceAsStream(resource);
-            helper.executeUpdate(dbToUpdate, stream);
-
-            sync(syncDirection, strategy, type, type2);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot close input stream!");
-                }
-            }
-        }
+    protected void initAndSyncClient(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+        ConnectionType type) throws SyncException, SQLException, ContextException {
+        initAndSyncClient(query, syncDirection, strategy, type, null);
     }
 
-    protected void initAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                               ConnectionType dbToUpdate, ConnectionType type
-    ) throws SyncException,
-        SQLException, ContextException {
-        InputStream stream = null;
-        try {
-            populateWithTestData();
-            stream = getResourceAsStream(resource);
-            helper.executeUpdate(dbToUpdate, stream);
-
-            sync(syncDirection, strategy, type);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot close input stream!");
-                }
-            }
-        }
+    protected void initAndSyncServer(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+        ConnectionType type) throws SyncException, SQLException, ContextException {
+        initAndSyncServer(query, syncDirection, strategy, type, null);
     }
 
-    protected void initClientAndServerWithSync(String resource1, String resource2, SyncDirection syncDirection,
-                                               ConflictStrategy strategy, ConnectionType type
-    ) throws
+    protected void initAndSyncClient(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+        ConnectionType type, ConnectionType type2) throws SyncException, SQLException, ContextException {
+
+        populateWithTestData();
+        helper.executeUpdateOnClient(query);
+        sync(syncDirection, strategy, type, type2);
+    }
+
+    protected void initAndSyncServer(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+        ConnectionType type, ConnectionType type2) throws SyncException, SQLException, ContextException {
+
+        populateWithTestData();
+        helper.executeUpdateOnServer(query);
+        sync(syncDirection, strategy, type, type2);
+    }
+
+    protected void initClientAndServerWithSync(String query1, String query2, SyncDirection syncDirection,
+        ConflictStrategy strategy, ConnectionType type) throws
         SyncException, SQLException, ContextException {
-        InputStream stream = null;
-        try {
-            populateWithTestData();
-            stream = getResourceAsStream(resource1);
-            helper.executeUpdate(SERVER, stream);
-            stream = getResourceAsStream(resource2);
-            helper.executeUpdate(CLIENT, stream);
+        populateWithTestData();
+        helper.executeUpdateOnServer(query1);
+        helper.executeUpdateOnClient(query2);
 
-            sync(syncDirection, strategy, type);
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot close input stream!");
-                }
-            }
-        }
+        sync(syncDirection, strategy, type);
     }
 
-    protected void initClientAndServerWithoutSync(String resource1, String resource2) throws
+    protected void initClientAndServerWithoutSync(String query1, String query2) throws
         SyncException, SQLException, ContextException {
-        InputStream stream = null;
-        try {
-            populateWithTestData();
-            stream = getResourceAsStream(resource1);
-            helper.executeUpdate(SERVER, stream);
-            stream = getResourceAsStream(resource2);
-            helper.executeUpdate(CLIENT, stream);
+        populateWithTestData();
+        helper.executeUpdateOnServer(query1);
+        helper.executeUpdateOnClient(query2);
 
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
-                    LOGGER.warn("Cannot close input stream!");
-                }
-            }
-        }
     }
 
     protected void initClientAndServerAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                                              ConnectionType type
-    ) throws SyncException,
+        ConnectionType type) throws SyncException,
         SQLException, ContextException {
         initClientAndServerWithSync(resource, resource, syncDirection, strategy, type);
     }
@@ -307,7 +229,6 @@ public abstract class AbstractSyncTest implements ISyncTests {
     }
 
     // was already ignored
-
     /**
      * Sync.
      *
@@ -341,8 +262,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
      * @throws ContextException
      */
     public void sync(final SyncDirection direction, final ConflictStrategy strategy, final ConnectionType type,
-                     final ConnectionType type2
-    ) throws
+        final ConnectionType type2) throws
         SyncException, SQLException,
         ContextException {
 
@@ -427,7 +347,6 @@ public abstract class AbstractSyncTest implements ISyncTests {
 //
 //        localCtx.synchronize();
 //    }
-
     private Map<String, String> initTestTableStatementMap() {
         Map<String, String> statementsToExecute = newHashMap();
         statementsToExecute.put("categories", "select * from categories order by categoryid asc");

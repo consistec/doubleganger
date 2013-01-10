@@ -51,7 +51,7 @@ public class ITAllOperationsPostgreSQL extends DefaultSyncTest {
     }
 
     @Override
-    protected String[] getCreateTableStatement() {
+    protected String[] getCreateTableQueries() {
         return new String[]{
             "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" VARCHAR (30000),\"description\" VARCHAR (30000));",
             "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
