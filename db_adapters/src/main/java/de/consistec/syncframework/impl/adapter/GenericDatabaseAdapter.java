@@ -713,6 +713,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                 throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName));
             }
         } catch (SQLException e) {
+            LOGGER.error(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName), e);
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName), e);
         } finally {
             closeStatements(insertStatement);
