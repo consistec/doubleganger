@@ -5,6 +5,7 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.Tuple;
@@ -53,10 +54,10 @@ import org.slf4j.cal10n.LocLogger;
  * Objects of this class should <b>not</b> be created directly with {@code new} keyword. Instead, a canonical name
  * has to be specified in framework configuration. See {@link de.consistec.syncframework.common.Config Config class}.
  *
- * @company Consistec Engineering and Consulting GmbH
- * @date 12.04.12 11:30
  * @author Markus Backes
  * @version 0.0.1-SNAPSHOT
+ * @company Consistec Engineering and Consulting GmbH
+ * @date 12.04.12 11:30
  */
 public class HttpServerSyncProxy implements IServerSyncProvider {
 
@@ -72,9 +73,11 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     private URI host;
     private Credentials credentials;
     private ISerializationAdapter serializationAdapter;
+    private long threadId;
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
+
     /**
      * Instantiates a new server sync provider proxy.
      * <p/>
@@ -96,6 +99,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
         if (!StringUtil.isNullOrEmpty(username)) {
             credentials = new UsernamePasswordCredentials(username, password);
         }
+
+        threadId = Thread.currentThread().getId();
     }
 
     //</editor-fold>
@@ -108,6 +113,7 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.APPLY_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(CHANGES.name(),
                 serializationAdapter.serializeChangeList(changes).toString()));
@@ -119,10 +125,11 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     }
 
     @Override
-        public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+    public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(REVISION.name(), String.valueOf(rev)));
             String serializedResponse = request(data);
@@ -137,6 +144,7 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
 
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_SCHEMA.getStringName()));
             String serializedResponse = request(data);
             return serializationAdapter.deserializeSchema(serializedResponse);
