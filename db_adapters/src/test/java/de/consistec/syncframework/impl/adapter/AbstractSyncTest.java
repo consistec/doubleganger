@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * @date 19.04.12 15:47
  * @since 0.0.1-SNAPSHOT
  */
-public abstract class AbstractSyncTest implements ISyncTests {
+public abstract class AbstractSyncTest implements ISyncIntegrationTest {
 
     // This test watcher prints a test's name before and after each test.
     @Rule
@@ -103,33 +103,13 @@ public abstract class AbstractSyncTest implements ISyncTests {
         helper = new ExecuteStatementHelper(getClientConnection(), getServerConnection());
     }
 
-    /**
-     * Closes server and client connection.
-     *
-     * @throws SQLException
-     */
     @AfterClass
     public static void tearDownClass() throws SQLException {
+        clientConnection.close();
+        clientConnection = null;
 
-        if (clientConnection != null) {
-            try {
-                clientConnection.close();
-                clientConnection = null;
-            } catch (SQLException e) {
-                LOGGER.error("could not close client connection!", e);
-                throw e;
-            }
-        }
-
-        if (serverConnection != null) {
-            try {
-                serverConnection.close();
-                serverConnection = null;
-            } catch (SQLException e) {
-                LOGGER.warn("could not close server connection!", e);
-                throw e;
-            }
-        }
+        serverConnection.close();
+        serverConnection = null;
     }
 
     /**
@@ -151,15 +131,10 @@ public abstract class AbstractSyncTest implements ISyncTests {
         helper.executeQueriesOnClient(insertDataQueries);
     }
 
-    /**
-     * @param resourceName
-     * @return
-     */
     @Override
     public InputStream getResourceAsStream(String resourceName) {
         return ClassLoader.getSystemResourceAsStream(resourceName);
     }
-
 
     protected String[] getCreateTableQueries() {
         return new String[]{
@@ -182,7 +157,8 @@ public abstract class AbstractSyncTest implements ISyncTests {
 
         populateWithTestData();
         helper.executeUpdateOnClient(query);
-        sync(syncDirection, strategy, type, type2);
+        sync(syncDirection, strategy);
+        compareDatabases(type, type2);
     }
 
     protected void initAndSyncServer(String query, SyncDirection syncDirection, ConflictStrategy strategy,
@@ -190,17 +166,21 @@ public abstract class AbstractSyncTest implements ISyncTests {
 
         populateWithTestData();
         helper.executeUpdateOnServer(query);
-        sync(syncDirection, strategy, type, type2);
+        sync(syncDirection, strategy);
+        compareDatabases(type, type2);
     }
 
-    protected void initClientAndServerWithSync(String query1, String query2, SyncDirection syncDirection,
+    protected void initClientAndServerWithSyncAndCompare(String query1, String query2, SyncDirection syncDirection,
         ConflictStrategy strategy, ConnectionType type) throws
         SyncException, SQLException, ContextException {
         populateWithTestData();
+
         helper.executeUpdateOnServer(query1);
         helper.executeUpdateOnClient(query2);
 
-        sync(syncDirection, strategy, type);
+        sync(syncDirection, strategy);
+
+        compareDatabases(type);
     }
 
     protected void initClientAndServerWithoutSync(String query1, String query2) throws
@@ -211,74 +191,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
 
     }
 
-    protected void initClientAndServerAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-        ConnectionType type) throws SyncException,
-        SQLException, ContextException {
-        initClientAndServerWithSync(resource, resource, syncDirection, strategy, type);
-    }
-
-    /**
-     * Sync.
-     *
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    public void sync(ConnectionType type) throws SyncException, SQLException, ContextException {
-        sync(SyncDirection.BIDIRECTIONAL, SERVER_WINS, type);
-    }
-
-    // was already ignored
-    /**
-     * Sync.
-     *
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    public void sync() throws SyncException, SQLException, ContextException {
-        sync(SyncDirection.BIDIRECTIONAL, SERVER_WINS);
-    }
-
-    /**
-     * @param strategy
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    public void sync(final SyncDirection direction, final ConflictStrategy strategy, final ConnectionType type) throws
-        SyncException, SQLException,
-        ContextException {
-
-        sync(direction, strategy);
-
-        compareDatabases(type);
-    }
-
-    /**
-     * @param strategy
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    public void sync(final SyncDirection direction, final ConflictStrategy strategy, final ConnectionType type,
-        final ConnectionType type2) throws
-        SyncException, SQLException,
-        ContextException {
-
-        sync(direction, strategy);
-
-        compareDatabases(type, type2);
-    }
-
-    /**
-     * @param strategy
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    public void sync(final SyncDirection direction, final ConflictStrategy strategy) throws
-        SyncException, SQLException,
+    public void sync(final SyncDirection direction, final ConflictStrategy strategy) throws SyncException, SQLException,
         ContextException {
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
@@ -363,21 +276,15 @@ public abstract class AbstractSyncTest implements ISyncTests {
         helper.readTableContent(tableStatementMap);
     }
 
-    /**
-     * Compare databases.
-     */
-    private void compareDatabases(ConnectionType type) throws
+    public void compareDatabases(ConnectionType type) throws
         SyncException, SQLException {
         Map<String, String> statementsToExecute = initTestTableStatementMap();
 
         helper.executeStatementAndCompareResults(statementsToExecute,
-            new ResultSetComparator(), CONF, type);
+            new ResultSetComparator(), CONF, type, null);
     }
 
-    /**
-     * Compare databases.
-     */
-    private void compareDatabases(ConnectionType type, ConnectionType type2) throws
+    public void compareDatabases(ConnectionType type, ConnectionType type2) throws
         SyncException, SQLException {
         Map<String, String> statementsToExecute = initTestTableStatementMap();
 

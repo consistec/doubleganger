@@ -95,13 +95,6 @@ public class ExecuteStatementHelper {
         }
     }
 
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute,
-        ResultSetComparator comparator, Config conf, ConnectionType type) throws
-        SQLException, SyncException {
-
-        executeStatementAndCompareResults(statementsToExecute, comparator, conf, type, null);
-    }
-
     /**
      * Executes provided SQL statements and compares theirs result.
      *
