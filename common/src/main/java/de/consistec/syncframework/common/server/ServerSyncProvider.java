@@ -131,7 +131,8 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             validateChangeList(changes);
             tableSynchronizer.synchronizeServerTables();
             int result = hashProcessor.applyChangesFromClientOnServer(changes, clientRevision);
-            adapter.getConnection().commit();
+//            adapter.getConnection().commit();
+            adapter.commit();
             LOGGER.info(Infos.COMMON_SENDING_NEW_REVISION_TO_CLIENT, result);
 
             return result;

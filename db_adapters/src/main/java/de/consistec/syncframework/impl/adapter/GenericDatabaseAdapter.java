@@ -345,6 +345,15 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public void commit() throws DatabaseAdapterException {
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.COMMITTING_THE_CONNECTION_FAILS), e);
+        }
+    }
+
+    @Override
     public ISQLConverter getSchemaConverter() {
         return new CreateSchemaToSQLConverter();
     }

@@ -82,6 +82,15 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         LOGGER.debug("created new {}", getClass().getCanonicalName());
     }
 
+    @Override
+    public void commit() throws DatabaseAdapterException {
+        try {
+            super.commit();
+        } catch (DatabaseAdapterException ex) {
+            handleTransactionAborted(ex);
+        }
+    }
+
 
     @Override
     public void getRowForPrimaryKey(final Object primaryKey, final String tableName,

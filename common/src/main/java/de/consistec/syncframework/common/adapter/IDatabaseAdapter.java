@@ -5,6 +5,7 @@ import de.consistec.syncframework.common.data.schema.ISQLConverter;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.syncframework.common.exception.database_adapter.TransactionAbortedException;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -298,4 +299,11 @@ public interface IDatabaseAdapter {
      * @return Database connection.
      */
     Connection getConnection();
+
+    /**
+     * Commits the underling database connection
+     *
+     * @throws DatabaseAdapterException
+     */
+    public void commit() throws DatabaseAdapterException, TransactionAbortedException;
 }
