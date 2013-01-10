@@ -179,12 +179,6 @@ public class ClientHashProcessor {
                 new DatabaseAdapterCallback<ResultSet>() {
                     @Override
                     public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
-                        String hash = null;
-                        try {
-                            hash = serverChange.calculateHash();
-                        } catch (NoSuchAlgorithmException e) {
-                            throw new DatabaseAdapterException(e);
-                        }
                         if (result.next()) {
                             adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
                             adapter.updateMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
@@ -249,7 +243,7 @@ public class ClientHashProcessor {
         throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
 
         MDEntry remoteEntry = serverChange.getMdEntry();
-        Map<String, Object> remoteRowData = serverChange.getRowData();
+//        Map<String, Object> remoteRowData = serverChange.getRowData();
 
         ConflictHandlingData data = new ConflictHandlingData(clientChange, serverChange);
 
