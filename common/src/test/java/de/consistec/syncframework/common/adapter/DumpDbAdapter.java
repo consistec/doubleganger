@@ -15,23 +15,24 @@ import java.util.Properties;
 /**
  * Dump IDatabaseAdapter implementation for mocking.
  *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 31.10.2012 14:48:35
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 public class DumpDbAdapter implements IDatabaseAdapter {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
+    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     public Connection connection;
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
+    //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
 //</editor-fold>
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-    private DumpDbAdapter(){
+    private DumpDbAdapter() {
     }
-//</editor-fold>
+
+    //</editor-fold>
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
     @Override
     public void init(Properties adapterConfig) {
@@ -153,6 +154,11 @@ public class DumpDbAdapter implements IDatabaseAdapter {
 
     @Override
     public Connection getConnection() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void commit() throws DatabaseAdapterException, TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
