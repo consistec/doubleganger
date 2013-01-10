@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sync">Synchronize</string>
+    <string name="app_name">AndroidSyncClient</string>
+    <string name="url">http://10.0.2.2:8080/SyncServer/SyncService</string>
+</resources>

@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
+
+<module name="Checker">
+
+    <!-- Checks for whitespace                               -->
+    <!-- See http://checkstyle.sf.net/config_whitespace.html -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Miscellaneous other checks.                   -->
+    <!-- See http://checkstyle.sf.net/config_misc.html -->
+    <module name="NewlineAtEndOfFile"/>
+    <module name="Translation"/>
+
+    <!-- Suppress checks -->
+    <!-- See http://checkstyle.sourceforge.net/config.html -->
+    <module name="SuppressionCommentFilter"/>
+
+    <module name="TreeWalker">
+        <property name="cacheFile" value="${checkstyle.cache.file}"/>
+        <!--        <property name="tabWidth" value="4" />-->
+
+        <!-- Suppress checks -->
+        <!-- See http://checkstyle.sourceforge.net/config.html -->
+        <module name="FileContentsHolder"/>
+
+
+        <!-- Checks javadocs                                            -->
+        <!-- See http://checkstyle.sourceforge.net/config_javadoc.html  -->
+        <module name="JavadocType">
+            <property name="authorFormat" value="\S"/>
+            <property name="allowMissingParamTags" value="true" />
+            <property name="allowUnknownTags" value="true" />
+            <property name="scope" value="package" />
+        </module>
+        <module name="JavadocMethod">
+            <property name="allowUndeclaredRTE" value="true" />
+            <property name="scope" value="package" />
+            <property name="allowMissingThrowsTags" value="true" />
+        </module>
+        <module name="JavadocVariable">
+            <property name="scope" value="package"/>
+        </module>
+        <module name="JavadocStyle" >
+            <property name="checkEmptyJavadoc" value="false" />
+        </module>
+        <module name="WriteTag">
+            <property name="tag" value="@todo"/>
+            <property name="tagFormat" value="\S"/>
+            <property name="severity" value="ignore"/>
+            <property name="tagSeverity" value="warning"/>
+        </module>
+
+        <!-- Checks for imports                              -->
+        <module name="AvoidStarImport"/>
+        <module name="RedundantImport" />
+        <module name="UnusedImports"/>
+        <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
+        <module name="ImportOrder">
+            <property name="groups" value="de.consistec.syncframework"/>
+            <property name="separated" value="true"/>
+            <property name="option" value="top"/>
+        </module>
+
+        <!-- Checks for Naming Conventions.                  -->
+        <!-- See http://checkstyle.sf.net/config_naming.html -->
+        <module name="ConstantName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName"/>
+        <module name="MethodName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+
+        <!-- Checks for whitespace (for TreeWalker module)       -->
+        <!-- See http://checkstyle.sf.net/config_whitespace.html -->
+        <module name="EmptyForIteratorPad"/>
+        <module name="MethodParamPad"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="OperatorWrap"/>
+        <module name="ParenPad"/>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+
+        <!-- Checks for Size Violations.                    -->
+        <!-- See http://checkstyle.sf.net/config_sizes.html -->
+        <module name="LineLength">
+            <property name="max" value="128"/>
+            <!-- To configure the check to ignore lines that begin with " * ", followed by just one word, such as within a Javadoc comment. -->
+            <property name="ignorePattern" value="^ *\* *[^ ]+$"/>
+        </module>
+        <module name="MethodLength">
+            <property name="tokens" value="METHOD_DEF"/>
+            <property name="max" value="100"/>
+            <property name="countEmpty" value="false"/>
+        </module>
+
+        <!-- Modifier Checks                                    -->
+        <!-- See http://checkstyle.sf.net/config_modifier.html -->
+        <module name="RedundantModifier"/>
+        <!--
+            Checks that the order of modifiers conforms to the suggestions in the Java Language specification,
+            sections 8.1.1, 8.3.1 and 8.4.3.
+        -->
+        <module name="ModifierOrder"/>
+
+
+        <!-- Checks for blocks. You know, those {}'s         -->
+        <module name="LeftCurly"/>
+        <module name="NeedBraces"/>
+
+        <!-- Checks for common coding problems               -->
+        <!-- http://checkstyle.sourceforge.net/config_coding.html -->
+        <module name="EmptyStatement"/>
+        <module name="EqualsHashCode"/>
+        <module name="IllegalInstantiation">
+            <property name="classes" value="java.lang.Boolean"/>
+            <property name="classes" value="java.lang.String"/>
+            <property name="classes" value="java.util.ArrayList"/>
+            <property name="classes" value="java.util.HashMap"/>
+            <property name="classes" value="java.util.HashSet"/>
+        </module>
+        <module name="CovariantEquals"/>
+        <module name="EqualsAvoidNull"/>
+        <module name="HiddenField">
+            <property name="tokens" value="VARIABLE_DEF"/>
+        </module>
+        <module name="MissingSwitchDefault"/>
+        <module name="DefaultComesLast"/>
+        <module name="ModifiedControlVariable" />
+        <module name="RedundantThrows">
+            <property name="logLoadErrors" value="false" />
+            <property name="suppressLoadErrors" value="true" />
+        </module>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="IllegalThrows"/>
+        <module name="PackageDeclaration"/>
+        <module name="JUnitTestCase"/>
+        <module name="DeclarationOrder"/>
+        <module name="ParameterAssignment"/>
+        <module name="FallThrough"/>
+        <module name="MultipleStringLiterals">
+            <property name="allowedDuplicates" value="5"/>
+        </module>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="OneStatementPerLine"/>
+
+        <!-- Checks for class design                         -->
+        <!-- See http://checkstyle.sf.net/config_design.html -->
+        <module name="FinalClass"/>
+        <module name="InterfaceIsType">
+            <property name="allowMarkerInterfaces" value="true"/>
+        </module>
+        <module name="HideUtilityClassConstructor"/>
+        <module name="VisibilityModifier">
+            <property name="protectedAllowed" value="true"/>
+        </module>
+
+        <!-- Check nested (internal) classes/interfaces are declared at the bottom of the class after all method and field declarations. -->
+        <module name="InnerTypeLast"/>
+
+
+        <!-- Miscellaneous other checks.                   -->
+        <!-- See http://checkstyle.sf.net/config_misc.html -->
+        <module name="ArrayTypeStyle"/>
+        <!--        <module name="FinalParameters"/>-->
+        <module name="TodoComment"/>
+        <module name="UpperEll"/>
+        <!-- Comparing this with null (i.e. this == null and this != null):  -->
+        <module name="DescendantToken">
+            <property name="tokens" value="EQUAL,NOT_EQUAL"/>
+            <property name="limitedTokens" value="LITERAL_THIS,LITERAL_NULL"/>
+            <property name="maximumNumber" value="1"/>
+            <property name="maximumDepth" value="1"/>
+            <property name="sumTokenCounts" value="true"/>
+        </module>
+        <!-- String literal equality check: -->
+        <module name="DescendantToken">
+            <property name="tokens" value="EQUAL,NOT_EQUAL"/>
+            <property name="limitedTokens" value="STRING_LITERAL"/>
+            <property name="maximumNumber" value="0"/>
+            <property name="maximumDepth" value="1"/>
+        </module>
+
+        <!--<module name="Indentation" />-->
+        <module name="TrailingComment">
+            <property name="legalComment" value="NOSONAR"/>
+        </module>
+
+        <!-- Checks for annotations -->
+        <!-- See http://checkstyle.sourceforge.net/config_annotation.html -->
+        <!--Verifies that both the java.lang.Deprecated annotation is present and the @deprecated Javadoc tag is present when either is present. -->
+        <module name="MissingDeprecated"/>
+        <!--  Verifies that the java.lang.Override annotation is present when the {@inheritDoc} javadoc tag is present. -->
+        <module name="MissingOverride"/>
+        <module name="PackageAnnotation"/>
+
+    </module>
+
+</module>

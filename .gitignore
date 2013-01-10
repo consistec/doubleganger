@@ -1,0 +1,14 @@
+target/
+*/.settings/
+*/.project
+*/.classpath
+.idea/
+*.log
+*.iml
+.reverse.properties
+out
+nb-configuration.xml
+*/nbactions.xml
+target
+*.log.1
+nbactions.xml

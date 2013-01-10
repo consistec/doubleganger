@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiJARLocking="true" path="/${deploy.name}">
+  <Resource auth="Container" driverClassName="org.postgresql.Driver" logAbandoned="true" maxActive="20" maxIdle="10"
+              name="jdbc/sync" password="${db.passwd}" removeAbandoned="false" type="javax.sql.DataSource"
+              url="jdbc:postgresql://${db.host}:${db.port}/${db.name}" username="${db.user}"
+              validationQuery="select 1"/>
+</Context>

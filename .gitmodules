@@ -1,0 +1,3 @@
+[submodule "android-adapters/sqldroid"]
+	path = android-adapters/sqldroid
+	url = gitosis@bigmama1.sb.consistec.de:SQLDroid.git

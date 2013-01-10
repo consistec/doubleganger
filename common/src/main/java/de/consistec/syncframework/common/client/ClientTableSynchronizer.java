@@ -1,0 +1,190 @@
+package de.consistec.syncframework.common.client;
+
+import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_FLAG;
+import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+
+import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
+import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
+import de.consistec.syncframework.common.data.Change;
+import de.consistec.syncframework.common.data.MDEntry;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.i18n.Infos;
+import de.consistec.syncframework.common.util.DBMapperUtil;
+import de.consistec.syncframework.common.util.HashCalculator;
+import de.consistec.syncframework.common.util.LoggingUtil;
+import de.consistec.syncframework.common.util.StringUtil;
+
+import java.security.NoSuchAlgorithmException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import org.slf4j.cal10n.LocLogger;
+
+/**
+ * The {@code ClientTableSynchronizer} class looks for changed / deleted data rows for each
+ * sync table defined in the configuration file.
+ * <br/>
+ * <p>If changed rows are detected then the {@code ClientTableSynchronizer } calculates
+ * a new hash entry for each of them and updates it in the md-table. For new rows the
+ * {@code ClientTableSynchronizer } creates a new md table entry. If deleted rows are
+ * detected and an md table entry exists then the {@code ClientTableSynchronizer }
+ * updates the md table entry with an empty hash value and marks it so as deleted.</p>
+ *
+ * @author Markus
+ * @company Consistec Engineering and Consulting GmbH
+ * @date unknown
+ * @since 0.0.1-SNAPSHOT
+ */
+public class ClientTableSynchronizer {
+
+    private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientTableSynchronizer.class.getCanonicalName());
+    private static final String MDV_COLUMN_NAME = "mdv";
+    private static final Config CONF = Config.getInstance();
+    private IDatabaseAdapter adapter;
+
+    /**
+     * Instantiates a new client table synchronizer.
+     *
+     * @param adapter Database adapter
+     */
+    public ClientTableSynchronizer(IDatabaseAdapter adapter) {
+        this.adapter = adapter;
+        LOGGER.debug("ClientTableSynchronizer Constructor finished");
+    }
+
+    /**
+     * Synchronize client tables.
+     *
+     * @return List<Change> the client changes.
+     * @throws DatabaseAdapterException
+     * @throws SQLException
+     */
+    public List<Change> synchronizeClientTables() throws DatabaseAdapterException {
+
+        LOGGER.debug("SynchronizeClientTables called. Searching for changed rows ...");
+
+        List<Change> changes = newArrayList();
+
+        for (final String table : CONF.getSyncTables()) {
+            LOGGER.debug(String.format("processing table %s", table));
+            changes.addAll(searchAndProcessChangedRows(table));
+            changes.addAll(searchAndProcessDeletedRows(table));
+        }
+
+        LOGGER.debug("synchronizeClientTables finished");
+
+        return changes;
+    }
+
+    private List<Change> searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
+
+        final List<Change> changeList = newArrayList();
+        final List<String> columns = adapter.getColumns(table);
+        Collections.sort(columns);
+
+        adapter.getAllRowsFromTable(table, new DatabaseAdapterCallback<ResultSet>() {
+            @Override
+            public void onSuccess(ResultSet allRows) throws DatabaseAdapterException {
+
+                try {
+                    String mdTable = table + CONF.getMdTableSuffix();
+
+                    while (allRows.next()) {
+
+                        final Map<String, Object> rowData = newHashMap();
+
+                        for (String s : columns) {
+                            rowData.put(s, allRows.getObject(s));
+                        }
+
+                        final Object primaryKey = allRows.getObject(adapter.getPrimaryKeyColumn(table).getName());
+                        final String hash = new HashCalculator().getHash(rowData);
+
+                        adapter.getRowForPrimaryKey(primaryKey, mdTable, new DatabaseAdapterCallback<ResultSet>() {
+                            @Override
+                            public void onSuccess(ResultSet result) throws DatabaseAdapterException {
+                                Change change = new Change();
+                                try {
+                                    if (result.next()) {
+                                        // compare hashes
+                                        String mdTableHash = result.getString(MDV_COLUMN_NAME);
+                                        if (mdTableHash == null || !mdTableHash.equalsIgnoreCase(hash)) {
+                                            LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
+                                            adapter.updateMdRow(result.getInt("rev"), CLIENT_FLAG, primaryKey, hash,
+                                                table);
+                                            MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
+                                            change.setMdEntry(mdEntry);
+                                            change.setRowData(rowData);
+                                            changeList.add(change);
+                                        }
+                                    } else {
+                                        // create new entry
+                                        LOGGER.info(Infos.COMMON_CREATING_NEW_CLIENT_HASH_ENTRY);
+                                        adapter.insertMdRow(CLIENT_INIT_REVISION, CLIENT_FLAG, primaryKey, hash, table);
+
+                                        MDEntry mdEntry = new MDEntry(primaryKey, true, CLIENT_INIT_REVISION, table,
+                                            hash);
+                                        change.setMdEntry(mdEntry);
+                                        change.setRowData(rowData);
+                                        changeList.add(change);
+                                    }
+
+                                } catch (SQLException e) {
+                                    throw new DatabaseAdapterException(e);
+                                }
+                            }
+                        });
+
+                    }
+
+                } catch (SQLException e) {
+                    throw new DatabaseAdapterException(e);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new DatabaseAdapterException(e);
+                }
+            }
+        });
+
+        return changeList;
+    }
+
+    private List<Change> searchAndProcessDeletedRows(final String table) throws DatabaseAdapterException {
+
+        LOGGER.debug("searching for deleted rows");
+
+        final List<Change> changeList = newArrayList();
+        // Update deleted rows
+        // http://www.cryer.co.uk/brian/sql/sql_crib_sheet.htm
+        adapter.getDeletedRowsForTable(table, new DatabaseAdapterCallback<ResultSet>() {
+            @Override
+            public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
+                try {
+                    while (deletedRows.next()) {
+                        if (StringUtil.isNullOrEmpty(deletedRows.getString(MDV_COLUMN_NAME))) {
+                            // this row has already been deleted
+                            continue;
+                        }
+                        LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
+                        adapter.updateMdRow(deletedRows.getInt("rev"), CLIENT_FLAG, deletedRows.getObject("pk"), "",
+                            table);
+
+                        MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
+                        mdEntry.setMdv("");
+                        Change change = new Change();
+                        change.setMdEntry(mdEntry);
+//                        change.setRowData(rowData);
+                        changeList.add(change);
+                    }
+                } catch (SQLException e) {
+                    throw new DatabaseAdapterException(e);
+                }
+            }
+        });
+        return changeList;
+    }
+}

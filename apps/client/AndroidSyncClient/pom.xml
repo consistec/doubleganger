@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.consistec.syncframework</groupId>
+    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>AndroidSyncClient</artifactId>
+    <packaging>apk</packaging>
+
+    <name>AndroidSyncClient</name>
+
+    <properties>
+        <android.test.skip>true</android.test.skip>
+        <android.emulator.name>TestDevice</android.emulator.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!--        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android</artifactId>
+            <version>2.3.3</version>
+            <scope>provided</scope>
+        </dependency>-->
+        <!--        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>-->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.mindpipe.android</groupId>
+            <artifactId>android-logging-log4j</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.2</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android-test</artifactId>
+            <version>2.3.3</version>
+            <type>jar</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.consistec.syncframework</groupId>
+            <artifactId>android-adapters</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.consistec.syncframework</groupId>
+            <artifactId>db_adapters</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <classifier>tests</classifier>
+        </dependency>
+
+        <dependency>
+            <groupId>de.consistec.syncframework</groupId>
+            <artifactId>sync_providers_proxies</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>emma</groupId>
+            <artifactId>emma</artifactId>
+            <version>2.1.5320</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <!-- Andorid SDK doesn't support jdk7  -->
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <skipTests>${android.test.skip}</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                <artifactId>android-maven-plugin</artifactId>
+                <version>3.3.2</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <emma>
+                        <enable>true</enable>
+                        <classFolders>${project.basedir}/target/classes/</classFolders>
+                        <outputMetaFile>${project.basedir}/target/emma/coverage.em</outputMetaFile>
+                    </emma>
+                    <dex>
+                        <noLocals>true</noLocals> <!--  must be set for emma -->
+                    </dex>
+                    <test>
+                        <coverage>true</coverage>
+                        <createReport>true</createReport>
+                    </test>
+                    <androidManifestFile>${project.basedir}/AndroidManifest.xml</androidManifestFile>
+                    <assetsDirectory>${project.basedir}/assets</assetsDirectory>
+                    <resourceDirectory>${project.basedir}/res</resourceDirectory>
+                    <nativeLibrariesDirectory>${project.basedir}/src/main/native</nativeLibrariesDirectory>
+                    <sdk>
+                        <platform>10</platform>
+                    </sdk>
+                    <emulator>
+                        <avd>${android.emulator.name}</avd>
+                        <wait>60000</wait>
+                        <options>-no-window</options>
+                    </emulator>
+                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>maven-jetty-plugin</artifactId>
+                <version>6.1.26</version>
+                <configuration>
+                    <contextPath>/SyncServer</contextPath>
+                    <stopKey>foo</stopKey>
+                    <stopPort>9090</stopPort>
+                    <webApp>../SyncServer/target/SyncServer.war</webApp>
+                    <webAppSourceDirectory>../SyncServer/src/main/webapp</webAppSourceDirectory>
+                    <connectors>
+                        <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                            <port>8085</port>
+                            <maxIdleTime>60000</maxIdleTime>
+                        </connector>
+                    </connectors>
+                    <systemProperties>
+                        <!-- set servers formContentSize for request to max (default is 200.000) -->
+                        <systemProperty>
+                            <name>org.mortbay.jetty.Request.maxFormContentSize</name>
+                            <value>-1</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.3</version>
+                <configuration>
+                    <thirdPartyFilename>${project.artifactId}_licenses.txt</thirdPartyFilename>
+                    <outputDirectory>${project.basedir}/target</outputDirectory>
+                    <!-- Ignore own modules -->
+                    <excludedGroups>de.consistec</excludedGroups>
+                    <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                    <excludedLicenses>The GNU General Public License, Version 2 </excludedLicenses>
+                    <!-- Using lib with excluded License will break build if failIfWarning is true-->
+                    <failIfWarning>false</failIfWarning>
+                    <excludedScopes>test</excludedScopes>
+                    <force>true</force>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-third-party</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+<plugin>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.9.1</version>
+                <configuration>
+                    <consoleOutput>true</consoleOutput>
+                    <failOnViolation>true</failOnViolation>
+                    <failsOnError>true</failsOnError>
+                    <violationSeverity>error</violationSeverity>
+                    <logViolationsToConsole>true</logViolationsToConsole>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <configLocation>consistec-checkstyle/consistec-rules.xml</configLocation>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>checkstyle-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>${project.groupId}</groupId>
+                        <version>1</version>
+                        <artifactId>checkstyle</artifactId>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>androidTest</id>
+            <properties>
+                <android.test.skip>false</android.test.skip>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.mortbay.jetty</groupId>
+                        <artifactId>maven-jetty-plugin</artifactId>
+                        <version>6.1.26</version>
+                        <executions>
+                            <execution>
+                                <id>start-jetty</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>deploy-war</goal>
+                                </goals>
+                                <configuration>
+                                    <scanIntervalSeconds>0</scanIntervalSeconds>
+                                    <daemon>true</daemon>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>stop-jetty</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.jayway.maven.plugins.android.generation2</groupId>
+                        <artifactId>android-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>start-emulator</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>emulator-start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>pull-coverage</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>pull</goal>
+                                </goals>
+                                <configuration>
+                                    <pullSource>/data/data/de.consistec.syncframework.android/files/coverage.ec</pullSource>
+                                    <pullDestination>${project.basedir}/target/emma/coverage.ec</pullDestination>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>stop-emulator</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>emulator-stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

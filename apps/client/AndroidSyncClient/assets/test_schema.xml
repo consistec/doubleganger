@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema>
+    <tables>
+        <table name="table1">
+            <columns>
+                <column name="column1" type="INTEGER" nullable="false"/>
+                <column name="column2" type="VARCHAR" size="25" nullable="true"/>
+            </columns>
+            <constraints>
+                <constraint name="pk_table1" type="PRIMARY_KEY" column="column1"/>
+            </constraints>
+        </table>
+        <table name="table2">
+            <columns>
+                <column name="column3" type="INTEGER" nullable="false"/>
+                <column name="column4" type="DOUBLE" size="2" decimalDigits="2"/>
+            </columns>
+            <constraints>
+                <constraint name="pk_table2" type="PRIMARY_KEY" column="column3"/>
+            </constraints>
+        </table>
+    </tables>
+</schema>

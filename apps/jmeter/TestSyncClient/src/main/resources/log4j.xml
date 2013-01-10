@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!-- logging configuration for unit tests -->
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <appender name="consoleAppender" class="org.apache.log4j.ConsoleAppender">
+        <param name="Threshold" value="ALL"/>
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p %m [%c] line %L%n"/>
+        </layout>
+    </appender>
+
+    <appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
+        <param name="Threshold" value="DEBUG"/>
+        <param name="File" value="test.log"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d - %X{session-id} %-5p %m [%c] line %L%n"/>
+            <!--<param name="ConversionPattern" value="%d [%t] %-5p [%-35F : %-25M : %-6L] %-C -%m%n"/>-->
+        </layout>
+    </appender>
+
+    <root>
+        <level value="ALL"/>
+        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="fileAppender"/>
+    </root>
+
+</log4j:configuration>

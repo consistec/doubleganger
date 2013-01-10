@@ -1,0 +1,10 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+    <changeSet author="markus (generated)" id="1">
+        <update tableName="categories">
+            <column name="categoryid" valueNumeric="7"/>
+            <column name="categoryname" value="Cat7b"/>
+            <column name="description" value="uhhhhhhh 7b"/>
+            <where>categoryid=7</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

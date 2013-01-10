@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    <RadioGroup
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+        <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Gingerbread"
+                android:id="@+id/osGingerbreadRadioButton"/>
+        <RadioButton
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Ice Cream Sandwich / Jelly Bean"
+                android:id="@+id/osICSRadioButton"/>
+    </RadioGroup>
+<Button  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="@string/sync"
+    android:id="@+id/syncButton"
+    />
+    <TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:id="@+id/statusTextView"
+    />
+    <EditText 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/urlEditText"
+    android:text="@string/url"
+    />
+</LinearLayout>
