@@ -26,6 +26,7 @@ import de.consistec.syncframework.impl.i18n.Infos;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -73,7 +74,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     private URI host;
     private Credentials credentials;
     private ISerializationAdapter serializationAdapter;
-    private long threadId;
+    //    private long threadId;
+    private String threadId;
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
@@ -99,8 +101,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
         if (!StringUtil.isNullOrEmpty(username)) {
             credentials = new UsernamePasswordCredentials(username, password);
         }
-
-        threadId = Thread.currentThread().getId();
     }
 
     //</editor-fold>
@@ -111,9 +111,13 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
 
     @Override
     public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
-            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.APPLY_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(CHANGES.name(),
                 serializationAdapter.serializeChangeList(changes).toString()));
@@ -127,9 +131,13 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
+
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
-            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(REVISION.name(), String.valueOf(rev)));
             String serializedResponse = request(data);
@@ -142,9 +150,12 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Schema getSchema() throws SyncException {
 
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
-            data.add(new BasicNameValuePair(THREAD_ID.name(), Long.valueOf(threadId).toString()));
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_SCHEMA.getStringName()));
             String serializedResponse = request(data);
             return serializationAdapter.deserializeSchema(serializedResponse);
