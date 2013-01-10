@@ -199,7 +199,7 @@ public class ClientHashProcessor {
     }
 
     private boolean isConflict(int foundIndex) {
-        return foundIndex != -1;
+        return foundIndex >= 0;
     }
 
 //    private void processServerChange(ResultSet localHashResultSet, ResultSet localDataResultSet, Change remoteChange)
