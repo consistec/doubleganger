@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import java.io.IOException;
+import java.sql.BatchUpdateException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -59,8 +60,8 @@ public class SynchronizationTest {
     static String insertNewRow = "INSERT INTO categories (id, name, description) VALUES (7, 'Cat7a', '7a')";
     static String updateNewRow = "UPDATE categories SET id = 7, name = 'Cat7b', description = '7b' WHERE id = 7";
     static String deleteNewRow = "DELETE FROM categories WHERE id = 7";
-    String[] tableNames = new String[]{"categories_md", "categories"};
-    String[] insertDataQueries = new String[]{
+    static String[] tableNames = new String[]{"categories_md", "categories"};
+    static String[] insertDataQueries = new String[]{
         "INSERT INTO categories (\"id\", \"name\", \"description\") VALUES (1, 'Beverages', 'Soft drinks')",
         "INSERT INTO categories (\"id\", \"name\", \"description\") VALUES (2, 'Condiments', 'Sweet and ')",
         "INSERT INTO categories (\"id\", \"name\", \"description\") VALUES (3, 'Confections', 'Desserts')",
@@ -76,11 +77,11 @@ public class SynchronizationTest {
     };
     // POSTGRESQL
     public static final String CONFIG_FILE = "/config_postgre.properties";
-    protected static final DumpDataSource clientDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
-        ConnectionType.CLIENT);
     protected static final DumpDataSource serverDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
         ConnectionType.SERVER);
-    protected static Connection clientConnection, serverConnection;
+    protected static final DumpDataSource clientDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
+        ConnectionType.CLIENT);
+    protected static Connection serverConnection, clientConnection;
 
     @Parameterized.Parameters
     public static Collection<TestScenario[]> AllScenarii() {
@@ -102,14 +103,14 @@ public class SynchronizationTest {
     public static void initClass() throws SQLException {
         // initialize logging framework
         DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
-        clientConnection = clientDs.getConnection();
         serverConnection = serverDs.getConnection();
+        clientConnection = clientDs.getConnection();
     }
 
     @Before
     public void init() throws SyncException, ContextException, SQLException, IOException {
         Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
-        helper = new ExecuteStatementHelper(clientConnection, serverConnection);
+        helper = new ExecuteStatementHelper(serverConnection, clientConnection);
 
         helper.dropTablesOnServer(tableNames);
         helper.dropTablesOnClient(tableNames);
@@ -125,17 +126,29 @@ public class SynchronizationTest {
 
     @Test
     public void executeTest() throws SQLException, ContextException, SyncException {
-        scenario.executeSteps(serverConnection, clientConnection);
+        scenario.setDataSources(serverDs, clientDs);
+        
+        scenario.setSelectQueries(new String[]{
+                "select * from categories order by id asc",
+                "select * from categories_md order by pk asc"
+            });
 
-        scenario.synchronize("categories", serverDs, clientDs);
+        scenario.executeSteps();
+
+        scenario.synchronize(tableNames);
 
         scenario.assertBothSidesAreInExpectedState();
+
     }
 
     @AfterClass
     public static void tearDownClass() throws SQLException {
-        clientConnection.close();
-        serverConnection.close();
+        for (Connection connection : serverDs.getCreatedConnections()) {
+            connection.close();
+        }
+        for (Connection connection : clientDs.getCreatedConnections()) {
+            connection.close();
+        }
     }
 
     public Connection getServerConnection() {

@@ -13,15 +13,11 @@ import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 
 import de.consistec.syncframework.impl.adapter.ResultSetComparator;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +38,9 @@ public class TestScenario {
     private ConflictStrategy strategy;
     private ConnectionType expectedState;
     private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
+    private DumpDataSource serverDs, clientDs;
+    private ResultSet[] expectedResultSets;
+    private String[] selectQueries;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy, ConnectionType expectedState) {
         this.name = name;
@@ -66,6 +65,9 @@ public class TestScenario {
         return expectedState;
     }
 
+    /**
+     * Adds a step to the scenario, like a query to be executed on the client/server or a sync in between.
+     */
     public TestScenario addStep(ConnectionType side, String query) {
         Map<ConnectionType, String> step = new EnumMap<ConnectionType, String>(ConnectionType.class);
         step.put(side, query);
@@ -73,9 +75,21 @@ public class TestScenario {
         return this;
     }
 
-    public void executeSteps(Connection serverConnection, Connection clientConnection) throws SQLException {
-        Statement serverStmt = serverConnection.createStatement();
-        Statement clientStmt = clientConnection.createStatement();
+    public void setDataSources(DumpDataSource serverDs, DumpDataSource clientDs) {
+        this.serverDs = serverDs;
+        this.clientDs = clientDs;
+    }
+
+    /**
+     * These queries will be used to assert the tables are in the right state.
+     */
+    public void setSelectQueries(String[] selectQueries) {
+        this.selectQueries = selectQueries;
+    }
+
+    public void executeSteps() throws SQLException {
+        Statement serverStmt = serverDs.getConnection().createStatement();
+        Statement clientStmt = clientDs.getConnection().createStatement();
 
         for (Map<ConnectionType, String> step : steps) {
             // there should be exactly one entry per step
@@ -84,27 +98,28 @@ public class TestScenario {
 
             switch (side) {
                 case CLIENT:
-                    clientStmt.addBatch(query);
+                    clientStmt.execute(query);
                     break;
                 case SERVER:
-                    serverStmt.addBatch(query);
+                    serverStmt.executeQuery(query);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown connection type: " + side);
             }
         }
 
-        serverStmt.executeBatch();
         serverStmt.close();
-        clientStmt.executeBatch();
         clientStmt.close();
     }
 
-    public void synchronize(String tableName, DumpDataSource serverDs, DumpDataSource clientDs) throws SyncException,
-        ContextException {
+    public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
+        setExpectedResultSet();
+
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
         TableSyncStrategies strategies = new TableSyncStrategies();
-        strategies.addSyncStrategyForTable(tableName, tableSyncStrategy);
+        for (String tableName : tableNames) {
+            strategies.addSyncStrategyForTable(tableName, tableSyncStrategy);
+        }
 
         final SyncContext.LocalContext localCtx = SyncContext.local(serverDs, clientDs, strategies);
 
@@ -120,86 +135,48 @@ public class TestScenario {
         localCtx.synchronize();
     }
 
-    public void assertBothSidesAreInExpectedState() throws SQLException {
-        Assert.assertEquals(true, false);
-//        ResultSet clientResultSet, serverResultSet;
-//        ResultSetComparator comparator = new ResultSetComparator();
-//
-//        Map<String, String> selectQueries = new HashMap<String, String>();
-//        selectQueries.put("categories", "select * from categories order by id asc");
-//        selectQueries.put("categories" + getMdTableSuffix(),
-//            String.format("select pk, mdv, rev from categories%s  order by pk asc", getMdTableSuffix()));
-//
-//        for (String tableName : selectQueries.keySet()) {
-//            String query = selectQueries.get(tableName);
-//
-//            if (tableName.endsWith(getMdTableSuffix())) {
-//                continue;
-//            }
-//
-//            Statement clientStmt = clientDs.getConnection().createStatement();
-//            clientResultSet = clientStmt.executeQuery(query);
-//
-//            Statement serverStmt = serverDs.getConnection().createStatement();
-//            serverResultSet = serverStmt.executeQuery(query);
-//
-//            String tableContentToCompare = getContentToCompare(tableName, type);
-//            String clientTableContent = resultSetToString(clientResultSet);
-//            comparator.compare(tableContentToCompare, clientTableContent);
-//
-//            if (type2 != null) {
-//                tableContentToCompare = getContentToCompare(tableName, type2);
-//            }
-//            String serverTableContent = resultSetToString(serverResultSet);
-//
-//            comparator.compare(tableContentToCompare, serverTableContent);
-//
-//            comparator.compare(clientResultSet, serverResultSet);
-//
-//            Assert.assertEquals(clientResultSet, serverResultSet);
-//
-//            clientStmt.close();
-//            serverStmt.close();
-//        }
-//    }
-//
-//    private String getContentToCompare(String tableName, ConnectionType type) {
-//        if (type == ConnectionType.CLIENT) {
-//            return clientTableContentMap.get(tableName);
-//        } else {
-//            return serverTableContentMap.get(tableName);
-//        }
-    }
+    private void setExpectedResultSet() throws SQLException {
+        Statement serverStmt = serverDs.getConnection().createStatement();
+        Statement clientStmt = clientDs.getConnection().createStatement();
 
-    private String resultSetToString(final ResultSet rs) throws SQLException {
-        if (rs == null) {
-            throw new IllegalArgumentException("Passed result set can't be null!!!");
-        }
-        StringBuilder strBuilder = new StringBuilder();
+        ResultSet[] expectedRs = new ResultSet[selectQueries.length];
 
-        while (rs.next()) {
-            ResultSetMetaData metaData = rs.getMetaData();
+        for (int i = 0; i < selectQueries.length; i++) {
+            String query = selectQueries[i];
 
-            List<String> sortedList = new ArrayList<String>();
-            sortColumnNames(metaData, sortedList);
-
-            for (String listEntry : sortedList) {
-                strBuilder.append(listEntry).append("(").append(rs.getObject(listEntry)).append("),");
+            switch (expectedState) {
+                case CLIENT:
+                    expectedRs[i] = clientStmt.executeQuery(query);
+                    break;
+                case SERVER:
+                    expectedRs[i] = serverStmt.executeQuery(query);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown connection type: " + expectedState);
             }
         }
-        return strBuilder.toString();
+
+        serverStmt.close();
+        clientStmt.close();
+
+        expectedResultSets = expectedRs;
     }
 
-    private List<String> sortColumnNames(ResultSetMetaData metaData, List<String> sortedList) throws SQLException {
+    public void assertBothSidesAreInExpectedState() throws SQLException {
 
-        int columnCount = metaData.getColumnCount();
-        for (int j = 1; j <= columnCount; j++) {
+        ResultSet clientResultSet, serverResultSet;
 
-            sortedList.add(metaData.getColumnName(j));
+        for (int i = 0; i < selectQueries.length; i++) {
+            String selectQuery = selectQueries[i];
+            Statement clientStmt = clientDs.getConnection().createStatement();
+            clientResultSet = clientStmt.executeQuery(selectQuery);
+            Statement serverStmt = serverDs.getConnection().createStatement();
+            serverResultSet = serverStmt.executeQuery(selectQuery);
+
+            ResultSetComparator.assertEquals(expectedResultSets[i], serverResultSet);
+            ResultSetComparator.assertEquals(expectedResultSets[i], clientResultSet);
         }
 
-        Collections.sort(sortedList);
-        return sortedList;
     }
 
     @Override
@@ -213,9 +190,5 @@ public class TestScenario {
         }
         result += "\n\tdirection=" + direction + ", \n\tstrategy=" + strategy + ", \n\texpectedState=" + expectedState;
         return result;
-    }
-
-    private String getMdTableSuffix() {
-        return "_md";
     }
 }

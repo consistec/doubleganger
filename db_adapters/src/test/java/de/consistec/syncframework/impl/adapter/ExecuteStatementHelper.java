@@ -36,7 +36,7 @@ public class ExecuteStatementHelper {
      * @param clientConnection Connection to client database
      * @param serverConnection Connection to server database
      */
-    public ExecuteStatementHelper(Connection clientConnection, Connection serverConnection) {
+    public ExecuteStatementHelper(Connection serverConnection, Connection clientConnection) {
         this.clientConnection = clientConnection;
         this.serverConnection = serverConnection;
     }
@@ -103,10 +103,8 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute,
-        ResultSetComparator comparator, Config conf, ConnectionType type,
-        ConnectionType type2) throws
-        SQLException, SyncException {
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type,
+        ConnectionType type2) throws SQLException, SyncException {
 
         for (String tableName : statementsToExecute.keySet()) {
             Statement clientStmt = null;
@@ -127,16 +125,16 @@ public class ExecuteStatementHelper {
 
                 String tableContentToCompare = getContentToCompare(tableName, type);
                 String clientTableContent = resultSetToString(clientResultSet);
-                comparator.compare(tableContentToCompare, clientTableContent);
+                ResultSetComparator.assertEquals(tableContentToCompare, clientTableContent);
 
                 if (type2 != null) {
                     tableContentToCompare = getContentToCompare(tableName, type2);
                 }
                 String serverTableContent = resultSetToString(serverResultSet);
 
-                comparator.compare(tableContentToCompare, serverTableContent);
+                ResultSetComparator.assertEquals(tableContentToCompare, serverTableContent);
 
-                comparator.compare(clientResultSet, serverResultSet);
+                ResultSetComparator.assertEquals(clientResultSet, serverResultSet);
             } catch (SQLException e) {
                 throw e;
             } finally {

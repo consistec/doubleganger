@@ -1,13 +1,11 @@
 package de.consistec.syncframework.impl.adapter;
 
-import static junit.framework.Assert.assertEquals;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import org.junit.Assert;
 
 /**
- * This class has only one purpose - to compare values in two ResultSets.
+ * This class has only one purpose - to assertEquality values in two ResultSets.
  *
  * @author Marcel
  * @company Consistec Engineering and Consulting GmbH
@@ -16,23 +14,30 @@ import java.sql.SQLException;
  */
 public class ResultSetComparator {
 
-    public void compare(ResultSet rs1, ResultSet rs2) throws SQLException {
+    public static boolean assertEquals(ResultSet source, ResultSet target) throws SQLException {
 
-        int columnCountRs1 = rs1.getMetaData().getColumnCount();
-        int columnCountRs2 = rs2.getMetaData().getColumnCount();
+        while (source.next() && target.next()) {
+            int columnCountSource = source.getMetaData().getColumnCount();
+            int columnCountTarget = target.getMetaData().getColumnCount();
 
-        assertEquals(columnCountRs1, columnCountRs2);
+            Assert.assertEquals(columnCountSource, columnCountTarget);
 
-        while (rs1.next() && rs2.next()) {
-            for (int i = 1; i <= columnCountRs1; i++) {
-                String colName = rs1.getMetaData().getColumnName(i);
-                assertEquals(rs1.getObject(colName), rs2.getObject(colName));
+            for (int i = 1; i <= columnCountSource; i++) {
+                if (!source.getObject(i).equals(target.getObject(i))) {
+                    return false;
+                }
+            }
+
+            // source and target must reach the last row in the same iteration
+            if (source.isLast() != target.isLast()) {
+                return false;
             }
         }
+        return true;
     }
 
-    public void compare(String content1, String content2) throws SQLException {
+    public static void assertEquals(String content1, String content2) throws SQLException {
 
-        assertEquals(content1, content2);
+        Assert.assertEquals(content1, content2);
     }
 }

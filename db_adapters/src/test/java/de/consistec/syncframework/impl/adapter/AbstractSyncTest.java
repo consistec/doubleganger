@@ -142,17 +142,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
                 "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
     }
 
-    protected void initAndSyncClient(String query, SyncDirection syncDirection, ConflictStrategy strategy,
-        ConnectionType type) throws SyncException, SQLException, ContextException {
-        initAndSyncClient(query, syncDirection, strategy, type, null);
-    }
-
-    protected void initAndSyncServer(String query, SyncDirection syncDirection, ConflictStrategy strategy,
-        ConnectionType type) throws SyncException, SQLException, ContextException {
-        initAndSyncServer(query, syncDirection, strategy, type, null);
-    }
-
-    protected void initAndSyncClient(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+    protected void initAndSyncClientAndCompare(String query, SyncDirection syncDirection, ConflictStrategy strategy,
         ConnectionType type, ConnectionType type2) throws SyncException, SQLException, ContextException {
 
         populateWithTestData();
@@ -161,7 +151,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         compareDatabases(type, type2);
     }
 
-    protected void initAndSyncServer(String query, SyncDirection syncDirection, ConflictStrategy strategy,
+    protected void initAndSyncServerAndCompare(String query, SyncDirection syncDirection, ConflictStrategy strategy,
         ConnectionType type, ConnectionType type2) throws SyncException, SQLException, ContextException {
 
         populateWithTestData();
@@ -180,7 +170,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
 
         sync(syncDirection, strategy);
 
-        compareDatabases(type);
+        compareDatabases(type, null);
     }
 
     protected void initClientAndServerWithoutSync(String query1, String query2) throws
@@ -215,12 +205,6 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         localCtx.synchronize();
     }
 
-    /**
-     * @param strategy
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
     public void syncWithoutCompare(final ConflictStrategy strategy) throws SyncException, SQLException,
         ContextException {
 
@@ -276,20 +260,11 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         helper.readTableContent(tableStatementMap);
     }
 
-    public void compareDatabases(ConnectionType type) throws
-        SyncException, SQLException {
-        Map<String, String> statementsToExecute = initTestTableStatementMap();
-
-        helper.executeStatementAndCompareResults(statementsToExecute,
-            new ResultSetComparator(), CONF, type, null);
-    }
-
     public void compareDatabases(ConnectionType type, ConnectionType type2) throws
         SyncException, SQLException {
         Map<String, String> statementsToExecute = initTestTableStatementMap();
 
-        helper.executeStatementAndCompareResults(statementsToExecute,
-            new ResultSetComparator(), CONF, type, type2);
+        helper.executeStatementAndCompareResults(statementsToExecute, CONF, type, type2);
     }
 
     @Override
