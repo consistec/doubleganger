@@ -37,18 +37,16 @@ public class TestScenario {
     private final String name;
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
-    private final ConnectionType expectedServerState;
-    private final ConnectionType expectedClientState;
+    private final String expectedServerState, expectedClientState;
     private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
     private DumpDataSource serverDs, clientDs;
     private Connection serverConnection, clientConnection;
     private String[] selectTableQueries;
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
-    private String[] expectedFlatServerResultSets;
-    private String[] expectedFlatClientResultSets;
+    private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy,
-        ConnectionType expectedServerState, ConnectionType expectedClientState) {
+        String expectedServerState, String expectedClientState) {
         this.name = name;
         this.direction = direction;
         this.strategy = strategy;
@@ -112,7 +110,7 @@ public class TestScenario {
                     clientStmt.execute(query);
                     break;
                 case SERVER:
-                    serverStmt.executeQuery(query);
+                    serverStmt.execute(query);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown connection type: " + side);
@@ -123,62 +121,25 @@ public class TestScenario {
         clientStmt.close();
     }
 
-    public void setExpectedServerResultSets(String[] expectedFlatServerResultSets) {
-        this.expectedFlatServerResultSets = expectedFlatServerResultSets;
-    }
+    public void saveCurrentState() throws SQLException {
+        expectedFlatClientResultSets = new String[selectTableQueries.length];
+        expectedFlatServerResultSets = new String[selectTableQueries.length];
 
-    public void saveCurrentStateAsExpectedServerResult() throws SQLException {
-        expectedFlatServerResultSets =new String[selectTableQueries.length];
         Statement serverStmt = serverConnection.createStatement();
         Statement clientStmt = clientConnection.createStatement();
 
-        ResultSet expectedRs;
+        ResultSet serverRs, clientRs;
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
             String query = selectTableQueries[i];
 
-            switch (expectedServerState) {
-                case CLIENT:
-                    expectedRs = clientStmt.executeQuery(query);
-                    break;
-                case SERVER:
-                    expectedRs = serverStmt.executeQuery(query);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown connection type: " + expectedServerState);
-            }
-            expectedFlatServerResultSets[i] = ResultSetHelper.resultSetToString(expectedRs);
-        }
+            serverRs = serverStmt.executeQuery(query);
+            clientRs = clientStmt.executeQuery(query);
+            expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs, expectedServerState);
 
-        serverStmt.close();
-        clientStmt.close();
-    }
-
-    public void setExpectedClientResultSets(String[] expectedFlatClientResultSets) {
-        this.expectedFlatClientResultSets = expectedFlatClientResultSets;
-    }
-
-    public void saveCurrentStateAsExpectedClientResult() throws SQLException {
-        expectedFlatClientResultSets =new String[selectTableQueries.length];
-        Statement serverStmt = serverConnection.createStatement();
-        Statement clientStmt = clientConnection.createStatement();
-
-        ResultSet expectedRs;
-
-        for (int i = 0; i < selectTableQueries.length; i += 2) {
-            String query = selectTableQueries[i];
-
-            switch (expectedClientState) {
-                case CLIENT:
-                    expectedRs = clientStmt.executeQuery(query);
-                    break;
-                case SERVER:
-                    expectedRs = serverStmt.executeQuery(query);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown connection type: " + expectedClientState);
-            }
-            expectedFlatClientResultSets[i] = ResultSetHelper.resultSetToString(expectedRs);
+            serverRs = serverStmt.executeQuery(query);
+            clientRs = clientStmt.executeQuery(query);
+            expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs, expectedClientState);
         }
 
         serverStmt.close();
@@ -208,8 +169,8 @@ public class TestScenario {
     }
 
     public void assertBothSidesAreInExpectedState() throws SQLException {
-
         ResultSet serverResultSet, clientResultSet;
+
         Statement clientStmt = clientConnection.createStatement();
         Statement serverStmt = serverConnection.createStatement();
 
@@ -228,6 +189,9 @@ public class TestScenario {
 
             ResultSetHelper.assertEquals(clientResultSet, serverResultSet);
         }
+
+        serverStmt.close();
+        clientStmt.close();
     }
 
     @Override
