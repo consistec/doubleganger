@@ -16,6 +16,13 @@
 package de.consistec.syncframework.common.util;
 
 
+import static de.consistec.syncframework.common.i18n.MessageReader.read;
+
+import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncDirection;
+import de.consistec.syncframework.common.conflict.ConflictStrategy;
+import de.consistec.syncframework.common.i18n.Errors;
+
 /**
  * This class was copied from <a href="http://code.google.com/p/guava-libraries/">Guava</a> library.
  * <p/>
@@ -417,5 +424,76 @@ public final class Preconditions {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Validates the state of the global configured sync direction and conflict strategy.
+     * <p/>
+     * Invalid states are the following:
+     * <ul>
+     * <li>
+     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+     * </li>
+     * <li>
+     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+     * </li>
+     * </ul>
+     */
+    public static void checkGlobalSyncDirectionAndConflictStrategyState() {
+        SyncDirection globalSyncDirection = Config.getInstance().getGlobalSyncDirection();
+        ConflictStrategy globalConflictStrategy = Config.getInstance().getGlobalConflictStrategy();
+
+        checkSyncDirectionAndConflictStrategyState(globalSyncDirection, globalConflictStrategy);
+    }
+
+//    /**
+//     * Validates the state of sync direction and conflict strategy.
+//     * <p/>
+//     * Invalid states are the following:
+//     * <ul>
+//     * <li>
+//     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+//     * </li>
+//     * <li>
+//     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+//     * </li>
+//     * </ul>
+//     *
+//     * @param direction - sync direction to validate
+//     * @param strategy - conflict strategy to validate
+//     */
+//    public void validatePerTableSyncDirectionAndConflictStrategyState() {
+//        SyncDirection globalSyncDirection = Config.getInstance().getGlobalSyncDirection();
+//        ConflictStrategy globalConflictStrategy = Config.getInstance().getGlobalConflictStrategy();
+//
+//        checkSyncDirectionAndConflictStrategyState(globalSyncDirection, globalConflictStrategy);
+//    }
+
+
+    /**
+     * Validates the state of sync direction and conflict strategy.
+     * <p/>
+     * Invalid states are the following:
+     * <ul>
+     * <li>
+     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+     * </li>
+     * <li>
+     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+     * </li>
+     * </ul>
+     *
+     * @param direction - sync direction to validate
+     * @param strategy - conflict strategy to validate
+     */
+    private static void checkSyncDirectionAndConflictStrategyState(SyncDirection direction, ConflictStrategy strategy
+    ) {
+        if ((strategy == ConflictStrategy.SERVER_WINS || strategy == ConflictStrategy.FIRE_EVENT)
+            && direction == SyncDirection.CLIENT_TO_SERVER
+            || (strategy == ConflictStrategy.CLIENT_WINS || strategy == ConflictStrategy.FIRE_EVENT)
+            && direction == SyncDirection.SERVER_TO_CLIENT) {
+            throw new IllegalStateException(
+                read(Errors.NOT_SUPPORTED_CONFLICT_STRATEGY, strategy.name(), direction.name()));
+        }
     }
 }
