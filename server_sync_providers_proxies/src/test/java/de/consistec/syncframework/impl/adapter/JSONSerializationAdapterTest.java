@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 
 import de.consistec.syncframework.common.TestBase;
 import de.consistec.syncframework.common.TestUtil;
+import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -92,6 +93,64 @@ public class JSONSerializationAdapterTest extends TestBase {
 
         assertEquals("Original and deserialised change lists are different", changeList, deserializedChangeList);
     }
+
+    @Test
+    public void testTupleSerialization() throws SerializationException {
+
+        final List<Change> changeList = newArrayList();
+        MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
+        Map<String, Object> rowData = newHashMap();
+        rowData.put(COLUMNNAME1, 1);
+        rowData.put(COLUMNNAME2, TEST_STRING);
+        rowData.put(COLUMNNAME3, true);
+        rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
+        rowData.put(COLUMNNAME5, 4.5);
+        rowData.put(COLUMNNAME6, null);
+        changeList.add(new Change(entry, rowData));
+
+        entry = new MDEntry(2, false, 2, TABLENAME2, TEST_MDV);
+        rowData = new HashMap<String, Object>();
+        rowData.put(COLUMNNAME1, 2);
+        rowData.put(COLUMNNAME2, TEST_STRING);
+        rowData.put(COLUMNNAME3, "false");
+        rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
+        rowData.put(COLUMNNAME5, 3.14);
+        rowData.put(COLUMNNAME6, null);
+        changeList.add(new Change(entry, rowData));
+
+        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+//        final String jsonChangeList = adapter.serializeChangeList(changeList);
+        final String jsonChangeList = adapter.serializeChangeList(tuple);
+        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+            jsonChangeList);
+
+        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
+            deserializedTuple.getValue1());
+        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
+            deserializedTuple.getValue2());
+    }
+
+    @Test
+    public void testTupleSerializationEmptyChangeList() throws SerializationException {
+
+        final List<Change> changeList = newArrayList();
+
+        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+//        final String jsonChangeList = adapter.serializeChangeList(changeList);
+        final String jsonChangeList = adapter.serializeChangeList(tuple);
+        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+            jsonChangeList);
+
+        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
+            deserializedTuple.getValue1());
+        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
+            deserializedTuple.getValue2());
+    }
+
 
     @Test
     public void testSchemaSerialization() throws SerializationException {
