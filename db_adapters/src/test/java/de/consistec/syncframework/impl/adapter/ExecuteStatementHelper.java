@@ -1,6 +1,6 @@
 package de.consistec.syncframework.impl.adapter;
 
-import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
+import de.consistec.syncframework.impl.ResultSetHelper;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.junit.Assert;
 
 /**
  * Contains methods to facilitate test data preparation.
@@ -127,16 +128,16 @@ public class ExecuteStatementHelper {
 
                 String tableContentToCompare = getContentToCompare(tableName, type);
                 String clientTableContent = resultSetToString(clientResultSet);
-                ResultSetComparator.assertEquals(tableContentToCompare, clientTableContent);
+                Assert.assertEquals(tableContentToCompare, clientTableContent);
 
                 if (type2 != null) {
                     tableContentToCompare = getContentToCompare(tableName, type2);
                 }
                 String serverTableContent = resultSetToString(serverResultSet);
 
-                ResultSetComparator.assertEquals(tableContentToCompare, serverTableContent);
+                Assert.assertEquals(tableContentToCompare, serverTableContent);
 
-                ResultSetComparator.assertEquals(clientResultSet, serverResultSet);
+                ResultSetHelper.assertEquals(clientResultSet, serverResultSet);
             } catch (SQLException e) {
                 throw e;
             } finally {
@@ -178,7 +179,7 @@ public class ExecuteStatementHelper {
         return strBuilder.toString();
     }
 
-    public static List<String> getSortedColumnNames(ResultSetMetaData metaData) throws SQLException {
+    private static List<String> getSortedColumnNames(ResultSetMetaData metaData) throws SQLException {
         List<String> sortedList = new ArrayList<String>();
 
         for (int j = 1; j <= metaData.getColumnCount(); j++) {

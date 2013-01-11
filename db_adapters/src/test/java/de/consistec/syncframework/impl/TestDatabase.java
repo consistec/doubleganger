@@ -1,5 +1,7 @@
-package de.consistec.syncframework.impl.adapter;
+package de.consistec.syncframework.impl;
 
+import de.consistec.syncframework.impl.adapter.ConnectionType;
+import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
 
 import java.sql.Connection;
@@ -40,6 +42,14 @@ public class TestDatabase {
         for (Connection connection : clientDs.getCreatedConnections()) {
             connection.close();
         }
+    }
+
+    public Connection getServerConnection() {
+        return serverConnection;
+    }
+
+    public Connection getClientConnection() {
+        return clientConnection;
     }
 
     public String getConfigFile() {

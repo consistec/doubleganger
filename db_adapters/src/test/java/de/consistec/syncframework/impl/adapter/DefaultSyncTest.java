@@ -55,12 +55,12 @@ public abstract class DefaultSyncTest extends AbstractSyncTest {
 //    @Parameters
     public static Collection<TestScenario> syncDirections() {
         TestScenario[] scenarii = new TestScenario[]{
-            new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT),
-            new TestScenario("Add Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
-            new TestScenario("Add Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
-            new TestScenario("Add Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
-            new TestScenario("Add Unchanged", SERVER_TO_CLIENT, SERVER_WINS, SERVER).addStep(CLIENT, queryInsert7a),
-            new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT).addStep(CLIENT, queryInsert7a)
+//            new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT),
+//            new TestScenario("Add Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
+//            new TestScenario("Add Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
+//            new TestScenario("Add Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT).addStep(CLIENT, queryInsert7a),
+//            new TestScenario("Add Unchanged", SERVER_TO_CLIENT, SERVER_WINS, SERVER).addStep(CLIENT, queryInsert7a),
+//            new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT).addStep(CLIENT, queryInsert7a)
         };
         return Arrays.asList(scenarii);
     }
