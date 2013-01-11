@@ -36,16 +36,16 @@ import org.slf4j.LoggerFactory;
  * @since
  */
 @RunWith(value = Parameterized.class)
-public class SynchronizationTest {
+public class SynchronizationIT {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
     protected static final Config CONF = Config.getInstance();
     private TestScenario scenario;
     private static TestDatabase db;
     static String deleteLastRow = "DELETE FROM categories WHERE id = 2";
-    static String updateLastRow = "UPDATE categories SET id = 2, name = 'Cat2b', description = '2b' WHERE id = 2";
+    static String updateLastRow = "UPDATE categories SET name = 'Cat2b', description = '2b' WHERE id = 2";
     static String insertNewRow = "INSERT INTO categories (id, name, description) VALUES (3, 'Cat3a', '3a')";
-    static String updateNewRow = "UPDATE categories SET id = 3, name = 'Cat3b', description = '3b' WHERE id = 3";
+    static String updateNewRow = "UPDATE categories SET name = 'Cat3b', description = '3b' WHERE id = 3";
     static String deleteNewRow = "DELETE FROM categories WHERE id = 3";
     static String[] tableNames = new String[]{"categories", "categories_md"};
     static String[] insertDataQueries = new String[]{
@@ -68,12 +68,17 @@ public class SynchronizationTest {
             {new TestScenario("Add Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT, CLIENT).addStep(CLIENT, insertNewRow)},
             {new TestScenario("Add Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, CLIENT).addStep(CLIENT, insertNewRow)},
             {new TestScenario("Add Unchanged", SERVER_TO_CLIENT, SERVER_WINS, SERVER, CLIENT).addStep(CLIENT, insertNewRow)},
-            {new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT).addStep(CLIENT, insertNewRow)}
+            {new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT).addStep(CLIENT, insertNewRow)},
+            {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT, CLIENT).addStep(CLIENT, deleteLastRow)},
+            {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT, CLIENT).addStep(CLIENT, deleteLastRow)},
+            {new TestScenario("Deleted Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT, SERVER).addStep(CLIENT, deleteLastRow)},
+            {new TestScenario("Deleted Unchanged", SERVER_TO_CLIENT, SERVER_WINS, CLIENT, CLIENT).addStep(CLIENT, deleteLastRow)},
+            {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT, CLIENT).addStep(CLIENT, deleteLastRow)}
         };
         return Arrays.asList(scenarii);
     }
 
-    public SynchronizationTest(TestScenario scenario) {
+    public SynchronizationIT(TestScenario scenario) {
         this.scenario = scenario;
     }
 
