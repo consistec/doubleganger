@@ -5,6 +5,7 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.Tuple;
@@ -25,6 +26,7 @@ import de.consistec.syncframework.impl.i18n.Infos;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -53,10 +55,10 @@ import org.slf4j.cal10n.LocLogger;
  * Objects of this class should <b>not</b> be created directly with {@code new} keyword. Instead, a canonical name
  * has to be specified in framework configuration. See {@link de.consistec.syncframework.common.Config Config class}.
  *
- * @company Consistec Engineering and Consulting GmbH
- * @date 12.04.12 11:30
  * @author Markus Backes
  * @version 0.0.1-SNAPSHOT
+ * @company Consistec Engineering and Consulting GmbH
+ * @date 12.04.12 11:30
  */
 public class HttpServerSyncProxy implements IServerSyncProvider {
 
@@ -72,9 +74,12 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     private URI host;
     private Credentials credentials;
     private ISerializationAdapter serializationAdapter;
+    //    private long threadId;
+    private String threadId;
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
+
     /**
      * Instantiates a new server sync provider proxy.
      * <p/>
@@ -106,8 +111,13 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
 
     @Override
     public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.APPLY_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(CHANGES.name(),
                 serializationAdapter.serializeChangeList(changes).toString()));
@@ -119,10 +129,15 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     }
 
     @Override
-        public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+    public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
+
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(REVISION.name(), String.valueOf(rev)));
             String serializedResponse = request(data);
@@ -135,8 +150,12 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Schema getSchema() throws SyncException {
 
+//        threadId = Thread.currentThread().getId();
+        threadId = ManagementFactory.getRuntimeMXBean().getName();
+
         try {
             List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.GET_SCHEMA.getStringName()));
             String serializedResponse = request(data);
             return serializationAdapter.deserializeSchema(serializedResponse);

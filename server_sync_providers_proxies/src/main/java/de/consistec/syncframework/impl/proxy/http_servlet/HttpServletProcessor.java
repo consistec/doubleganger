@@ -4,6 +4,7 @@ import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.Tuple;
@@ -27,6 +28,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
+import org.slf4j.MDC;
 import org.slf4j.cal10n.LocLogger;
 
 /**
@@ -49,6 +51,7 @@ public class HttpServletProcessor {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructor " >
+
     /**
      * Creates new instance of servlet processor.
      * <p/>
@@ -81,6 +84,7 @@ public class HttpServletProcessor {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class fmethods " >
+
     /**
      * Parses the request, invokes
      * {@link de.consistec.syncframework.common.SyncContext.ServerContext synchronization context}
@@ -88,13 +92,16 @@ public class HttpServletProcessor {
      *
      * @param req Http request received from client.
      * @param resp Http response from invoking servlet.
-     *
      * @throws java.io.IOException Signals that an exception has occurred while getting the response writer.
      * @throws DatabaseAdapterException
      * @throws SerializationException
      */
     public void execute(HttpServletRequest req, HttpServletResponse resp) throws IOException, DatabaseAdapterException,
         SerializationException {
+
+        if (!StringUtil.isNullOrEmpty(req.getParameter(THREAD_ID.name()))) {
+            MDC.put("thread-id", req.getParameter(THREAD_ID.name()));
+        }
 
         if (!StringUtil.isNullOrEmpty(req.getParameter(ACTION.name()))) {
 

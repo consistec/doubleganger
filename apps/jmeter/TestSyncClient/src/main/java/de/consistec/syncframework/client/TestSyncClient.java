@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 //import java.nio.file.Files;
 //import java.nio.file.Path;
 //import java.nio.file.Paths;
+
 /**
  * Date: 26.09.12 17:14
  * <p/>
@@ -80,7 +81,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TestSyncClient {
 
-    public static final String SERIALIZATION_FAILURE = "40001";
     //    private static final Logger LOGGER = Logger.getRootLogger();
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSyncClient.class.getCanonicalName());
     // obtaining frameworks configuration object

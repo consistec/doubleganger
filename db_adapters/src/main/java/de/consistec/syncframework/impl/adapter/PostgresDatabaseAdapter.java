@@ -55,11 +55,13 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     public static final int DEFAULT_PORT = 5432;
     /**
      * 40001 means psql error code SERIALIZATION FAILURE.
+     * all transaction failures begin with 40...
      * <p/>
      *
      * @see http://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
      */
-    private static final String SERIALIZATION_FAILURE = "40001";
+    private static final String TRANSACTION_FAILURE_PREFIX = "40";
+
     /**
      * PostgreSQL code for UNIQUE VIOLATION.
      */
@@ -78,6 +80,15 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      */
     private PostgresDatabaseAdapter() {
         LOGGER.debug("created new {}", getClass().getCanonicalName());
+    }
+
+    @Override
+    public void commit() throws DatabaseAdapterException {
+        try {
+            super.commit();
+        } catch (DatabaseAdapterException ex) {
+            handleTransactionAborted(ex);
+        }
     }
 
 
@@ -121,7 +132,8 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             SQLException sqlEx = (SQLException) ex.getCause();
 
             if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState())) {
-                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName), sqlEx); //NOSONAR
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName),
+                    sqlEx); //NOSONAR
             } else {
                 handleTransactionAborted(ex);
             }
@@ -229,10 +241,13 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     private void handleTransactionAborted(DatabaseAdapterException ex) throws DatabaseAdapterException {
+
         if (ex.getCause() instanceof SQLException) {
 
+            LOGGER.error(String.format("Cause State: %s", ((SQLException) ex.getCause()).getSQLState()), ex.getCause());
+
             SQLException sqlEx = (SQLException) ex.getCause();
-            if (SERIALIZATION_FAILURE.equals(sqlEx.getSQLState())) {
+            if (sqlEx.getSQLState().startsWith(TRANSACTION_FAILURE_PREFIX)) {
                 throw new TransactionAbortedException(read(DBAdapterErrors.TRANSACTION_ABORTED_SERIALIZATION_FAILURES),
                     sqlEx);
             } else {

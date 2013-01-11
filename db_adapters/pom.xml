@@ -107,12 +107,12 @@
             <build>
                 <plugins>
                     <plugin>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <configuration>
-                        <includes>
-                            <include>**/it_postgres/IT*.java</include>
-                        </includes>
-                    </configuration>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <includes>
+                                <include>**/it_postgres/IT*.java</include>
+                            </includes>
+                        </configuration>
                     </plugin>
 
                     <plugin>
@@ -143,60 +143,73 @@
                         <executions>
                             <execution>
                                 <id>drop-postgres-test-dbs</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
                                     <driver>org.postgresql.Driver</driver>
-                                    <url>jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}</url>
+                                    <url>
+                                        jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}
+                                    </url>
                                     <username>${postgres_admin}</username>
                                     <password>${postgres_admin_pwd}</password>
                                     <autocommit>true</autocommit>
                                     <srcFiles>
-                                        <srcFile>${basedir}/target/test-classes/sql-scripts/drop_dbs_postgresql.sql</srcFile>
+                                        <srcFile>
+                                            ${basedir}/target/test-classes/sql-scripts/drop_dbs_postgresql.sql
+                                        </srcFile>
                                     </srcFiles>
                                     <onError>continue</onError>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>create-postgres-user</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
                                     <driver>org.postgresql.Driver</driver>
-                                    <url>jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}</url>
+                                    <url>
+                                        jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}
+                                    </url>
                                     <username>${postgres_admin}</username>
                                     <password>${postgres_admin_pwd}</password>
                                     <autocommit>true</autocommit>
                                     <srcFiles>
-                                        <srcFile>${basedir}/target/test-classes/sql-scripts/create_user_postgresql.sql</srcFile>
+                                        <srcFile>
+                                            ${basedir}/target/test-classes/sql-scripts/create_user_postgresql.sql
+                                        </srcFile>
                                     </srcFiles>
                                     <onError>continue</onError>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>create-postgres-test-dbs</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
                                 <configuration>
                                     <driver>org.postgresql.Driver</driver>
-                                    <url>jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}</url>
+                                    <url>
+                                        jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_connect_db}
+                                    </url>
                                     <username>${postgres_admin}</username>
                                     <password>${postgres_admin_pwd}</password>
                                     <autocommit>true</autocommit>
                                     <srcFiles>
-                                        <srcFile>${basedir}/target/test-classes/sql-scripts/create_dbs_postgresql.sql</srcFile>
+                                        <srcFile>
+                                            ${basedir}/target/test-classes/sql-scripts/create_dbs_postgresql.sql
+                                        </srcFile>
                                     </srcFiles>
+                                    <onError>continue</onError>
                                 </configuration>
                             </execution>
                             <execution>
                                 <id>create-postgres-test-tables</id>
-                                <phase>pre-integration-test</phase>
+                                <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>execute</goal>
                                 </goals>
@@ -206,10 +219,15 @@
                                     <password>${postgres_admin_pwd}</password>
                                     <autocommit>true</autocommit>
                                     <!-- connect to server database -->
-                                    <url>jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_server_dbname}</url>
+                                    <url>
+                                        jdbc:postgresql://${postgres_server}:${postgres_port}/${postgres_server_dbname}
+                                    </url>
                                     <srcFiles>
-                                        <srcFile>${basedir}/target/test-classes/sql-scripts/create_tables_postgresql.sql</srcFile>
+                                        <srcFile>
+                                            ${basedir}/target/test-classes/sql-scripts/create_tables_postgresql.sql
+                                        </srcFile>
                                     </srcFiles>
+                                    <onError>continue</onError>
                                 </configuration>
                             </execution>
                         </executions>
@@ -322,7 +340,8 @@
                                     <password>${mysql_admin_pwd}</password>
                                     <autocommit>true</autocommit>
                                     <srcFiles>
-                                        <srcFile>${basedir}/target/test-classes/sql-scripts/create_dbs_mysql.sql</srcFile>
+                                        <srcFile>${basedir}/target/test-classes/sql-scripts/create_dbs_mysql.sql
+                                        </srcFile>
                                     </srcFiles>
                                 </configuration>
                             </execution>

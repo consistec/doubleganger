@@ -298,4 +298,11 @@ public interface IDatabaseAdapter {
      * @return Database connection.
      */
     Connection getConnection();
+
+    /**
+     * Commits the underling database connection.
+     *
+     * @throws DatabaseAdapterException
+     */
+    void commit() throws DatabaseAdapterException;
 }

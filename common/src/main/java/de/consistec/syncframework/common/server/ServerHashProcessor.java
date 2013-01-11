@@ -69,6 +69,7 @@ public class ServerHashProcessor {
     private IDatabaseAdapter adapter;
 
     //</editor-fold>
+
     /**
      * Instantiates a new server hash processor.
      *
@@ -112,25 +113,25 @@ public class ServerHashProcessor {
             adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(),
                 remoteEntry.getTableName() + CONF.getMdTableSuffix(),
                 new DatabaseAdapterCallback<ResultSet>() {
-                @Override
-                public void onSuccess(final ResultSet hashRst) throws DatabaseAdapterException {
-                    adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
-                        new DatabaseAdapterCallback<ResultSet>() {
-                        @Override
-                        public void onSuccess(final ResultSet dataRst) throws DatabaseAdapterException {
-                            LOGGER.debug("call processResultSets ...");
-                            try {
-                                processResultSets(hashRst, dataRst, nextRev, remoteChange, remoteEntry,
-                                    remoteRowData);
-                            } catch (SQLException e) {
-                                throw new DatabaseAdapterException(e);
-                            } catch (NoSuchAlgorithmException e) {
-                                throw new DatabaseAdapterException(e);
-                            }
-                        }
-                    });
-                }
-            });
+                    @Override
+                    public void onSuccess(final ResultSet hashRst) throws DatabaseAdapterException {
+                        adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
+                            new DatabaseAdapterCallback<ResultSet>() {
+                                @Override
+                                public void onSuccess(final ResultSet dataRst) throws DatabaseAdapterException {
+                                    LOGGER.debug("call processResultSets ...");
+                                    try {
+                                        processResultSets(hashRst, dataRst, nextRev, remoteChange, remoteEntry,
+                                            remoteRowData);
+                                    } catch (SQLException e) {
+                                        throw new DatabaseAdapterException(e);
+                                    } catch (NoSuchAlgorithmException e) {
+                                        throw new DatabaseAdapterException(e);
+                                    }
+                                }
+                            });
+                    }
+                });
 
         }
         LOGGER.debug("applyChangesFromClientOnServer called");
@@ -138,12 +139,13 @@ public class ServerHashProcessor {
     }
 
     private void processResultSets(ResultSet hashRst, ResultSet data, int nextRev, Change remoteChange,
-        MDEntry remoteEntry,
-        Map<String, Object> remoteRowData) throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException {
+                                   MDEntry remoteEntry,
+                                   Map<String, Object> remoteRowData
+    ) throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException {
 
         LOGGER.debug("processResultSets called");
         if (hashRst.next()) {
-            int localRev = hashRst.getInt("rev");
+//            int localRev = hashRst.getInt("rev");
 
             // normally the add add conflict cannot happen because the client refreshes his revision through server change set.
             // also normally the out of date conflict cannot happen because the client revision is checked before
@@ -166,7 +168,8 @@ public class ServerHashProcessor {
                 // CLIENT DEL
                 LOGGER.info(Infos.COMMON_CLIENT_DELETED_CASE_DETECTED);
                 adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                adapter.updateMdRow(nextRev, SERVER_FLAG, remoteEntry.getPrimaryKey(), null, remoteEntry.getTableName());
+                adapter.updateMdRow(nextRev, SERVER_FLAG, remoteEntry.getPrimaryKey(), null,
+                    remoteEntry.getTableName());
 
             } else {
 

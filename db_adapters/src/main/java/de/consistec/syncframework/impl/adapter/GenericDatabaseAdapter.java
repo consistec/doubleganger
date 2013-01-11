@@ -345,6 +345,15 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public void commit() throws DatabaseAdapterException {
+        try {
+            connection.commit();
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.COMMITTING_THE_CONNECTION_FAILS), e);
+        }
+    }
+
+    @Override
     public ISQLConverter getSchemaConverter() {
         return new CreateSchemaToSQLConverter();
     }
@@ -713,6 +722,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                 throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName));
             }
         } catch (SQLException e) {
+            LOGGER.error(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName), e);
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_INSERT_DATA_ROW, tableName), e);
         } finally {
             closeStatements(insertStatement);

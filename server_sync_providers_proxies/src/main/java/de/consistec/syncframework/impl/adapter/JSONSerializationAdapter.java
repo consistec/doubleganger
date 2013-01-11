@@ -155,6 +155,8 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
             JSONObject jsonRowData;
             JSONArray array = new JSONArray();
 
+            array.put(changeListTuple.getValue1().intValue());
+
             for (Change c : changeListTuple.getValue2()) {
 
                 entry = c.getMdEntry();
@@ -186,9 +188,9 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 }
 
                 object.put(FIELD_NAME_ROWDATA, jsonRowData);
-                array.put(changeListTuple.getValue1().intValue());
                 array.put(object);
             }
+
             return array.toString();
         } catch (JSONException e) {
             throw new SerializationException(read(Errors.CANT_CONVERT_CHANGELIST_TO_JSON), e);
