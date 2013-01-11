@@ -257,7 +257,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
 
     private void readTableContentBeforeSync() throws SQLException {
         Map<String, String> tableStatementMap = initTestTableStatementMap();
-        helper.readTableContent(tableStatementMap);
+        helper.storeTableContent(tableStatementMap);
     }
 
     public void compareDatabases(ConnectionType type, ConnectionType type2) throws

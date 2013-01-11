@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,8 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type,
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf,
+        ConnectionType type,
         ConnectionType type2) throws SQLException, SyncException {
 
         for (String tableName : statementsToExecute.keySet()) {
@@ -161,30 +163,25 @@ public class ExecuteStatementHelper {
         }
     }
 
-    private String resultSetToString(final ResultSet rs) throws SQLException {
-        if (rs == null) {
-            throw new IllegalArgumentException("Passed result set can't be null!!!");
-        }
+    public static String resultSetToString(final ResultSet rs) throws SQLException {
         StringBuilder strBuilder = new StringBuilder();
 
         while (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
 
-            List<String> sortedList = newArrayList();
-            sortColumnNames(metaData, sortedList);
+            List<String> sortedColumnNames = getSortedColumnNames(metaData);
 
-            for (String listEntry : sortedList) {
-                strBuilder.append(listEntry).append("(").append(rs.getObject(listEntry)).append("),");
+            for (String columnName : sortedColumnNames) {
+                strBuilder.append(columnName).append("(").append(rs.getObject(columnName)).append("),");
             }
         }
         return strBuilder.toString();
     }
 
-    private List<String> sortColumnNames(ResultSetMetaData metaData, List<String> sortedList) throws SQLException {
+    public static List<String> getSortedColumnNames(ResultSetMetaData metaData) throws SQLException {
+        List<String> sortedList = new ArrayList<String>();
 
-        int columnCount = metaData.getColumnCount();
-        for (int j = 1; j <= columnCount; j++) {
-
+        for (int j = 1; j <= metaData.getColumnCount(); j++) {
             sortedList.add(metaData.getColumnName(j));
         }
 
@@ -192,14 +189,13 @@ public class ExecuteStatementHelper {
         return sortedList;
     }
 
-    public void readTableContent(Map<String, String> tableStatementMap) throws
-        SQLException {
+    public void storeTableContent(Map<String, String> tableStatementMap) throws SQLException {
 
-        fillTableContentMap(tableStatementMap, clientTableContentMap, ConnectionType.CLIENT);
-        fillTableContentMap(tableStatementMap, serverTableContentMap, ConnectionType.SERVER);
+        storeTableContentMap(tableStatementMap, clientTableContentMap, ConnectionType.CLIENT);
+        storeTableContentMap(tableStatementMap, serverTableContentMap, ConnectionType.SERVER);
     }
 
-    private void fillTableContentMap(Map<String, String> tableStatementMap, Map<String, String> tableContentMap,
+    private void storeTableContentMap(Map<String, String> tableStatementMap, Map<String, String> tableContentMap,
         ConnectionType type) throws SQLException {
         Statement contentRelatedToStrategyStmt = null;
         try {

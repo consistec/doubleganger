@@ -4,19 +4,10 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 
 import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
-import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
-import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
-import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
 
 import de.consistec.syncframework.common.Config;
-import de.consistec.syncframework.common.IConflictListener;
-import de.consistec.syncframework.common.SyncContext;
-import de.consistec.syncframework.common.TableSyncStrategies;
-import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.ExecuteStatementHelper;
@@ -25,15 +16,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
-import javax.sql.DataSource;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import static de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
+import de.consistec.syncframework.impl.adapter.TestDatabase;
 import java.io.IOException;
-import java.sql.BatchUpdateException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -54,7 +42,7 @@ public class SynchronizationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
     protected static final Config CONF = Config.getInstance();
     private transient ExecuteStatementHelper helper = null;
-    TestScenario scenario;
+    private TestScenario scenario;
     static String deleteLastRow = "DELETE FROM categories WHERE id = 6";
     static String updateLastRow = "UPDATE categories SET id = 6, name = 'Cat6b', description = '6b' WHERE id = 6";
     static String insertNewRow = "INSERT INTO categories (id, name, description) VALUES (7, 'Cat7a', '7a')";
@@ -75,23 +63,20 @@ public class SynchronizationTest {
         "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") VALUES (1, 'A52D87B86798B317A7C1C01837290D2F', 5, 0)",
         "INSERT INTO categories_md (\"rev\", \"mdv\", \"pk\", \"f\") VALUES (1, '0D9F6F55D5BF5190D2B8C1105AE21325', 6, 0)"
     };
-    // POSTGRESQL
-    public static final String CONFIG_FILE = "/config_postgre.properties";
-    protected static final DumpDataSource serverDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
-        ConnectionType.SERVER);
-    protected static final DumpDataSource clientDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
-        ConnectionType.CLIENT);
-    protected static Connection serverConnection, clientConnection;
+    static String[] postgresCreateQueries = new String[]{
+        "create table categories (\"id\" INTEGER NOT NULL PRIMARY KEY ,\"name\" VARCHAR (300),\"description\" VARCHAR (300));",
+        "create table categories_md (\"pk\" INTEGER NOT NULL PRIMARY KEY, \"mdv\" VARCHAR (300), \"rev\" INTEGER DEFAULT 1, \"f\" INTEGER DEFAULT 0);"};
+    private static TestDatabase db;
 
     @Parameterized.Parameters
     public static Collection<TestScenario[]> AllScenarii() {
         TestScenario[][] scenarii = new TestScenario[][]{
-            {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT)},
-            {new TestScenario("Add Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
-            {new TestScenario("Add Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
-            {new TestScenario("Add Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
-            {new TestScenario("Add Unchanged", SERVER_TO_CLIENT, SERVER_WINS, SERVER).addStep(CLIENT, insertNewRow)},
-            {new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT).addStep(CLIENT, insertNewRow)}};
+            {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT)}, //            {new TestScenario("Add Unchanged", BIDIRECTIONAL, SERVER_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
+        //            {new TestScenario("Add Unchanged", BIDIRECTIONAL, CLIENT_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
+        //            {new TestScenario("Add Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, CLIENT).addStep(CLIENT, insertNewRow)},
+        //            {new TestScenario("Add Unchanged", SERVER_TO_CLIENT, SERVER_WINS, SERVER).addStep(CLIENT, insertNewRow)},
+        //            {new TestScenario("Add Unchanged", BIDIRECTIONAL, FIRE_EVENT, CLIENT).addStep(CLIENT, insertNewRow)}
+        };
         return Arrays.asList(scenarii);
     }
 
@@ -103,31 +88,31 @@ public class SynchronizationTest {
     public static void initClass() throws SQLException {
         // initialize logging framework
         DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
-        serverConnection = serverDs.getConnection();
-        clientConnection = clientDs.getConnection();
+        db = new TestDatabase("/config_postgre.properties", SupportedDatabases.POSTGRESQL, postgresCreateQueries);
     }
 
     @Before
     public void init() throws SyncException, ContextException, SQLException, IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
-        helper = new ExecuteStatementHelper(serverConnection, clientConnection);
+        Config.getInstance().loadFromFile(getClass().getResourceAsStream(db.getConfigFile()));
 
-        helper.dropTablesOnServer(tableNames);
-        helper.dropTablesOnClient(tableNames);
+        db.init();
 
-        helper.executeQueriesOnServer(getCreateTableQueries());
-        helper.executeQueriesOnClient(getCreateTableQueries());
+        db.dropTablesOnServer(tableNames);
+        db.dropTablesOnClient(tableNames);
 
-        helper.executeQueriesOnServer(insertDataQueries);
-        helper.executeQueriesOnClient(insertDataQueries);
+        db.createTablesOnServer();
+        db.createTablesOnClient();
+
+        db.executeQueriesOnServer(insertDataQueries);
+        db.executeQueriesOnClient(insertDataQueries);
 
         LOGGER.debug("\n---------------------\n" + scenario.toString() + "\n----------------------\n");
     }
 
     @Test
     public void executeTest() throws SQLException, ContextException, SyncException {
-        scenario.setDataSources(serverDs, clientDs);
-        
+        scenario.setDataSources(db.getServerDs(), db.getClientDs());
+
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by id asc",
                 "select * from categories_md order by pk asc"
@@ -135,34 +120,14 @@ public class SynchronizationTest {
 
         scenario.executeSteps();
 
-        scenario.synchronize(tableNames);
+//        scenario.synchronize(tableNames);
 
         scenario.assertBothSidesAreInExpectedState();
 
     }
 
-    @AfterClass
-    public static void tearDownClass() throws SQLException {
-        for (Connection connection : serverDs.getCreatedConnections()) {
-            connection.close();
-        }
-        for (Connection connection : clientDs.getCreatedConnections()) {
-            connection.close();
-        }
-    }
-
-    public Connection getServerConnection() {
-        return serverConnection;
-    }
-
-    public Connection getClientConnection() {
-        return clientConnection;
-    }
-
-    // POSTGRESQL
-    protected String[] getCreateTableQueries() {
-        return new String[]{
-                "create table categories (\"id\" INTEGER NOT NULL PRIMARY KEY ,\"name\" VARCHAR (300),\"description\" VARCHAR (300));",
-                "create table categories_md (\"pk\" INTEGER NOT NULL PRIMARY KEY, \"mdv\" VARCHAR (300), \"rev\" INTEGER DEFAULT 1, \"f\" INTEGER DEFAULT 0);"};
+    @After
+    public void tearDown() throws SQLException {
+        db.clean();
     }
 }

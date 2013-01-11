@@ -1,5 +1,7 @@
 package de.consistec.syncframework.impl;
 
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
+
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncDirection;
@@ -10,18 +12,16 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
-
+import de.consistec.syncframework.impl.adapter.ExecuteStatementHelper;
 import de.consistec.syncframework.impl.adapter.ResultSetComparator;
+
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
 
 /**
  * Use this class to reflect your integration test scenario
@@ -33,14 +33,15 @@ import org.junit.Assert;
  */
 public class TestScenario {
 
-    private String name;
-    private SyncDirection direction;
-    private ConflictStrategy strategy;
-    private ConnectionType expectedState;
+    private final String name;
+    private final SyncDirection direction;
+    private final ConflictStrategy strategy;
+    private final ConnectionType expectedState;
     private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
     private DumpDataSource serverDs, clientDs;
-    private ResultSet[] expectedResultSets;
     private String[] selectQueries;
+    // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
+    private String[] expectedFlatResultSets;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy, ConnectionType expectedState) {
         this.name = name;
@@ -110,10 +111,39 @@ public class TestScenario {
 
         serverStmt.close();
         clientStmt.close();
+
+        saveExpectedResultSet();
+    }
+
+    private void saveExpectedResultSet() throws SQLException {
+        expectedFlatResultSets = new String[selectQueries.length];
+
+        Statement serverStmt = serverDs.getConnection().createStatement();
+        Statement clientStmt = clientDs.getConnection().createStatement();
+
+        ResultSet expectedRs;
+
+        for (int i = 0; i < selectQueries.length; i++) {
+            String query = selectQueries[i];
+
+            switch (expectedState) {
+                case CLIENT:
+                    expectedRs = clientStmt.executeQuery(query);
+                    break;
+                case SERVER:
+                    expectedRs = serverStmt.executeQuery(query);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown connection type: " + expectedState);
+            }
+            expectedFlatResultSets[i] = ExecuteStatementHelper.resultSetToString(expectedRs);
+        }
+
+        serverStmt.close();
+        clientStmt.close();
     }
 
     public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
-        setExpectedResultSet();
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
         TableSyncStrategies strategies = new TableSyncStrategies();
@@ -135,48 +165,25 @@ public class TestScenario {
         localCtx.synchronize();
     }
 
-    private void setExpectedResultSet() throws SQLException {
-        Statement serverStmt = serverDs.getConnection().createStatement();
-        Statement clientStmt = clientDs.getConnection().createStatement();
-
-        ResultSet[] expectedRs = new ResultSet[selectQueries.length];
-
-        for (int i = 0; i < selectQueries.length; i++) {
-            String query = selectQueries[i];
-
-            switch (expectedState) {
-                case CLIENT:
-                    expectedRs[i] = clientStmt.executeQuery(query);
-                    break;
-                case SERVER:
-                    expectedRs[i] = serverStmt.executeQuery(query);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown connection type: " + expectedState);
-            }
-        }
-
-        serverStmt.close();
-        clientStmt.close();
-
-        expectedResultSets = expectedRs;
-    }
-
     public void assertBothSidesAreInExpectedState() throws SQLException {
 
-        ResultSet clientResultSet, serverResultSet;
+        ResultSet serverResultSet, clientResultSet;
+        Statement clientStmt = clientDs.getConnection().createStatement();
+        Statement serverStmt = serverDs.getConnection().createStatement();
 
         for (int i = 0; i < selectQueries.length; i++) {
+            String flatServerRs, flatClientRs;
             String selectQuery = selectQueries[i];
-            Statement clientStmt = clientDs.getConnection().createStatement();
+
             clientResultSet = clientStmt.executeQuery(selectQuery);
-            Statement serverStmt = serverDs.getConnection().createStatement();
+            flatClientRs = ExecuteStatementHelper.resultSetToString(clientResultSet);
+
             serverResultSet = serverStmt.executeQuery(selectQuery);
+            flatServerRs = ExecuteStatementHelper.resultSetToString(serverResultSet);
 
-            ResultSetComparator.assertEquals(expectedResultSets[i], serverResultSet);
-            ResultSetComparator.assertEquals(expectedResultSets[i], clientResultSet);
+            ResultSetComparator.assertEquals(expectedFlatResultSets[i], flatServerRs);
+            ResultSetComparator.assertEquals(expectedFlatResultSets[i], flatClientRs);
         }
-
     }
 
     @Override
