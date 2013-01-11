@@ -89,11 +89,11 @@ public class ApplicationStarter {
 //            }
 
             if (line.hasOption("--server-wins")) {
-                CONF.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
             } else if (line.hasOption("--client-wins")) {
-                CONF.setConflictStrategy(ConflictStrategy.CLIENT_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.CLIENT_WINS);
             } else {
-                CONF.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
             }
 
             if (CONF.getServerProxy() == null) {

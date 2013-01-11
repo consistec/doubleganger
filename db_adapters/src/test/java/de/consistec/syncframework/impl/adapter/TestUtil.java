@@ -1,11 +1,13 @@
 package de.consistec.syncframework.impl.adapter;
 
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.data.schema.Column;
 import de.consistec.syncframework.common.data.schema.Constraint;
 import de.consistec.syncframework.common.data.schema.ConstraintType;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.data.schema.Table;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Types;
 import java.util.Scanner;
@@ -13,9 +15,9 @@ import java.util.Scanner;
 /**
  * Utility methods to use in unit tests.
  *
+ * @author Markus Backes
  * @company Consistec Engineering and Consulting GmbH
  * @date 30.07.12 14:28
- * @author Markus Backes
  * @since 0.0.1-SNAPSHOT
  */
 public class TestUtil {
@@ -65,5 +67,10 @@ public class TestUtil {
     public static String getStringFromXMLFile(String filename) {
         InputStream is = TestUtil.class.getClassLoader().getResourceAsStream(filename);
         return new Scanner(is, "UTF-8").useDelimiter("\\A").next();
+    }
+
+    public static void initConfig(Class<?> classOfObject, String configFile) throws IOException {
+        Config instance = Config.getInstance();
+        instance.init(classOfObject.getResourceAsStream(configFile));
     }
 }

@@ -97,13 +97,13 @@ public class TableSyncStrategies {
         } else {
             Config cfg = Config.getInstance();
             SyncDirection syncDirection = DEFAULT_SYNC_STRATEGY.getDirection();
-            if (cfg.getSyncDirection() != null) {
-                syncDirection = cfg.getSyncDirection();
+            if (cfg.getGlobalSyncDirection() != null) {
+                syncDirection = cfg.getGlobalSyncDirection();
             }
 
             ConflictStrategy conflictStrategy = DEFAULT_SYNC_STRATEGY.getConflictStrategy();
-            if (cfg.getConflictStrategy() != null) {
-                conflictStrategy = cfg.getConflictStrategy();
+            if (cfg.getGlobalConflictStrategy() != null) {
+                conflictStrategy = cfg.getGlobalConflictStrategy();
             }
 
             return new TableSyncStrategy(syncDirection, conflictStrategy);

@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
  * Base class for all unit test.
  * This class hold instances of logger, junit test watcher, and loads logging facility's configuration.
  *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 16.10.2012 13:41:03
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 public class TestBase {
@@ -39,7 +39,7 @@ public class TestBase {
             LOGGER.info("start {} for test class {} ...", description.getMethodName(),
                 description.getTestClass().getCanonicalName());
             try {
-                resetConfigSingleton();
+//                resetConfigSingleton();
                 LOGGER.info("Framework configuration reseted");
             } catch (Exception ex) {
                 LOGGER.warn("Can't reset framework configuration ", ex);

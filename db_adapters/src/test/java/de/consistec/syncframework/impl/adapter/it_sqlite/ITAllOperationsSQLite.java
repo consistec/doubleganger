@@ -1,9 +1,9 @@
 package de.consistec.syncframework.impl.adapter.it_sqlite;
 
-import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -14,9 +14,9 @@ import org.junit.BeforeClass;
  * Performs integration test with
  * {@link de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter GenericDatabaseAdapter} and SqLite database.
  *
+ * @author markus
  * @company Consistec Engineering and Consulting GmbH
  * @date 18.04.12 14:19
- * @author markus
  * @since 0.0.1-SNAPSHOT
  */
 public class ITAllOperationsSQLite extends AbstractSyncTest {
@@ -35,7 +35,7 @@ public class ITAllOperationsSQLite extends AbstractSyncTest {
 
     @Before
     public void setUp() throws IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
+        TestUtil.initConfig(getClass(), CONFIG_FILE);
     }
 
     @Override

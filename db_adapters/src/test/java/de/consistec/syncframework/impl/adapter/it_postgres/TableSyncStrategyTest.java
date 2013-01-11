@@ -7,7 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
@@ -21,6 +20,7 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.impl.adapter.TestBase;
+import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -68,7 +68,7 @@ public class TableSyncStrategyTest extends TestBase {
         // bezieht sich auf obige(s) @Mock
         MockitoAnnotations.initMocks(this);
 
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
+        TestUtil.initConfig(getClass(), CONFIG_FILE);
     }
 
     @Test
@@ -226,7 +226,7 @@ public class TableSyncStrategyTest extends TestBase {
 //
 //        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
 //        assertTrue(strategy.getDirection() == SyncDirection.CLIENT_TO_SERVER);
-//        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.CLIENT_WINS);
+//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.CLIENT_WINS);
 //    }
 
     @Test(expected = IllegalStateException.class)
@@ -248,7 +248,7 @@ public class TableSyncStrategyTest extends TestBase {
 //
 //        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
 //        assertTrue(strategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
-//        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
+//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.SERVER_WINS);
 //    }
 
     @Test(expected = IllegalStateException.class)

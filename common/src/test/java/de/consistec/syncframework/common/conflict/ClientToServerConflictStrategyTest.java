@@ -83,7 +83,7 @@ public class ClientToServerConflictStrategyTest {
     public void resolveByClientWinsStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException {
 
         Config confInstance = Config.getInstance();
-        confInstance.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+        confInstance.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
 
         conflictStrategy.resolveByClientWinsStrategy(databaseAdapterMock, conflictHandlingData);
 
@@ -96,7 +96,7 @@ public class ClientToServerConflictStrategyTest {
     public void resolveByServerWinsStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException {
 
         Config confInstance = Config.getInstance();
-        confInstance.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+        confInstance.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
 
         MDEntry remoteEntry = new MDEntry(Integer.valueOf(1), false, 1, TEST_TABLE_NAME, TEST_MDV);
         Change remoteChange = new Change(remoteEntry, createRowData());
@@ -110,7 +110,7 @@ public class ClientToServerConflictStrategyTest {
     public void resolveByFireEventStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException, SyncException {
 
         Config confInstance = Config.getInstance();
-        confInstance.setConflictStrategy(ConflictStrategy.FIRE_EVENT);
+        confInstance.setGlobalConflictStrategy(ConflictStrategy.FIRE_EVENT);
 
         MDEntry remoteEntry = new MDEntry(Integer.valueOf(1), false, 1, TEST_TABLE_NAME, TEST_MDV);
         Change remoteChange = new Change(remoteEntry, createRowData());

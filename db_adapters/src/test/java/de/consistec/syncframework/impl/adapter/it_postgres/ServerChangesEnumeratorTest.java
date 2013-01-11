@@ -18,6 +18,7 @@ import de.consistec.syncframework.common.server.ServerChangesEnumerator;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -83,7 +84,7 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
 
     @Before
     public void setUp() throws IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
+        TestUtil.initConfig(getClass(), CONFIG_FILE);
     }
 
     @Override
@@ -139,8 +140,8 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
 
             adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
             Config configInstance = Config.getInstance();
-            configInstance.setConflictStrategy(strategy);
-            configInstance.setSyncDirection(direction);
+            configInstance.setGlobalConflictStrategy(strategy);
+            configInstance.setGlobalSyncDirection(direction);
             ServerChangesEnumerator serverChangesEnumerator = new ServerChangesEnumerator(adapter,
                 new TableSyncStrategies());
 

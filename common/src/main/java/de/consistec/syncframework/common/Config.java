@@ -1,9 +1,27 @@
 package de.consistec.syncframework.common;
 
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_MD_TABLE_SUFFIX;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_NR_GET_CHANGES_ON_TRANS_ERR;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_NR_SYNC_ON_TRANS_ERR;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_SYNC_DIRECTION;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAPTER_CLASS;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CONFLICT_ACTION;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_MD_TABLE_SUFFIX;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_SYNC_TRIES_ON_TRANS_ERROR;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SERV_DB_ADAPTER_CLASS;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SERV_DB_ADAP_GROUP;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SERV_PROXY;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SER_PROXY_GROUP;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SYNC_DIRECTION;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_SYNC_TABLES;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newSyncSet;
 import static de.consistec.syncframework.common.util.Preconditions.checkNotNull;
-import static de.consistec.syncframework.common.util.SyncStatePreconditions.checkSyncDirectionAndConflictStrategy;
 
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
@@ -28,7 +46,7 @@ import org.slf4j.cal10n.LocLogger;
  * Singleton which holds configuration data for framework.
  * <p>
  * Properties can be set by mutators or loaded from properties file (or object).
- * Default configuration's file path in classpath is {@value #CONFIG_FILE}.
+ * Default configuration's file path in classpath is {@value ConfigLoader.CONFIG_FILE}.
  * Template of this file is provided with this jar package in it's root directory.
  * </p>
  *
@@ -41,178 +59,15 @@ public final class Config {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     //<editor-fold defaultstate="collapsed" desc=" ------------- Default values ------------- " >
-    /**
-     * Delimiter for multivalued options strings, like SYNC_TABLES.<br/>
-     * Value: {@value}
-     */
-    public static final String DELIMITER = ",";
-    /**
-     * Default configuration file.<br/>
-     * Value: {@value}
-     */
-    public static final String CONFIG_FILE = "/syncframework.properties";
-    /**
-     * Default suffix for md tables.<br/>
-     * Value: {@value}
-     */
-    public static final String DEFAULT_MD_TABLE_SUFFIX = "_md";
-    /**
-     * Default number of synchronization tries when transaction error occurs.<br/>
-     * Value: {@value}
-     */
-    public static final int DEFAULT_NR_SYNC_ON_TRANS_ERR = 3;
-    /**
-     * Default number of tries to apply changes on server side.<br/>
-     * Value: {@value}
-     */
-    public static final int DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR = 3;
-    /**
-     * Default number of tries to get the server changes.<br/>
-     * Value: {@value}
-     */
-    public static final int DEFAULT_NR_GET_CHANGES_ON_TRANS_ERR = 3;
-    /**
-     * Default conflict action.<br/>
-     * Value: ConflictStrategy.SERVER_WINS
-     */
-    public static final ConflictStrategy DEFAULT_CONFLICT_STRATEGY = ConflictStrategy.SERVER_WINS;
-    /**
-     * Default synchronization direction.<br/>
-     * Value: SyncDirection.SERVER_TO_CLIENT
-     */
-    public static final SyncDirection DEFAULT_SYNC_DIRECTION = SyncDirection.BIDIRECTIONAL;
-
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Config options names in config file" >
-    /**
-     * Key prefix for common options.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_PREFIX = "framework";
-    /**
-     * Key prefix for server options.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_SERVER_PREFIX = OPTIONS_COMMON_PREFIX + ".server";
-    /**
-     * Key prefix for client options.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_CLIENT_PREFIX = OPTIONS_COMMON_PREFIX + ".client";
-    /**
-     * Key part for database adapter groups.
-     * <p/>
-     * All options from this group are used to create {@link #getServerDatabaseProperties() }
-     * (if this value is preceded with {@value #OPTIONS_SERVER_PREFIX} ) or
-     * {@link #getClientDatabaseProperties() } (if this value is preceded with {@value #OPTIONS_CLIENT_PREFIX} ).
-     * <br/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_DB_ADAPTER = ".db_adapter";
-    /**
-     * Key part for proxy provider group.
-     * <p/>
-     * All options from this group are used to create {@link #getServerProxyProviderProperties() }.
-     * <br/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_PROXY_PROVIDER = ".proxy_provider";
-    // -------------- common framework options
-    /**
-     * Key for conflict {@link #getConflictStrategy() }.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_CONFLICT_ACTION = OPTIONS_COMMON_PREFIX + ".conflict_action";
-    /**
-     * Key for synchronization {@link #getSyncDirection() }.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SYNC_DIRECTION = OPTIONS_COMMON_PREFIX + ".sync_direction";
-    /**
-     * Key for list of synchronized tables.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SYNC_TABLES = OPTIONS_COMMON_PREFIX + ".sync_tables";
-    /**
-     * Key for {@link #getRetryNumberOfApplyChangesOnTransactionError() } value.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR = OPTIONS_SERVER_PREFIX
-        + ".number_of_apply_changes_tries_on_transaction_error";
-    /**
-     * Key for {@link #getRetryNumberOfApplyChangesOnTransactionError() } value.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR = OPTIONS_SERVER_PREFIX
-        + ".number_of_get_changes_tries_on_transaction_error";
-    /**
-     * Key for {@link #getSyncRetryNumber() } value.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_NR_OF_SYNC_TRIES_ON_TRANS_ERROR = OPTIONS_CLIENT_PREFIX
-        + ".number_of_sync_tries_on_transaction_error";
-    /**
-     * Key for {@link #getMdTableSuffix() } value.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_MD_TABLE_SUFFIX = OPTIONS_COMMON_PREFIX + ".md_table_suffix";
-    /**
-     * Key for options which form {@link #getServerProxyProviderProperties() } object.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SERV_DB_ADAP_GROUP = OPTIONS_SERVER_PREFIX + OPTIONS_DB_ADAPTER;
-    /**
-     * Key for options which form {@link #getClientDatabaseProperties() } object.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP = OPTIONS_CLIENT_PREFIX + OPTIONS_DB_ADAPTER;
-    /**
-     * Key for options which form {@link #getServerProxyProviderProperties() } object.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SER_PROXY_GROUP = OPTIONS_SERVER_PREFIX + OPTIONS_PROXY_PROVIDER;
 
     /**
-     * CHECKSTYLE:OFF
-     */
-    /**
-     * Key for {@link #getServerDatabaseAdapter() } class.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SERV_DB_ADAPTER_CLASS = OPTIONS_COMMON_SERV_DB_ADAP_GROUP + ".class";
-    /**
-     * Key for {@link #getClientDatabaseAdapter() } class.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_CLIENT_DB_ADAPTER_CLASS = OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP + ".class";
-    /**
-     * Key for {@link #getServerProxy() } class.
-     * <p/>
-     * Value: {@value}
-     */
-    private static final String OPTIONS_COMMON_SERV_PROXY = OPTIONS_COMMON_SER_PROXY_GROUP + ".class";
-    /**
+     * .
      * CHECKSTYLE:ON
      */
     //</editor-fold>
     //<editor-fold desc="Class Fields" >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(Config.class.getCanonicalName());
-    private static Config instance;
+    //    private static Config instance;
     private Class<? extends IDatabaseAdapter> serverDatabaseAdapter;
     private Class<? extends IDatabaseAdapter> clientDatabaseAdapter;
     private Class<? extends IServerSyncProvider> serverProxy;
@@ -223,8 +78,8 @@ public final class Config {
     private Properties serverDatabaseProperties;
     private Properties clientDatabaseProperties;
     private Properties serverProxyProviderProperties;
-    private ConflictStrategy conflictStrategy;
-    private SyncDirection syncDirection;
+    private ConflictStrategy globalConflictStrategy;
+    private SyncDirection globalSyncDirection;
     private int syncRetryNumber;
 //    private TableSyncStrategies syncStrategyPerTable = new TableSyncStrategies();
 
@@ -239,6 +94,19 @@ public final class Config {
          * Here AssertionError should be thrown, but we are using this constructor in unit tests (through reflection)
          * to reset configuration before each test method.
          */
+    }
+
+    /**
+     * Loads the properties file from passed input stream and initilizes the config class attributes.
+     *
+     * @param inputStream the properties file as input stream
+     * @throws IOException
+     */
+    public void init(InputStream inputStream) throws IOException {
+
+        ConfigLoader loader = new ConfigLoader();
+        Properties props = loader.loadFromFile(inputStream);
+        setValues(props);
     }
     //</editor-fold>
 
@@ -273,21 +141,17 @@ public final class Config {
      *
      * @return Conflict action.
      */
-    public ConflictStrategy getConflictStrategy() {
-        return conflictStrategy;
+    public ConflictStrategy getGlobalConflictStrategy() {
+        return globalConflictStrategy;
     }
 
     /**
      * What action to undertake when synchronization conflict occur.
      *
-     * @param conflictStrategy conflict action
+     * @param globalConflictStrategy conflict action
      */
-    public void setConflictStrategy(ConflictStrategy conflictStrategy) {
-        this.conflictStrategy = conflictStrategy;
-
-        if (syncDirection != null) {
-            checkSyncDirectionAndConflictStrategy(syncDirection, conflictStrategy);
-        }
+    public void setGlobalConflictStrategy(ConflictStrategy globalConflictStrategy) {
+        this.globalConflictStrategy = globalConflictStrategy;
     }
 
     /**
@@ -297,8 +161,8 @@ public final class Config {
      *
      * @return Direction of synchronization process.
      */
-    public SyncDirection getSyncDirection() {
-        return syncDirection;
+    public SyncDirection getGlobalSyncDirection() {
+        return globalSyncDirection;
     }
 
     /**
@@ -306,15 +170,11 @@ public final class Config {
      * Synchronization direction specifies which site of synchronization has priority over the other site.<br/>
      * When there is no direction specified in table sync strategy, this one will be used.
      *
-     * @param syncDirection Synchronization direction for all tables.
-     * @see #getSyncDirection()
+     * @param globalSyncDirection Synchronization direction for all tables.
+     * @see #getGlobalSyncDirection()
      */
-    public void setSyncDirection(SyncDirection syncDirection) {
-        this.syncDirection = syncDirection;
-
-        if (conflictStrategy != null) {
-            checkSyncDirectionAndConflictStrategy(syncDirection, conflictStrategy);
-        }
+    public void setGlobalSyncDirection(SyncDirection globalSyncDirection) {
+        this.globalSyncDirection = globalSyncDirection;
     }
 
     /**
@@ -328,12 +188,12 @@ public final class Config {
 //    public SyncDirection getSyncDirectionForTable(String table) {
 //        TableSyncStrategy syncStrategy = syncStrategyPerTable.getSyncStrategyForTable(table);
 //        if (syncStrategy == null) {
-//            if (syncDirection == null) {
+//            if (globalSyncDirection == null) {
 //                LOGGER.debug("use default sync direction {}", DEFAULT_SYNC_DIRECTION);
 //                return DEFAULT_SYNC_DIRECTION;
 //            } else {
-//                LOGGER.debug("use sync direction {}", syncDirection);
-//                return syncDirection;
+//                LOGGER.debug("use sync direction {}", globalSyncDirection);
+//                return globalSyncDirection;
 //            }
 //        }
 //
@@ -386,12 +246,12 @@ public final class Config {
 //    public ConflictStrategy getConflictActionForTable(String table) {
 //        TableSyncStrategy syncStrategy = syncStrategyPerTable.getSyncStrategyForTable(table);
 //        if (syncStrategy == null) {
-//            if (conflictStrategy == null) {
+//            if (globalConflictStrategy == null) {
 //                LOGGER.debug("No strategy for table {}.Using default conflict action {}", table,
 //                    DEFAULT_CONFLICT_STRATEGY);
 //                return DEFAULT_CONFLICT_STRATEGY;
 //            } else {
-//                return conflictStrategy;
+//                return globalConflictStrategy;
 //            }
 //        }
 //
@@ -627,62 +487,8 @@ public final class Config {
      *
      * @return instance of framework configuration class
      */
-    public static synchronized Config getInstance() {
-        if (instance == null) {
-            instance = new Config();
-        }
-        return instance;
-    }
-
-    /**
-     * Loads configuration from default configuration file.
-     * Configuration file has to be java's <i>.properties</i> file.
-     * <p/>
-     *
-     * @throws IOException When errors during accessing the stream occur.
-     * @see #loadFromFile(java.io.InputStream)
-     */
-    public void loadFromFile() throws IOException {
-
-        InputStream in = null;
-        try {
-            in = getClass().getResourceAsStream(CONFIG_FILE);
-            loadFromFile(in);
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
-    /**
-     * Loads configuration from provided InputStream.
-     * InputStream has to represents java's <i>.properties</i> file.
-     * <p/>
-     *
-     * @param stream Stream to property file.
-     * @throws IOException well, shit happens.
-     */
-    public void loadFromFile(InputStream stream) throws IOException {
-
-        checkNotNull(stream, read(Errors.COMMON_INPUT_STREAM_IS_NULL));
-
-        LOGGER.info(Infos.CONFIG_LOADING_FROM_STREAM);
-        Properties props = new Properties();
-        props.load(stream);
-
-        if (props.isEmpty()) {
-            LOGGER.info(Infos.CONFIG_CONFIGURATION_FILE_IS_EMPTY);
-        } else {
-
-//            LOGGER.debug("Printing config file content ( option = value ): ");
-//            for (String key : props.stringPropertyNames()) {
-//                LOGGER.debug("\"{}\" = \"{}\"", key, props.getProperty(key));
-//            }
-
-            setValues(props);
-            LOGGER.info(Infos.CONFIG_CONFIG_LOADED);
-        }
+    public static Config getInstance() {
+        return InstanceHolder.INSTANCE;
     }
 
     private void setValues(final Properties props) {
@@ -719,10 +525,11 @@ public final class Config {
             retryNumberOfGetChangesOnTransactionError);
 
         try {
-            conflictStrategy = PropertiesUtil.defaultIfNull(DEFAULT_CONFLICT_STRATEGY, PropertiesUtil.readEnum(props,
-                OPTIONS_COMMON_CONFLICT_ACTION, false,
-                ConflictStrategy.class));
-            LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_CONFLICT_ACTION, conflictStrategy.name());
+            globalConflictStrategy = PropertiesUtil.defaultIfNull(DEFAULT_CONFLICT_STRATEGY,
+                PropertiesUtil.readEnum(props,
+                    OPTIONS_COMMON_CONFLICT_ACTION, false,
+                    ConflictStrategy.class));
+            LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_CONFLICT_ACTION, globalConflictStrategy.name());
 
         } catch (Exception ex) {
             throw new ConfigException(read(Errors.CONFIG_CANT_LOAD_OPTION, OPTIONS_COMMON_CONFLICT_ACTION), ex);
@@ -737,10 +544,10 @@ public final class Config {
         }
 
         try {
-            syncDirection = PropertiesUtil.defaultIfNull(DEFAULT_SYNC_DIRECTION, PropertiesUtil.readEnum(props,
+            globalSyncDirection = PropertiesUtil.defaultIfNull(DEFAULT_SYNC_DIRECTION, PropertiesUtil.readEnum(props,
                 OPTIONS_COMMON_SYNC_DIRECTION, false,
                 SyncDirection.class));
-            LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_SYNC_DIRECTION, syncDirection.name());
+            LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_SYNC_DIRECTION, globalSyncDirection.name());
         } catch (Exception ex) {
             throw new ConfigException(read(Errors.CONFIG_CANT_LOAD_OPTION, OPTIONS_COMMON_SYNC_DIRECTION), ex);
         }
@@ -857,11 +664,18 @@ public final class Config {
         builder.append(",\n mdTableSuffix=");
         builder.append(mdTableSuffix);
         builder.append(",\n conflictStrategy=");
-        builder.append(conflictStrategy.name());
+        builder.append(globalConflictStrategy.name());
         builder.append(",\n syncRetryNumber=");
         builder.append(syncRetryNumber);
         builder.append(" }");
         return builder.toString();
+    }
+
+    // inner private class which will be initialized during access through the surrounded class.
+    private static final class InstanceHolder {
+        // The initialization of fields is done only once und will be implizit
+        // synchronized through the ClassLoader
+        static final Config INSTANCE = new Config();
     }
     //</editor-fold>
 }

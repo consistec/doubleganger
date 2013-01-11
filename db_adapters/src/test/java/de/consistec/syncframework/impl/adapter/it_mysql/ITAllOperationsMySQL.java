@@ -1,9 +1,9 @@
 package de.consistec.syncframework.impl.adapter.it_mysql;
 
-import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -14,9 +14,9 @@ import org.junit.BeforeClass;
  * Performs integration test with
  * {@link de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter GenericDatabaseAdapter} and MySQL database.
  *
+ * @author Markus
  * @company Consistec Engineering and Consulting GmbH
  * @date 18.04.12 14:19
- * @author Markus
  * @since 0.0.1-SNAPSHOT
  */
 public class ITAllOperationsMySQL extends AbstractSyncTest {
@@ -35,9 +35,9 @@ public class ITAllOperationsMySQL extends AbstractSyncTest {
 
     @Before
     public void setUp() throws IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
+        TestUtil.initConfig(getClass(), CONFIG_FILE);
     }
-    
+
     @Override
     public Connection getServerConnection() {
         return serverConnection;
@@ -51,8 +51,8 @@ public class ITAllOperationsMySQL extends AbstractSyncTest {
     @Override
     protected String[] getCreateTableStatement() {
         return new String[]{
-                "create table categories (categoryid INTEGER NOT NULL PRIMARY KEY, categoryname VARCHAR (30000), description VARCHAR (30000));",
-                "create table items (itemid INTEGER NOT NULL PRIMARY KEY, itemname VARCHAR (30000), description VARCHAR (30000));" };
+            "create table categories (categoryid INTEGER NOT NULL PRIMARY KEY, categoryname VARCHAR (30000), description VARCHAR (30000));",
+            "create table items (itemid INTEGER NOT NULL PRIMARY KEY, itemname VARCHAR (30000), description VARCHAR (30000));"};
     }
 
 }

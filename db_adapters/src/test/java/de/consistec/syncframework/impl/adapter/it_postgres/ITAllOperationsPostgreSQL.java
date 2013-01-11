@@ -1,9 +1,9 @@
 package de.consistec.syncframework.impl.adapter.it_postgres;
 
-import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DefaultSyncTest;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -37,7 +37,7 @@ public class ITAllOperationsPostgreSQL extends DefaultSyncTest {
 
     @Before
     public void setUp() throws IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
+        TestUtil.initConfig(getClass(), CONFIG_FILE);
     }
 
     @Override
