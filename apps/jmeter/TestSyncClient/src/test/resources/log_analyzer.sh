@@ -1,12 +1,13 @@
 #!/bin/bash
 ##This script takes a log file as input and generates a log file for each client
-##based on their hash number. The files are stored in the current directory.
+##based on an unique client id. The files are stored in the ./log directory.
 ##
 ##Usage:
 ##    ./log_analyzer.sh <logfile>
 ##
 
 FILENAME=$1
+LOG_FOLDER="log"
 
 function usage() {
     sed -n 's/^##\([^$]*\).*/\1/p' $0
@@ -17,9 +18,13 @@ if [ -z $FILENAME ] || [ ! -f $FILENAME ]; then
         exit
 fi
 
+if [ ! -d "$LOG_FOLDER" ]; then
+    mkdir log
+fi
+
 cd log
 
-echo "in progress ..."
+echo "work in progress ..."
 
 while read line
 do 
