@@ -322,6 +322,10 @@
                     <configuration>
                         <thirdPartyFilename>${project.artifactId}_licenses.txt</thirdPartyFilename>
                         <outputDirectory>${project.basedir}/target</outputDirectory>
+                        <useMissingFile>true</useMissingFile>
+                        <missingFile>
+                            ${project.parent.basedir}/src/license/${project.artifactId}_third-party.properties
+                        </missingFile>
                         <!-- Ignore own modules -->
                         <excludedGroups>de.consistec</excludedGroups>
                         <!-- Third party licenses not allowed to use in syncframework project separated by | -->
