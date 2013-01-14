@@ -1,20 +1,23 @@
 package de.consistec.syncframework.impl.adapter;
 
-import de.consistec.syncframework.impl.ResultSetHelper;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.impl.ResultSetHelper;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import org.junit.Assert;
 
 /**
@@ -27,6 +30,7 @@ import org.junit.Assert;
  */
 public class ExecuteStatementHelper {
 
+    private ChangeLogToSQLAdapter converter = new ChangeLogToSQLConverter();
     private ResultSet clientResultSet, serverResultSet;
     private Connection clientConnection, serverConnection;
     private Map<String, String> clientTableContentMap = newHashMap(), serverTableContentMap = newHashMap();
@@ -38,51 +42,78 @@ public class ExecuteStatementHelper {
      * @param clientConnection Connection to client database
      * @param serverConnection Connection to server database
      */
-    public ExecuteStatementHelper(Connection serverConnection, Connection clientConnection) {
+    public ExecuteStatementHelper(Connection clientConnection, Connection serverConnection) {
         this.clientConnection = clientConnection;
         this.serverConnection = serverConnection;
     }
 
-    public int executeUpdateOnClient(String query) throws SQLException {
-        return executeQueriesOnClient(new String[]{query})[0];
-    }
-
-    public int[] dropTablesOnClient(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.CLIENT, tables);
-    }
-
-    public int[] executeQueriesOnClient(String[] queries) throws SQLException {
-        return executeQueries(ConnectionType.CLIENT, queries);
-    }
-
-    public int executeUpdateOnServer(String query) throws SQLException {
-        return executeQueriesOnServer(new String[]{query})[0];
-    }
-
-    public int[] executeQueriesOnServer(String[] queries) throws SQLException {
-        return executeQueries(ConnectionType.SERVER, queries);
-    }
-
-    public int[] dropTablesOnServer(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.SERVER, tables);
-    }
-
-    private int[] dropTables(final ConnectionType type, String[] tables) throws SQLException {
-        final Connection connection = getConnectionFromType(type);
-        final Statement statement = connection.createStatement();
-        for (String table : tables) {
-            statement.addBatch(String.format("drop table if exists %s", table));
+    /**
+     * Executes update statements from provided {@code sqlStream}.
+     *
+     * @param type On which connection should the statements be invoked - server or client.
+     * @param sqlStream Stream do data file.
+     * @return Number of updated rows.
+     * @throws SQLException
+     * @throws SyncException
+     */
+    public int executeUpdate(ConnectionType type, InputStream sqlStream) throws SQLException, SyncException {
+        Connection conn = getConnectionFromType(type);
+        String sql = new Scanner(sqlStream).useDelimiter("\\A").next();
+        Statement stmt = null;
+        int result = 0;
+        try {
+            String[] queries = converter.fromChangelog(sql).replace("\n", "").split(";");
+            for (String query : queries) {
+                stmt = conn.createStatement();
+                result += stmt.executeUpdate(query);
+            }
+            return result;
+        } catch (SerializationException e) {
+            throw new SyncException("could not convert from changelog", e);
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
         }
-        return statement.executeBatch();
+
     }
 
-    private int[] executeQueries(final ConnectionType type, String[] queries) throws SQLException {
+    /**
+     * Executes SQL DROP statement for each table in {@code tables} as batch execute.
+     *
+     * @param type On which connection should the statements be invoked - server or client.
+     * @param tables Tables to be dropped.
+     * @throws SyncException
+     * @throws SQLException
+     * @see java.sql.Statement#executeBatch()
+     */
+    public void createAndExecuteDropBatch(final ConnectionType type, String[] tables) throws SyncException,
+        SQLException {
+        final Connection connection = getConnectionFromType(type);
+        final Statement stmt = connection.createStatement();
+        for (String table : tables) {
+            stmt.addBatch(String.format("drop table if exists %s", table));
+        }
+
+        stmt.executeBatch();
+    }
+
+    /**
+     * Executes provided SQL queries as batch execute.
+     *
+     * @param type On which connection should the statements be invoked - server or client.
+     * @param queries queries to invoke.
+     * @throws SQLException
+     * @see java.sql.Statement#executeBatch()
+     */
+    public void createAndExecuteBatch(final ConnectionType type, String[] queries) throws SQLException {
         final Connection connection = getConnectionFromType(type);
         final Statement statement = connection.createStatement();
         for (String query : queries) {
             statement.addBatch(query);
         }
-        return statement.executeBatch();
+
+        statement.executeBatch();
     }
 
     private Connection getConnectionFromType(ConnectionType type) {
@@ -92,9 +123,25 @@ public class ExecuteStatementHelper {
             case SERVER:
                 return serverConnection;
             default:
-                throw new IllegalArgumentException("Unknown connection type: " + ConnectionType.class
-                    .getSimpleName());
+                throw new IllegalArgumentException("Unknown connection type: " + ConnectionType.class.getSimpleName());
         }
+    }
+
+    /**
+     * Executes provided SQL statements and compares theirs result.
+     *
+     * @param statementsToExecute
+     * @param comparator
+     * @param conf
+     * @param type
+     * @throws SQLException
+     * @throws SyncException
+     */
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type
+    ) throws
+        SQLException, SyncException {
+
+        executeStatementAndCompareResults(statementsToExecute, conf, type, null);
     }
 
     /**
@@ -105,9 +152,10 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf,
-        ConnectionType type,
-        ConnectionType type2) throws SQLException, SyncException {
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type,
+                                                  ConnectionType type2
+    ) throws
+        SQLException, SyncException {
 
         for (String tableName : statementsToExecute.keySet()) {
             Statement clientStmt = null;
@@ -156,7 +204,8 @@ public class ExecuteStatementHelper {
         }
     }
 
-    private String getContentToCompare(String tableName, ConnectionType type) {
+    private String getContentToCompare(String tableName, ConnectionType type
+    ) {
         if (type == ConnectionType.CLIENT) {
             return clientTableContentMap.get(tableName);
         } else {
@@ -164,25 +213,30 @@ public class ExecuteStatementHelper {
         }
     }
 
-    public static String resultSetToString(final ResultSet rs) throws SQLException {
-        StringBuilder strBuilder = new StringBuilder();
+    private String resultSetToString(final ResultSet rs) throws SQLException {
+        if (rs == null) {
+            throw new IllegalArgumentException("Passed result set hasn't be null!!!");
+        }
+        StringBuffer buffer = new StringBuffer();
 
         while (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
 
-            List<String> sortedColumnNames = getSortedColumnNames(metaData);
+            List<String> sortedList = newArrayList();
+            sortColumnNames(metaData, sortedList);
 
-            for (String columnName : sortedColumnNames) {
-                strBuilder.append(columnName).append("(").append(rs.getObject(columnName)).append("),");
+            for (String listEntry : sortedList) {
+                buffer.append(listEntry).append("(").append(rs.getObject(listEntry)).append("),");
             }
         }
-        return strBuilder.toString();
+        return buffer.toString();
     }
 
-    private static List<String> getSortedColumnNames(ResultSetMetaData metaData) throws SQLException {
-        List<String> sortedList = new ArrayList<String>();
+    private List<String> sortColumnNames(ResultSetMetaData metaData, List<String> sortedList) throws SQLException {
 
-        for (int j = 1; j <= metaData.getColumnCount(); j++) {
+        int columnCount = metaData.getColumnCount();
+        for (int j = 1; j <= columnCount; j++) {
+
             sortedList.add(metaData.getColumnName(j));
         }
 
@@ -190,14 +244,17 @@ public class ExecuteStatementHelper {
         return sortedList;
     }
 
-    public void storeTableContent(Map<String, String> tableStatementMap) throws SQLException {
+    public void readTableContent(Map<String, String> tableStatementMap
+    ) throws
+        SQLException {
 
-        storeTableContentMap(tableStatementMap, clientTableContentMap, ConnectionType.CLIENT);
-        storeTableContentMap(tableStatementMap, serverTableContentMap, ConnectionType.SERVER);
+        fillTableContentMap(tableStatementMap, clientTableContentMap, ConnectionType.CLIENT);
+        fillTableContentMap(tableStatementMap, serverTableContentMap, ConnectionType.SERVER);
     }
 
-    private void storeTableContentMap(Map<String, String> tableStatementMap, Map<String, String> tableContentMap,
-        ConnectionType type) throws SQLException {
+    private void fillTableContentMap(Map<String, String> tableStatementMap, Map<String, String> tableContentMap,
+                                     ConnectionType type
+    ) throws SQLException {
         Statement contentRelatedToStrategyStmt = null;
         try {
             final Connection connection = getConnectionFromType(type);

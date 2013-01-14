@@ -1,9 +1,11 @@
 package de.consistec.syncframework.impl.adapter;
 
+import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.SQLException;
 import javax.sql.DataSource;
 
 /**
@@ -18,13 +20,13 @@ public interface ISyncIntegrationTest {
 
     /**
      * @return Connection to client database. These connection is used only by the test class to prepare the data.
-     *         This is not the connection which is used by framework.
+     * This is not the connection which is used by framework.
      */
     Connection getClientConnection();
 
     /**
      * @return Connection to server database. These connection is used only by the test class to prepare the data.
-     *         This is not the connection which is used by framework.
+     * This is not the connection which is used by framework.
      */
     Connection getServerConnection();
 
@@ -33,7 +35,7 @@ public interface ISyncIntegrationTest {
      * based on frameworks configuration.
      *
      * @return External data source to be used by frameworks client synchronization provider
-     *         to initialize database adapter.
+     * to initialize database adapter.
      * @throws Exception
      */
     DataSource getClientDataSource() throws Exception;
@@ -43,7 +45,7 @@ public interface ISyncIntegrationTest {
      * based on frameworks configuration.
      *
      * @return External data source to be used by frameworks server synchronization provider
-     *         to initialize database adapter.
+     * to initialize database adapter.
      * @throws Exception
      */
     DataSource getServerDataSource() throws Exception;
@@ -55,4 +57,5 @@ public interface ISyncIntegrationTest {
      */
     InputStream getResourceAsStream(String resourceName) throws SyncException;
 
+    void resetClientAndServerDatabase() throws SyncException, SQLException, ContextException ;
 }

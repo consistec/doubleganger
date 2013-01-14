@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 /**
  * Performs integration test with
