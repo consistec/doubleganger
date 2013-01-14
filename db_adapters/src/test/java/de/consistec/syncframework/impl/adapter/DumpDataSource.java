@@ -6,9 +6,6 @@ import static de.consistec.syncframework.common.util.StringUtil.isNullOrEmpty;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.util.StringUtil;
-import de.consistec.syncframework.impl.adapter.it_mysql.ITAllOperationsMySQL;
-import de.consistec.syncframework.impl.adapter.it_postgres.ITAllOperationsPostgreSQLExternalConnection;
-import de.consistec.syncframework.impl.adapter.it_sqlite.ITAllOperationsSQLite;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,7 +98,7 @@ public class DumpDataSource implements DataSource {
     }
 
     private Connection createPostgres() throws Exception {
-        Properties props = readConfig(ITAllOperationsPostgreSQLExternalConnection.CONFIG_FILE);
+        Properties props = readConfig("/config_postgre.properties");
 
         String driver = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
         if (isNullOrEmpty(driver)) {
@@ -130,11 +127,11 @@ public class DumpDataSource implements DataSource {
     }
 
     private Connection createMySql() throws IOException, ClassNotFoundException, SQLException {
-        return createGeneric(readConfig(ITAllOperationsMySQL.CONFIG_FILE));
+        return createGeneric(readConfig("/config_mysql.properties"));
     }
 
     private Connection createSqlLite() throws IOException, ClassNotFoundException, SQLException {
-        return createGeneric(readConfig(ITAllOperationsSQLite.CONFIG_FILE));
+        return createGeneric(readConfig("/config_sqlite.properties"));
     }
 
     private Connection createGeneric(Properties props) throws ClassNotFoundException, SQLException {
