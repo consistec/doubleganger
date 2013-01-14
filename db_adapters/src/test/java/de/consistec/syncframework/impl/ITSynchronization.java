@@ -12,7 +12,6 @@ import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
 
 import java.io.IOException;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @RunWith(value = Parameterized.class)
 public class ITSynchronization {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(ITSynchronization.class.getCanonicalName());
     protected static final Config CONF = Config.getInstance();
     private TestScenario scenario;
     private static TestDatabase db;
@@ -61,37 +60,45 @@ public class ITSynchronization {
     public static Collection<TestScenario[]> AllScenarii() {
         TestScenario[][] scenarii = new TestScenario[][]{
             // First the scenario's name, then:      direction,     strategy, expected rows on server, expected rows on client
-            // where 'S' codes one row which originates from the server, C from the client
+            // - 'S' codes one row which originates from the server
+            // - 'C' from the client
+            // - a blank space counts as a deleted row:
+            //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
             {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, "SS", "CC")},
             {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, CLIENT_WINS, "SS", "CC")},
             {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, SERVER_WINS, "SS", "CC")},
             {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, CLIENT_WINS, "SS", "CC")},
             {new TestScenario("Unchanged Unchanged", BIDIRECTIONAL, FIRE_EVENT, "SS", "CC")},
-
+            //
             {new TestScenario("Added Unchanged", BIDIRECTIONAL, SERVER_WINS, "SSC", "CCC").addStep(CLIENT, insertRow3)},
             {new TestScenario("Added Unchanged", BIDIRECTIONAL, CLIENT_WINS, "SSC", "CCC").addStep(CLIENT, insertRow3)},
             {new TestScenario("Added Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, "SSC", "CCC").addStep(CLIENT, insertRow3)},
             {new TestScenario("Added Unchanged", SERVER_TO_CLIENT, SERVER_WINS, "SS", "CCC").addStep(CLIENT, insertRow3)},
             {new TestScenario("Added Unchanged", BIDIRECTIONAL, FIRE_EVENT, "SSC", "CCC").addStep(CLIENT, insertRow3)},
-
-            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, SERVER_WINS, "SC", "CC").addStep(CLIENT, updateRow2)},
-            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, CLIENT_WINS, "SC", "CC").addStep(CLIENT, updateRow2)},
-            {new TestScenario("Modified Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, "SC", "CC").addStep(CLIENT, updateRow2)},
-            {new TestScenario("Modified Unchanged", SERVER_TO_CLIENT, SERVER_WINS, "SS", "CC").addStep(CLIENT, updateRow2)},
-            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, FIRE_EVENT, "SC", "CC").addStep(CLIENT, updateRow2)},
-
+            //
+            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, SERVER_WINS, "SC", "CC")
+                .addStep(CLIENT, updateRow2)},
+            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, CLIENT_WINS, "SC", "CC")
+                .addStep(CLIENT, updateRow2)},
+            {new TestScenario("Modified Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, "SC", "CC")
+                .addStep(CLIENT, updateRow2)},
+            {new TestScenario("Modified Unchanged", SERVER_TO_CLIENT, SERVER_WINS, "SS", "CC")
+                .addStep(CLIENT, updateRow2)},
+            {new TestScenario("Modified Unchanged", BIDIRECTIONAL, FIRE_EVENT, "SC", "CC")
+                .addStep(CLIENT, updateRow2)},
+            //
             {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, SERVER_WINS, "S", "C").addStep(CLIENT, deleteRow2)},
             {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, CLIENT_WINS, "S", "C").addStep(CLIENT, deleteRow2)},
             {new TestScenario("Deleted Unchanged", CLIENT_TO_SERVER, CLIENT_WINS, "S", "C").addStep(CLIENT, deleteRow2)},
             {new TestScenario("Deleted Unchanged", SERVER_TO_CLIENT, SERVER_WINS, "SS", "C").addStep(CLIENT, deleteRow2)},
             {new TestScenario("Deleted Unchanged", BIDIRECTIONAL, FIRE_EVENT, "S", "C").addStep(CLIENT, deleteRow2)},
-
+            //
             {new TestScenario("Unchanged Added", BIDIRECTIONAL, SERVER_WINS, "SSS", "CCS").addStep(SERVER, insertRow3)},
             {new TestScenario("Unchanged Added", BIDIRECTIONAL, CLIENT_WINS, "SSS", "CCS").addStep(SERVER, insertRow3)},
-            {new TestScenario("Unchanged Added", CLIENT_TO_SERVER, CLIENT_WINS, "SSS", "CCS").addStep(SERVER, insertRow3)},
+            {new TestScenario("Unchanged Added", CLIENT_TO_SERVER, CLIENT_WINS, "SSS", "CC").addStep(SERVER, insertRow3)},
             {new TestScenario("Unchanged Added", SERVER_TO_CLIENT, SERVER_WINS, "SSS", "CCS").addStep(SERVER, insertRow3)},
             {new TestScenario("Unchanged Added", BIDIRECTIONAL, FIRE_EVENT, "SSS", "CCS").addStep(SERVER, insertRow3)},
-
+            //
             {new TestScenario("Added Added", BIDIRECTIONAL, SERVER_WINS, "SSS", "CCS")
                 .addStep(CLIENT, insertRow3)
                 .addStep(SERVER, insertRow3)},
@@ -107,7 +114,7 @@ public class ITSynchronization {
             {new TestScenario("Added Added", BIDIRECTIONAL, FIRE_EVENT, "SSS", "CCC")
                 .addStep(CLIENT, insertRow3)
                 .addStep(SERVER, insertRow3)},
-
+            //
             {new TestScenario("Modified Added", BIDIRECTIONAL, SERVER_WINS, "SCS", "CCS")
                 .addStep(CLIENT, updateRow2)
                 .addStep(SERVER, insertRow3)},
@@ -123,7 +130,7 @@ public class ITSynchronization {
             {new TestScenario("Modified Added", BIDIRECTIONAL, FIRE_EVENT, "SCS", "CCS")
                 .addStep(CLIENT, updateRow2)
                 .addStep(SERVER, insertRow3)},
-
+            //
             {new TestScenario("Deleted Added", BIDIRECTIONAL, SERVER_WINS, "SS", "CS")
                 .addStep(CLIENT, deleteRow2)
                 .addStep(SERVER, insertRow3)},
@@ -133,12 +140,12 @@ public class ITSynchronization {
             {new TestScenario("Deleted Added", CLIENT_TO_SERVER, CLIENT_WINS, "SS", "C")
                 .addStep(CLIENT, deleteRow2)
                 .addStep(SERVER, insertRow3)},
-            {new TestScenario("Deleted Added", SERVER_TO_CLIENT, SERVER_WINS, "SS", "CS")
+            {new TestScenario("Deleted Added", SERVER_TO_CLIENT, SERVER_WINS, "SSS", "C S")
                 .addStep(CLIENT, deleteRow2)
                 .addStep(SERVER, insertRow3)},
             {new TestScenario("Deleted Added", BIDIRECTIONAL, FIRE_EVENT, "SS", "CS")
                 .addStep(CLIENT, deleteRow2)
-                .addStep(SERVER, insertRow3)},
+                .addStep(SERVER, insertRow3)}, //
         };
         return Arrays.asList(scenarii);
     }

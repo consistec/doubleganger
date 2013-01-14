@@ -179,10 +179,10 @@ public class TestScenario {
             String selectQuery = selectTableQueries[i];
 
             clientResultSet = clientStmt.executeQuery(selectQuery);
-            flatClientRs = ExecuteStatementHelper.resultSetToString(clientResultSet);
+            flatClientRs = ResultSetHelper.resultSetToString(clientResultSet);
 
             serverResultSet = serverStmt.executeQuery(selectQuery);
-            flatServerRs = ExecuteStatementHelper.resultSetToString(serverResultSet);
+            flatServerRs = ResultSetHelper.resultSetToString(serverResultSet);
 
             Assert.assertEquals(expectedFlatServerResultSets[i], flatServerRs);
             Assert.assertEquals(expectedFlatClientResultSets[i], flatClientRs);
