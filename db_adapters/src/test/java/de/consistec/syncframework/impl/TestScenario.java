@@ -1,6 +1,10 @@
 package de.consistec.syncframework.impl;
 
+import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
+import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncContext;
@@ -12,7 +16,6 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
-import de.consistec.syncframework.impl.adapter.ExecuteStatementHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -146,6 +149,11 @@ public class TestScenario {
         clientStmt.close();
     }
 
+    public boolean hasInvalidDirectionAndStrategyCombination() {
+        return direction.equals(CLIENT_TO_SERVER) && strategy.equals(SERVER_WINS)
+            || direction.equals(SERVER_TO_CLIENT) && strategy.equals(CLIENT_WINS);
+    }
+
     public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
@@ -168,29 +176,45 @@ public class TestScenario {
         localCtx.synchronize();
     }
 
-    public void assertBothSidesAreInExpectedState() throws SQLException {
-        ResultSet serverResultSet, clientResultSet;
+    public void assertServerIsInExpectedState() throws SQLException {
+        ResultSet serverResultSet;
 
-        Statement clientStmt = clientConnection.createStatement();
         Statement serverStmt = serverConnection.createStatement();
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
-            String flatServerRs, flatClientRs;
+            String flatServerRs;
+            String selectQuery = selectTableQueries[i];
+
+            serverResultSet = serverStmt.executeQuery(selectQuery);
+            flatServerRs = ResultSetHelper.resultSetToString(serverResultSet);
+
+            Assert.assertEquals("Server state is invalid", expectedFlatServerResultSets[i], flatServerRs);
+
+//            serverResultSet.last();
+//            Assert.assertEquals("Wrong row count on server", expectedServerState.length(), serverResultSet.getRow());
+        }
+
+        serverStmt.close();
+    }
+
+    public void assertClientIsInExpectedState() throws SQLException {
+        ResultSet clientResultSet;
+
+        Statement clientStmt = clientConnection.createStatement();
+
+        for (int i = 0; i < selectTableQueries.length; i += 2) {
+            String flatClientRs;
             String selectQuery = selectTableQueries[i];
 
             clientResultSet = clientStmt.executeQuery(selectQuery);
             flatClientRs = ResultSetHelper.resultSetToString(clientResultSet);
 
-            serverResultSet = serverStmt.executeQuery(selectQuery);
-            flatServerRs = ResultSetHelper.resultSetToString(serverResultSet);
+            Assert.assertEquals("Client state is invalid", expectedFlatClientResultSets[i], flatClientRs);
 
-            Assert.assertEquals(expectedFlatServerResultSets[i], flatServerRs);
-            Assert.assertEquals(expectedFlatClientResultSets[i], flatClientRs);
-
-            ResultSetHelper.assertEquals(clientResultSet, serverResultSet);
+//            clientResultSet.last();
+//            Assert.assertEquals("Wrong row count on client", expectedClientState.length(), clientResultSet.getRow());
         }
 
-        serverStmt.close();
         clientStmt.close();
     }
 
