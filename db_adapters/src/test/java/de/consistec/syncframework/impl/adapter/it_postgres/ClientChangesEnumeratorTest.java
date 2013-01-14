@@ -25,6 +25,7 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
  * @company Consistec Engineering and Consulting GmbH
  * @date 13.12.12 12:16
  */
+@Ignore
 public class ClientChangesEnumeratorTest extends AbstractSyncTest {
 
 //<editor-fold defaultstate="expanded" desc=" Class fields " >

@@ -6,6 +6,7 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.impl.ResultSetHelper;
 
 import java.io.InputStream;
 import java.sql.Connection;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import org.junit.Assert;
 
 /**
  * Contains methods to facilitate test data preparation.
@@ -135,12 +137,11 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute,
-                                                  ResultSetComparator comparator, Config conf, ConnectionType type
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type
     ) throws
         SQLException, SyncException {
 
-        executeStatementAndCompareResults(statementsToExecute, comparator, conf, type, null);
+        executeStatementAndCompareResults(statementsToExecute, conf, type, null);
     }
 
     /**
@@ -151,8 +152,7 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute,
-                                                  ResultSetComparator comparator, Config conf, ConnectionType type,
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type,
                                                   ConnectionType type2
     ) throws
         SQLException, SyncException {
@@ -176,16 +176,16 @@ public class ExecuteStatementHelper {
 
                 String tableContentToCompare = getContentToCompare(tableName, type);
                 String clientTableContent = resultSetToString(clientResultSet);
-                comparator.compare(tableContentToCompare, clientTableContent);
+                Assert.assertEquals(tableContentToCompare, clientTableContent);
 
                 if (type2 != null) {
                     tableContentToCompare = getContentToCompare(tableName, type2);
                 }
                 String serverTableContent = resultSetToString(serverResultSet);
 
-                comparator.compare(tableContentToCompare, serverTableContent);
+                Assert.assertEquals(tableContentToCompare, serverTableContent);
 
-                comparator.compare(clientResultSet, serverResultSet);
+                ResultSetHelper.assertEquals(clientResultSet, serverResultSet);
             } catch (SQLException e) {
                 throw e;
             } finally {

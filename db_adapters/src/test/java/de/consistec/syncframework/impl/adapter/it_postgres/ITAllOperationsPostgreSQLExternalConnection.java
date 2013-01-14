@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 
 /**
  * Performs integration test with
