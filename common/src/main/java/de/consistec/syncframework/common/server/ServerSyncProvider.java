@@ -63,6 +63,9 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerSyncProvider.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
 
+    // database adapter only for test classes
+    private IDatabaseAdapter dbAdapter;
+
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
@@ -89,6 +92,19 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         super(strategies, ds);
     }
 
+    /**
+     * Creates provider which will be using the passed database adapter.
+     *
+     * @param strategies Special synchronization strategies for tables. given
+     * @param dbAdapter external db adapter
+     * @throws DatabaseAdapterException
+     */
+    public ServerSyncProvider(TableSyncStrategies strategies, IDatabaseAdapter dbAdapter) throws
+        DatabaseAdapterException {
+        super(strategies);
+        this.dbAdapter = dbAdapter;
+    }
+
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
@@ -97,7 +113,12 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
      *
      * @return Adapter object.
      */
-    private IDatabaseAdapter prepareDbAdapter() throws DatabaseAdapterInstantiationException {
+    private IDatabaseAdapter prepareDbAdapter() throws
+        DatabaseAdapterInstantiationException {
+
+        if (dbAdapter != null) {
+            return dbAdapter;
+        }
 
         IDatabaseAdapter adapter;
         try {

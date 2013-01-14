@@ -446,30 +446,6 @@ public final class Preconditions {
         checkSyncDirectionAndConflictStrategyState(globalSyncDirection, globalConflictStrategy);
     }
 
-//    /**
-//     * Validates the state of sync direction and conflict strategy.
-//     * <p/>
-//     * Invalid states are the following:
-//     * <ul>
-//     * <li>
-//     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
-//     * </li>
-//     * <li>
-//     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
-//     * </li>
-//     * </ul>
-//     *
-//     * @param direction - sync direction to validate
-//     * @param strategy - conflict strategy to validate
-//     */
-//    public void validatePerTableSyncDirectionAndConflictStrategyState() {
-//        SyncDirection globalSyncDirection = Config.getInstance().getGlobalSyncDirection();
-//        ConflictStrategy globalConflictStrategy = Config.getInstance().getGlobalConflictStrategy();
-//
-//        checkSyncDirectionAndConflictStrategyState(globalSyncDirection, globalConflictStrategy);
-//    }
-
-
     /**
      * Validates the state of sync direction and conflict strategy.
      * <p/>
@@ -486,7 +462,7 @@ public final class Preconditions {
      * @param direction - sync direction to validate
      * @param strategy - conflict strategy to validate
      */
-    private static void checkSyncDirectionAndConflictStrategyState(SyncDirection direction, ConflictStrategy strategy
+    public static void checkSyncDirectionAndConflictStrategyState(SyncDirection direction, ConflictStrategy strategy
     ) {
         if ((strategy == ConflictStrategy.SERVER_WINS || strategy == ConflictStrategy.FIRE_EVENT)
             && direction == SyncDirection.CLIENT_TO_SERVER

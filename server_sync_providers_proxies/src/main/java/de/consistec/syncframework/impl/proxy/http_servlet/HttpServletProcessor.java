@@ -69,9 +69,9 @@ public class HttpServletProcessor {
         serverContext = SyncContext.server();
         serializationAdapter = new JSONSerializationAdapter();
 
-        actionCommands.put(SyncAction.GET_SCHEMA.name(), new GetSchemaCommand());
-        actionCommands.put(SyncAction.GET_CHANGES.name(), new GetChangesCommand());
-        actionCommands.put(SyncAction.APPLY_CHANGES.name(), new ApplyChangesCommand());
+        actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
+        actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
+        actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
     }
 
     /**

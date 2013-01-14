@@ -2,7 +2,7 @@ package de.consistec.syncframework.common;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.Preconditions.checkNotNull;
-import static de.consistec.syncframework.common.util.SyncStatePreconditions.checkSyncDirectionAndConflictStrategyState;
+import static de.consistec.syncframework.common.util.Preconditions.checkState;
 
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.i18n.Errors;
@@ -83,7 +83,12 @@ public final class TableSyncStrategy implements Serializable {
         checkNotNull(direction, read(Errors.COMMON_SYNC_DIRECTION_CANT_BE_NULL));
         checkNotNull(strategy, read(Errors.COMMON_CONFLICT_ACTION_CANT_BE_NULL));
 
-        checkSyncDirectionAndConflictStrategyState(direction, strategy);
+        checkState(!((strategy == ConflictStrategy.SERVER_WINS && strategy == ConflictStrategy.FIRE_EVENT)
+            || direction == SyncDirection.CLIENT_TO_SERVER));
+        checkState(!((strategy == ConflictStrategy.CLIENT_WINS && strategy == ConflictStrategy.FIRE_EVENT)
+            || direction == SyncDirection.SERVER_TO_CLIENT));
+
+//        checkSyncDirectionAndConflictStrategyState(direction, strategy);
     }
 
     /**

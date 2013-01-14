@@ -154,7 +154,8 @@ public class DumpDbAdapter implements IDatabaseAdapter {
 
     @Override
     public Connection getConnection() {
-        throw new UnsupportedOperationException("Not supported yet.");
+//        throw new UnsupportedOperationException("Not supported yet.");
+        return this.connection;
     }
 
     @Override

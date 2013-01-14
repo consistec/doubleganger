@@ -347,7 +347,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void commit() throws DatabaseAdapterException {
         try {
-            connection.commit();
+            getConnection().commit();
         } catch (SQLException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.COMMITTING_THE_CONNECTION_FAILS), e);
         }
@@ -365,7 +365,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         ResultSet columns = null; //NOSONAR
         List<String> columnList;
         try {
-            columns = connection.getMetaData().getColumns(connection.getCatalog(), getSchemaOfConnection(),
+            columns = getConnection().getMetaData().getColumns(getConnection().getCatalog(), getSchemaOfConnection(),
                 tableName, null);
             columnList = CollectionsUtil.newArrayList();
             while (columns.next()) {
@@ -384,7 +384,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         Statement stmt = null; //NOSONAR
         try {
-            stmt = connection.createStatement();
+            stmt = getConnection().createStatement();
             removeExistentTablesFromSchema(schema);
             String sqlSchema = getSchemaConverter().toSQL(schema);
 
@@ -451,7 +451,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         ResultSet tables = null; //NOSONAR
         List<String> databaseTables = CollectionsUtil.newArrayList();
         try {
-            tables = connection.getMetaData().getTables(connection.getCatalog(), getSchemaOfConnection(), null,
+            tables = getConnection().getMetaData().getTables(getConnection().getCatalog(), getSchemaOfConnection(), null,
                 new String[]{"TABLE"});
             // create a list with all table names from database
             while (tables.next()) {
@@ -472,17 +472,17 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
             LOGGER.debug("looking for primary key in the meta data table with catalog: {}, schema: {} and table: {}",
-                connection.getCatalog(), getSchemaOfConnection(), table);
+                getConnection().getCatalog(), getSchemaOfConnection(), table);
 
             // look for primary key with lowercase table name
-            primaryKeys = connection.getMetaData().getPrimaryKeys(connection.getCatalog(),
+            primaryKeys = getConnection().getMetaData().getPrimaryKeys(getConnection().getCatalog(),
                 getSchemaOfConnection(), table);
 
             if (primaryKeys.next()) {
                 return createColumnForPrimaryKey(primaryKeys, table);
             } else {
                 // some database store their values in uppercase
-                primaryKeys = connection.getMetaData().getPrimaryKeys(connection.getCatalog(),
+                primaryKeys = getConnection().getMetaData().getPrimaryKeys(getConnection().getCatalog(),
                     getSchemaOfConnection(), table.toUpperCase());
                 if (primaryKeys.next()) {
                     return createColumnForPrimaryKey(primaryKeys, table.toUpperCase());
@@ -505,7 +505,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         ResultSet columns = null;
         try {
-            columns = connection.getMetaData().getColumns(connection.getCatalog(), getSchemaOfConnection(), table,
+            columns = getConnection().getMetaData().getColumns(getConnection().getCatalog(), getSchemaOfConnection(), table,
                 null);
 
             while (columns.next()) {
@@ -546,7 +546,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
             // CALCULATE REVISION
             String mdTable;
-            stmt = connection.createStatement();
+            stmt = getConnection().createStatement();
 
             for (String table : CONF.getSyncTables()) {
                 mdTable = table + CONF.getMdTableSuffix();
@@ -595,7 +595,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         PreparedStatement updateStatement = null;
         try {
 
-            updateStatement = connection.prepareStatement(statement);
+            updateStatement = getConnection().prepareStatement(statement);
 
             if (isNullOrEmpty(mdv)) {
                 updateStatement.setNull(1, Types.VARCHAR);
@@ -630,7 +630,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            stmt = connection.prepareStatement(
+            stmt = getConnection().prepareStatement(
                 String.format("delete from %s where %s = ?", tableName, primaryKeyColumnName));
             stmt.setObject(1, primaryKey);
             if (stmt.executeUpdate() <= 0) {
@@ -664,7 +664,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            insertStatement = connection.prepareStatement(statement);
+            insertStatement = getConnection().prepareStatement(statement);
             insertStatement.setObject(1, pk);
             insertStatement.setString(2, mdv);
             if (rev == -1) {
@@ -712,7 +712,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            insertStatement = connection.prepareStatement(formattedStatement); //NOSONAR
+            insertStatement = getConnection().prepareStatement(formattedStatement); //NOSONAR
             int i = 1;
             for (Map.Entry<String, Object> column : data.entrySet()) {
                 insertStatement.setObject(i, column.getValue());
@@ -756,7 +756,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            updateStatement = connection.prepareStatement(formattedStatement); //NOSONAR
+            updateStatement = getConnection().prepareStatement(formattedStatement); //NOSONAR
             for (Map.Entry<String, Object> column : data.entrySet()) {
                 updateStatement.setObject(i, column.getValue());
                 i++;
@@ -788,7 +788,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         ResultSet rst = null; //NOSONAR
         try {
 
-            stmt = connection.prepareStatement(query);
+            stmt = getConnection().prepareStatement(query);
             stmt.setInt(1, rev);
             rst = stmt.executeQuery();
             callback.onSuccess(rst);
@@ -815,7 +815,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         ResultSet rst = null; //NOSONAR
         try {
 
-            stmt = connection.prepareStatement(query);
+            stmt = getConnection().prepareStatement(query);
             rst = stmt.executeQuery();
             callback.onSuccess(rst);
 
@@ -835,7 +835,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         PreparedStatement stmt = null;
         try {
 
-            stmt = connection.prepareStatement(statement);
+            stmt = getConnection().prepareStatement(statement);
             stmt.setInt(1, rev);
             stmt.setObject(2, pk);
             updateCount = stmt.executeUpdate();
@@ -860,7 +860,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            stmt = connection.prepareStatement(statement);
+            stmt = getConnection().prepareStatement(statement);
             LOGGER.debug("got statement from {}", statement);
             stmt.setObject(1, primaryKey);
             LOGGER.debug("set primary key {}", primaryKey);
@@ -885,7 +885,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
 
-            deleteStmt = connection.createStatement();
+            deleteStmt = getConnection().createStatement();
             String mdTable = tableName + CONF.getMdTableSuffix();
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
@@ -910,7 +910,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         ResultSet rows = null; //NOSONAR
         try {
 
-            stat = connection.prepareStatement(statement);
+            stat = getConnection().prepareStatement(statement);
             rows = stat.executeQuery();
             callback.onSuccess(rows);
 
@@ -925,8 +925,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public Schema getSchema() throws DatabaseAdapterException {
         try {
-            String catalog = connection.getCatalog();
-            DatabaseMetaData metaData = connection.getMetaData();
+            String catalog = getConnection().getCatalog();
+            DatabaseMetaData metaData = getConnection().getMetaData();
             return buildSchema(catalog, metaData);
         } catch (SQLException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_BUILD_SCHEMA), e);
@@ -1071,7 +1071,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     public String toString() {
         StringBuilder builder = new StringBuilder(getClass().getSimpleName());
         builder.append("{\nconnection");
-        builder.append(connection == null ? "null" : "initialized");
+        builder.append(getConnection() == null ? "null" : "initialized");
         builder.append(",\n connectionUrl=");
         builder.append(connectionUrl);
         builder.append(",\n driverName=");
