@@ -18,20 +18,19 @@ public class TestDatabase {
 
     private final SupportedDatabases supportedDb;
     private final String configFile;
-    private final String[] createQueries;
     private DumpDataSource serverDs, clientDs;
     private Connection serverConnection, clientConnection;
 
-    public TestDatabase(String configFile, DumpDataSource.SupportedDatabases supportedDb, String[] createQueries) {
+    public TestDatabase(String configFile, DumpDataSource.SupportedDatabases supportedDb) {
         this.configFile = configFile;
         this.supportedDb = supportedDb;
-        this.createQueries = createQueries;
     }
 
     public void init() throws SQLException {
         serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
-        clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
         serverConnection = serverDs.getConnection();
+        
+        clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
         clientConnection = clientDs.getConnection();
     }
 
@@ -60,16 +59,28 @@ public class TestDatabase {
         return supportedDb;
     }
 
-    public String[] getCreateQueries() {
-        return createQueries;
-    }
-
     public DumpDataSource getServerDs() {
         return serverDs;
     }
 
     public DumpDataSource getClientDs() {
         return clientDs;
+    }
+
+    public int[] dropTablesOnServer(String[] tables) throws SQLException {
+        return dropTables(ConnectionType.SERVER, tables);
+    }
+
+    public int[] dropTablesOnClient(String[] tables) throws SQLException {
+        return dropTables(ConnectionType.CLIENT, tables);
+    }
+
+    private int[] dropTables(final ConnectionType type, String[] tables) throws SQLException {
+        String[] queries = new String[tables.length];
+        for (int i = 0; i < tables.length; i++) {
+            queries[i] = String.format("drop table if exists %s", tables[i]);
+        }
+        return executeQueries(type, queries);
     }
 
     public int executeUpdateOnServer(String query) throws SQLException {
@@ -86,30 +97,6 @@ public class TestDatabase {
 
     public int[] executeQueriesOnClient(String[] queries) throws SQLException {
         return executeQueries(ConnectionType.CLIENT, queries);
-    }
-
-    public int[] dropTablesOnServer(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.SERVER, tables);
-    }
-
-    public int[] dropTablesOnClient(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.CLIENT, tables);
-    }
-
-    public void createTablesOnServer() throws SQLException {
-        executeQueries(ConnectionType.SERVER, createQueries);
-    }
-
-    public void createTablesOnClient() throws SQLException {
-        executeQueries(ConnectionType.CLIENT, createQueries);
-    }
-
-    private int[] dropTables(final ConnectionType type, String[] tables) throws SQLException {
-        String[] queries = new String[tables.length];
-        for (int i = 0; i < tables.length; i++) {
-            queries[i] = String.format("drop table if exists %s", tables[i]);
-        }
-        return executeQueries(type, queries);
     }
 
     private int[] executeQueries(final ConnectionType type, String[] queries) throws SQLException {

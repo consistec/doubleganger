@@ -196,6 +196,10 @@ public class TestScenario {
 
     @Override
     public String toString() {
+        return name + " - " + direction + ", " + strategy;
+    }
+
+    public String getLongDescription() {
         String result = "TestScenario '" + name + "': \n\tsteps= ";
         for (Map<ConnectionType, String> step : steps) {
             // there should be exactly one entry per step
