@@ -40,7 +40,7 @@ public class TestScenario {
     private final String name;
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
-    private final String expectedServerState, expectedClientState;
+    private String expectedServerState, expectedClientState;
     private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
     private DumpDataSource serverDs, clientDs;
     private Connection serverConnection, clientConnection;
@@ -48,13 +48,10 @@ public class TestScenario {
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
 
-    public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy,
-        String expectedServerState, String expectedClientState) {
+    public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
         this.direction = direction;
         this.strategy = strategy;
-        this.expectedServerState = expectedServerState;
-        this.expectedClientState = expectedClientState;
     }
 
     public String getName() {
@@ -76,6 +73,23 @@ public class TestScenario {
         Map<ConnectionType, String> step = new EnumMap<ConnectionType, String>(ConnectionType.class);
         step.put(side, query);
         steps.add(step);
+        return this;
+    }
+
+    /**
+     * A mask defines the expected result after the sync.
+     * - 'S' codes one row which originates from the server
+     * - 'C' from the client
+     * - a blank space counts as a deleted row:
+     *    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
+     */
+    public TestScenario expectServer(String serverMask) {
+        this.expectedServerState = serverMask;
+        return this;
+    }
+
+    public TestScenario expectClient(String clientMask) {
+        this.expectedClientState = clientMask;
         return this;
     }
 
@@ -188,7 +202,7 @@ public class TestScenario {
             serverResultSet = serverStmt.executeQuery(selectQuery);
             flatServerRs = ResultSetHelper.resultSetToString(serverResultSet);
 
-            Assert.assertEquals("Server state is invalid", expectedFlatServerResultSets[i], flatServerRs);
+            Assert.assertEquals("Server state is invalid.", expectedFlatServerResultSets[i], flatServerRs);
 
 //            serverResultSet.last();
 //            Assert.assertEquals("Wrong row count on server", expectedServerState.length(), serverResultSet.getRow());
@@ -209,7 +223,7 @@ public class TestScenario {
             clientResultSet = clientStmt.executeQuery(selectQuery);
             flatClientRs = ResultSetHelper.resultSetToString(clientResultSet);
 
-            Assert.assertEquals("Client state is invalid", expectedFlatClientResultSets[i], flatClientRs);
+            Assert.assertEquals("Client state is invalid.", expectedFlatClientResultSets[i], flatClientRs);
 
 //            clientResultSet.last();
 //            Assert.assertEquals("Wrong row count on client", expectedClientState.length(), clientResultSet.getRow());
