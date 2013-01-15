@@ -377,6 +377,35 @@ public class SynchronizationIT {
                     .expectServer("invalid")
                     .expectClient("invalid")},
                 //
+                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CS")},
+                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CS")},
+                {new TestScenario("ServerMod ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CC")},
+                {new TestScenario("ServerMod ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CS")},
+                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CS")},
+                {new TestScenario("* ServerMod ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                {new TestScenario("* ServerMod ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                    .addStep(SERVER, updateRow2b)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                //
                 {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, SERVER_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(SERVER, updateRow3)
@@ -487,9 +516,154 @@ public class SynchronizationIT {
                     .expectServer("invalid")
                     .expectClient("invalid")},
                 {new TestScenario("* ServerMod ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(CLIENT, deleteRow2)
                     .addStep(SERVER, updateRow2b)
+                    .addStep(CLIENT, deleteRow2)
                     .expectServer("invalid")
-                    .expectClient("invalid")},});
+                    .expectClient("invalid")},
+                //
+                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("CC")},
+                {new TestScenario("ServerDel ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("* ServerDel ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                {new TestScenario("* ServerDel ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                //
+                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, SERVER_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("SSC")
+                    .expectClient("CCC")},
+                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("SSC")
+                    .expectClient("CCC")},
+                {new TestScenario("ServerDel ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("SSC")
+                    .expectClient("CCC")},
+                {new TestScenario("ServerDel ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("SS")
+                    .expectClient("CCC")},
+                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("SSC")
+                    .expectClient("CCC")},
+                {new TestScenario("* ServerDel ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                {new TestScenario("* ServerDel ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                    .addStep(SERVER, insertRow3)
+                    .addStep(SERVER, deleteRow3)
+                    .addStep(CLIENT, insertRow3)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                //
+                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("SC")
+                    .expectClient("CC")},
+                {new TestScenario("ServerDel ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("SC")
+                    .expectClient("CC")},
+                {new TestScenario("ServerDel ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, FIRE_EVENT)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("* ServerDel ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                {new TestScenario("* ServerDel ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, updateRow2b)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                //
+                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, FIRE_EVENT)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("S")
+                    .expectClient("C")},
+                {new TestScenario("* ServerDel ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+                {new TestScenario("* ServerDel ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                    .addStep(SERVER, deleteRow2)
+                    .addStep(CLIENT, deleteRow2)
+                    .expectServer("invalid")
+                    .expectClient("invalid")},
+        });
     }
 }
