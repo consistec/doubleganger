@@ -1,8 +1,8 @@
 package de.consistec.syncframework.common.data;
 
-import static junit.framework.Assert.assertNotSame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import de.consistec.syncframework.common.TestBase;

@@ -1,7 +1,7 @@
 package de.consistec.syncframework.common.data.schema;
 
-import static junit.framework.Assert.assertNotSame;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 import de.consistec.syncframework.common.TestBase;
 

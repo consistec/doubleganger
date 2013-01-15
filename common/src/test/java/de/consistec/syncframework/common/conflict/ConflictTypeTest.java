@@ -7,7 +7,7 @@ import static de.consistec.syncframework.common.conflict.ConflictType.CLIENT_DEL
 import static de.consistec.syncframework.common.conflict.ConflictType.CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD;
 import static de.consistec.syncframework.common.conflict.ConflictType.CLIENT_MOD_SERVER_DEL;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import de.consistec.syncframework.common.TestBase;
 import de.consistec.syncframework.common.client.ConflictHandlingData;
