@@ -147,7 +147,7 @@ public class ServerHashProcessor {
 
         LOGGER.debug("processResultSets called");
         if (hashRst.next()) {
-            int localRev = hashRst.getInt("rev");
+//            int localRev = hashRst.getInt("rev");
 
             // normally the add add conflict cannot happen because the client refreshes his revision through server change set.
             // also normally the out of date conflict cannot happen because the client revision is checked before

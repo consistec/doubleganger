@@ -117,9 +117,9 @@ public class Change implements Serializable {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "{ mdEntry="
-            + mdEntry == null ? "null" : mdEntry.toString()
+            + mdEntry.toString()
             + ", rowData= "
-            + rowData == null ? "null" : rowData.toString()
+            + rowData.toString()
             + " }";
     }
 

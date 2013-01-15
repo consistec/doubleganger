@@ -83,6 +83,7 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <skipITs>${skipItTests}</skipITs>
                     <includes>
+                        <include>**/IT*.java</include>
                         <include>**/it_sqlite/IT*.java</include>
                     </includes>
                 </configuration>
@@ -110,6 +111,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <includes>
+                                <include>**/IT*.java</include>
                                 <include>**/it_postgres/IT*.java</include>
                             </includes>
                         </configuration>
@@ -260,6 +262,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <includes>
+                                <include>**/IT*.java</include>
                                 <include>**/it_mysql/IT*.java</include>
                             </includes>
                         </configuration>

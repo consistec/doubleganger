@@ -16,6 +16,7 @@ import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.impl.ResultSetHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * @date 19.04.12 15:47
  * @since 0.0.1-SNAPSHOT
  */
-public abstract class AbstractSyncTest implements ISyncTests {
+public abstract class AbstractSyncTest implements ISyncIntegrationTest {
 
     /**
      * Test watcher, with methods invoked before and after of each tests.
@@ -179,7 +180,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
 
             LOGGER.info("Creating tables...");
 
-            helper.createAndExecuteBatch(SERVER, getCreateTableStatement());
+            helper.createAndExecuteBatch(SERVER, getCreateTableQueries());
 
             syncWithoutCompare(SERVER_WINS);
 
@@ -193,7 +194,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
     /**
      * @return CREATE TABLE sql statements for test tables.
      */
-    protected String[] getCreateTableStatement() {
+    protected String[] getCreateTableQueries() {
         return new String[]{
             "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" VARCHAR (30000),\"description\" VARCHAR (30000));",
             "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
@@ -451,8 +452,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
         SyncException, SQLException {
         Map<String, String> statementsToExecute = initTestTableStatementMap();
 
-        helper.executeStatementAndCompareResults(statementsToExecute,
-            new ResultSetComparator(), CONF, type);
+        helper.executeStatementAndCompareResults(statementsToExecute, CONF, type);
     }
 
     /**
@@ -462,8 +462,7 @@ public abstract class AbstractSyncTest implements ISyncTests {
         SyncException, SQLException {
         Map<String, String> statementsToExecute = initTestTableStatementMap();
 
-        helper.executeStatementAndCompareResults(statementsToExecute,
-            new ResultSetComparator(), CONF, type, type2);
+        helper.executeStatementAndCompareResults(statementsToExecute, CONF, type, type2);
     }
 
     @Override

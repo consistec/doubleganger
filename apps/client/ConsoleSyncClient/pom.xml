@@ -11,7 +11,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <license.licenseName>gpl_v3</license.licenseName> <!-- or change "gpl_v3" to "consistec" -->
+        <license.licenseName>gpl_v3</license.licenseName>
+        <!-- or change "gpl_v3" to "consistec" -->
         <license.licenseResolver>file://${basedir}/src/license</license.licenseResolver>
     </properties>
 
@@ -88,7 +89,7 @@
                         <configuration>
                             <transformers>
                                 <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>de.consistec.syncframework.client.ConsoleSyncClient</mainClass>
                                 </transformer>
                             </transformers>
@@ -122,10 +123,11 @@
                 <configuration>
                     <thirdPartyFilename>${project.artifactId}_licenses.txt</thirdPartyFilename>
                     <outputDirectory>${project.basedir}/target</outputDirectory>
+                    <useMissingFile>true</useMissingFile>
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
                     <!-- Third party licenses not allowed to use in syncframework project separated by | -->
-                    <excludedLicenses>The GNU General Public License, Version 2 </excludedLicenses>
+                    <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
                     <excludedScopes>test</excludedScopes>
