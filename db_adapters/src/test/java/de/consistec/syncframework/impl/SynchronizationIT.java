@@ -129,7 +129,7 @@ public class SynchronizationIT {
                 // First the scenario's name, then:      direction,     strategy, expected rows on server, expected rows on client
                 // - 'S' codes one row which originates from the server
                 // - 'C' from the client
-                // - a blank space counts as a deleted row:
+                // - ' ' a blank space counts as a deleted row:
                 //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
                 {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
                     .expectServer("SS")
@@ -344,28 +344,28 @@ public class SynchronizationIT {
                 {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, SERVER_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
+                    .expectServer("S S")
+                    .expectClient("C S")},
                 {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, CLIENT_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
+                    .expectServer("S S")
+                    .expectClient("C S")},
                 {new TestScenario("ServerAdd ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
+                    .expectServer("S S")
                     .expectClient("C")},
                 {new TestScenario("ServerAdd ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
                     .expectServer("SSS")
-                    .expectClient("ServerS ClientC")},
+                    .expectClient("C S")},
                 {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
+                    .expectServer("S S")
+                    .expectClient("C S")},
                 {new TestScenario("* ServerAdd ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
                     .addStep(SERVER, insertRow3)
                     .addStep(CLIENT, deleteRow2)
@@ -465,7 +465,7 @@ public class SynchronizationIT {
                     .addStep(SERVER, updateRow2b)
                     .addStep(CLIENT, deleteRow2)
                     .expectServer("S")
-                    .expectClient("CS")},
+                    .expectClient("C")},
                 {new TestScenario("ServerMod ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
                     .addStep(SERVER, updateRow2b)
                     .addStep(CLIENT, deleteRow2)
@@ -490,7 +490,6 @@ public class SynchronizationIT {
                     .addStep(CLIENT, deleteRow2)
                     .addStep(SERVER, updateRow2b)
                     .expectServer("invalid")
-                    .expectClient("invalid")},
-            });
+                    .expectClient("invalid")},});
     }
 }

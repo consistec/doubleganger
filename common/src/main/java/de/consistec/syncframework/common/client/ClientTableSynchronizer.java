@@ -165,7 +165,8 @@ public class ClientTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        if (StringUtil.isNullOrEmpty(deletedRows.getString(MDV_COLUMN_NAME))) {
+                        String mdvValue = deletedRows.getString(MDV_COLUMN_NAME);
+                        if (StringUtil.isNullOrEmpty(mdvValue)) {
                             // this row has already been deleted
                             continue;
                         }
@@ -175,6 +176,7 @@ public class ClientTableSynchronizer {
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
                         mdEntry.setMdv("");
+                        mdEntry.setDeleted();
                         Change change = new Change();
                         change.setMdEntry(mdEntry);
 //                        change.setRowData(rowData);

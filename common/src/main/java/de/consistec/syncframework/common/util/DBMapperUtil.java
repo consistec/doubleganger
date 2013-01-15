@@ -70,9 +70,8 @@ public final class DBMapperUtil {
                 }
                 tmpEntry.setMdv(mdv);
             } else if ("f".equalsIgnoreCase(columnName)) {
-                tmpEntry.setAdded();
-//                // do nothing, we don't want to sync the f flag
-//                continue;
+                // do nothing, we don't want to sync the f flag
+                continue;
             }
         }
         return tmpEntry;
