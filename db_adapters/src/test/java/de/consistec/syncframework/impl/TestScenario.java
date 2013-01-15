@@ -77,17 +77,24 @@ public class TestScenario {
     }
 
     /**
-     * A mask defines the expected result after the sync.
-     * - 'S' codes one row which originates from the server
-     * - 'C' from the client
-     * - a blank space counts as a deleted row:
-     *    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
+     * The mask defines the expected result after the sync.<br/>
+     * - 'S' codes a row originating from the server <br/>
+     * - 'C' from the client <br/>
+     * - ' ' a blank space counts as a deleted row: <br/>
+     * E.g: "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
      */
     public TestScenario expectServer(String serverMask) {
         this.expectedServerState = serverMask;
         return this;
     }
 
+    /**
+     * The mask defines the expected result after the sync.<br/>
+     * - 'S' codes a row originating from the server <br/>
+     * - 'C' from the client <br/>
+     * - ' ' a blank space counts as a deleted row: <br/>
+     * E.g: "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
+     */
     public TestScenario expectClient(String clientMask) {
         this.expectedClientState = clientMask;
         return this;
@@ -169,9 +176,9 @@ public class TestScenario {
     }
 
     public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
+        TableSyncStrategies strategies = new TableSyncStrategies();
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
-        TableSyncStrategies strategies = new TableSyncStrategies();
         for (int i = 0; i < tableNames.length; i += 2) {
             strategies.addSyncStrategyForTable(tableNames[i], tableSyncStrategy);
         }
