@@ -26,9 +26,11 @@ import de.consistec.syncframework.impl.i18n.Infos;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.List;
 import java.util.Properties;
 import org.apache.http.Header;
@@ -240,9 +242,14 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
                 }
             }
         }
-        String tmp = sb.toString();
-        LOGGER.debug("Server response size (in bytes): {}", tmp.getBytes());
-        return tmp;
+        String decodedResponse;
+        try {
+            decodedResponse = URLDecoder.decode(sb.toString(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new SyncException(e.getLocalizedMessage(), e);
+        }
+        LOGGER.debug("Server response size (in bytes): {}", decodedResponse.getBytes());
+        return decodedResponse;
     }
     //</editor-fold>
 }

@@ -24,6 +24,7 @@ import de.consistec.syncframework.impl.i18n.Infos;
 import de.consistec.syncframework.impl.i18n.Warnings;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -106,28 +107,34 @@ public class HttpServletProcessor {
         if (!StringUtil.isNullOrEmpty(req.getParameter(ACTION.name()))) {
 
             SyncAction action = SyncAction.fromStringName(req.getParameter(ACTION.name()));
+            String response;
 
             if (action != null) {
 
                 switch (action) {
                     case GET_SCHEMA:
-                        executeGetSchema(resp);
+                        response = executeGetSchema(resp);
                         break;
                     case GET_CHANGES:
-                        executeGetChanges(req, resp);
+                        response = executeGetChanges(req, resp);
                         break;
 
                     case APPLY_CHANGES:
-                        executeApplyChanges(req, resp);
+                        response = executeApplyChanges(req, resp);
                         break;
                     default:
                         throw new UnsupportedOperationException(read(Errors.SERVER_UNSUPPORTED_ACTION));
+                }
+                if (response != null) {
+                    String encodedResponse = URLEncoder.encode(response, "UTF-8");
+                    resp.getWriter().print(encodedResponse);
+                    resp.getWriter().flush();
                 }
             }
         }
     }
 
-    private void executeApplyChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException,
+    private String executeApplyChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException,
         SerializationException {
 
         final String changes = req.getParameter(CHANGES.name());
@@ -143,9 +150,7 @@ public class HttpServletProcessor {
                 LOGGER.debug("<{}>", deserializedChanges);
                 int nextServerRevisionSendToClient = serverContext.applyChanges(deserializedChanges, clientRevision);
                 LOGGER.info(Infos.NEW_SERVER_REVISION, nextServerRevisionSendToClient);
-
-                resp.getWriter().print(String.valueOf(nextServerRevisionSendToClient));
-                resp.getWriter().flush();
+                return String.valueOf(nextServerRevisionSendToClient);
             } catch (SyncException e) {
                 if (e instanceof ServerStatusException) {
                     ServerStatusException ex = (ServerStatusException) e;
@@ -157,12 +162,14 @@ public class HttpServletProcessor {
                         LOGGER.warn(read(Errors.CANT_APPLY_CHANGES), e);
                     }
                     resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+                    return null;
                 }
             }
         }
+        return null;
     }
 
-    private void executeGetChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    private String executeGetChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         try {
             final String tmpClientRev = req.getParameter(REVISION.name());
@@ -181,37 +188,31 @@ public class HttpServletProcessor {
                 throw new SyncException(read(Errors.CANT_GETCHANGES_NO_CLIENT_REVISION));
             }
 
-            resp.getWriter().print(serializationAdapter.serializeChangeList(changesTuple).toString());
-            resp.getWriter().flush();
+            return serializationAdapter.serializeChangeList(changesTuple).toString();
 
         } catch (SyncException e) {
             LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-        } catch (IOException e) {
-            LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+            return null;
         } catch (SerializationException e) {
             LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+            return null;
         }
     }
 
-    private void executeGetSchema(HttpServletResponse resp) throws IOException {
+    private String executeGetSchema(HttpServletResponse resp) throws IOException {
         try {
-            resp.getWriter().print(
-                serializationAdapter.serializeSchema(serverContext.getSchema()).toString());
-            resp.getWriter().flush();
+            return serializationAdapter.serializeSchema(serverContext.getSchema()).toString();
         } catch (SyncException e) {
             LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+            return null;
         } catch (SerializationException e) {
             LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-        } catch (IOException e) {
-            LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+            return null;
         }
-
     }
     //</editor-fold>
 }
