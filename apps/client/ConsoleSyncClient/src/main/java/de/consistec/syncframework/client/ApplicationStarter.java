@@ -50,6 +50,7 @@ import org.apache.log4j.SimpleLayout;
 /**
  * Date: 10.07.12 Time: 14:19
  * <p/>
+ *
  * @author Markus
  * @since 0.0.1-SNAPSHOT
  */
@@ -102,16 +103,17 @@ public class ApplicationStarter {
                 SyncContext.client().synchronize();
             }
 
-        } catch (ParseException | IOException ex) {
+        } catch (ParseException pex) {
+            printHelp(pex.getLocalizedMessage());
+        } catch (IOException ex) {
             printHelp(ex.getLocalizedMessage());
         }
     }
 
-    /**
-     *
-     * @param threadNumber
-     * @throws DatabaseAdapterException
-     */
+//    /**
+//     * @param threadNumber
+//     * @throws DatabaseAdapterException
+//     */
 //    private void startsAppInMultithreadinMode(int threadNumber) throws DatabaseAdapterException {
 //
 //        IServerSyncProvider serverProxy = null;
@@ -161,35 +163,34 @@ public class ApplicationStarter {
 //
 //        return changeSet;
 //    }
-
     private void createOptions() {
 
         options.addOption(OptionBuilder
-                .withLongOpt("settings")
-                .withDescription("Properties file with synchronisation settings")
-                .isRequired(true)
-                .hasArg(true)
-                .create(OPTION_SETTINGS_FILE));
+            .withLongOpt("settings")
+            .withDescription("Properties file with synchronisation settings")
+            .isRequired(true)
+            .hasArg(true)
+            .create(OPTION_SETTINGS_FILE));
         options.addOption(OptionBuilder
-                .withLongOpt("server-wins")
-                .withDescription("Set to let the server win on conflicts")
-                .hasArg(false)
-                .create());
+            .withLongOpt("server-wins")
+            .withDescription("Set to let the server win on conflicts")
+            .hasArg(false)
+            .create());
         options.addOption(OptionBuilder
-                .withLongOpt("client-wins")
-                .withDescription("Set to let the client win on conflicts")
-                .hasArg(false)
-                .create());
+            .withLongOpt("client-wins")
+            .withDescription("Set to let the client win on conflicts")
+            .hasArg(false)
+            .create());
 //        options.addOption(OptionBuilder.withLongOpt("numbers of client")
 //                .withDescription("starts the client for multithreading mode")
 //                .isRequired(false)
 //                .hasArg(true)
 //                .create(OPTION_MULTITHREADED_MODE));
         options.addOption(OptionBuilder.withLongOpt("output")
-                .withDescription("Output file. If not provided, all output will be printed to console")
-                .isRequired(false)
-                .hasArg(true)
-                .create(OPTION_OUPTUT_FILE));
+            .withDescription("Output file. If not provided, all output will be printed to console")
+            .isRequired(false)
+            .hasArg(true)
+            .create(OPTION_OUPTUT_FILE));
 
     }
 
@@ -198,7 +199,7 @@ public class ApplicationStarter {
         System.out.println(msg);
         HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.printHelp("java -jar ConsoleSyncClient.jar <options>",
-                "This tool immediately starts a synchronization with the given properties.", options, "");
+            "This tool immediately starts a synchronization with the given properties.", options, "");
 
     }
 
