@@ -1,13 +1,14 @@
 package de.consistec.syncframework.impl.proxy.http_servlet;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
-import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.SyncContext;
+import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.ServerStatusException;
@@ -18,15 +19,12 @@ import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.common.util.StringUtil;
 import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
 import de.consistec.syncframework.impl.adapter.JSONSerializationAdapter;
-import de.consistec.syncframework.impl.commands.ApplyChangesCommand;
-import de.consistec.syncframework.impl.commands.GetChangesCommand;
-import de.consistec.syncframework.impl.commands.GetSchemaCommand;
-import de.consistec.syncframework.impl.commands.RequestCommand;
 import de.consistec.syncframework.impl.i18n.Errors;
+import de.consistec.syncframework.impl.i18n.Infos;
 import de.consistec.syncframework.impl.i18n.Warnings;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
@@ -121,7 +119,8 @@ public class HttpServletProcessor {
                     String response = command.execute(serverContext, serializationAdapter,
                         req.getParameter(REVISION.name()), req.getParameter(CHANGES.name()));
                     if (response != null) {
-                        resp.getWriter().print(response);
+						String encodedResponse = URLEncoder.encode(response, "UTF-8");
+                        resp.getWriter().print(encodedResponse);
                         resp.getWriter().flush();
                     }
                 } catch (SyncException e) {

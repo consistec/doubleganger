@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.net.URLDecoder;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,8 @@ public class ServletProcessorTest {
         processor.execute(requestMock, responseMock);
 
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-        Schema s = adapter.deserializeSchema(writer.toString());
+        String decodedResponse = URLDecoder.decode(writer.toString(), "UTF-8");
+        Schema s = adapter.deserializeSchema(decodedResponse);
         assertEquals(schema, s);
     }
 
@@ -130,7 +132,8 @@ public class ServletProcessorTest {
         processor.execute(requestMock, responseMock);
 
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-        Tuple<Integer, List<Change>> s = adapter.deserializeMaxRevisionAndChangeList(writer.toString());
+        String decodedResponse = URLDecoder.decode(writer.toString(), "UTF-8");
+        Tuple<Integer, List<Change>> s = adapter.deserializeMaxRevisionAndChangeList(decodedResponse);
         assertEquals(expectedChangeList, s.getValue2());
         assertEquals(0, s.getValue1().intValue());
     }
