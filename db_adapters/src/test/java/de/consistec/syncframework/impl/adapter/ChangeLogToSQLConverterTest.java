@@ -63,7 +63,7 @@ public class ChangeLogToSQLConverterTest extends TestBase {
             + "insert into categories_md (rev,mdv,pk,f) VALUES (1,'A52D87B86798B317A7C1C01837290D2F',5,0);\n"
             + "insert into categories_md (rev,mdv,pk,f) VALUES (1,'0D9F6F55D5BF5190D2B8C1105AE21325',6,0);\n";
         ISQLConverter converter = new ChangeLogToSQLConverter();
-        String sql = converter.fromChangelog(getStringFromXMLFile("client_data.xml"));
+        String sql = converter.fromChangelog(getStringFromXMLFile("client_data_log_converter_test.xml"));
         assertEquals(expected, sql);
     }
 
