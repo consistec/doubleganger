@@ -883,6 +883,8 @@ public final class SyncContext {
         public static <T extends IServerSyncProvider> T newInstance() throws SyncProviderInstantiationException {
 
             Class<? extends IServerSyncProvider> proxyClass = CONF.getServerProxy();
+            LOGGER.info("instantiate following proxy class: {}",
+                proxyClass == null ? "null" : proxyClass.getCanonicalName());
             checkState(proxyClass != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
             T instance;
             try {

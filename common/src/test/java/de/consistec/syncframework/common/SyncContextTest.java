@@ -40,6 +40,7 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
             final Config conf = Config.getInstance();
 
             conf.setServerDatabaseAdapter(DumpDbAdapter.class);
+            conf.setServerProxy(null);
 
             Class<Object> innerClass = Whitebox.getInnerClassType(SyncContext.class, "ServerProxyFactory");
             IllegalStateException stateEx = null;
@@ -64,8 +65,6 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
         assertTrue(
             "Returned Server Proxy implementation is different then the specified in framework configuration class",
             getClass().equals(resultClass));
-
-
     }
 
     //<editor-fold defaultstate="collapsed" desc="Methods from IServerSyncProvider interface" >
