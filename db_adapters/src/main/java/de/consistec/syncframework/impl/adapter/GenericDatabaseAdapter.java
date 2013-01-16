@@ -407,6 +407,12 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     }
 
+    /**
+     * Removes the tables that already exist in the schema to avoid duplication.
+     *
+     * @param schema schema
+     * @throws DatabaseAdapterException
+     */
     private void removeExistentTablesFromSchema(Schema schema) throws DatabaseAdapterException {
         List<String> databaseTables = getTableNamesFromDatabase();
 

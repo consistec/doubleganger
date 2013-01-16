@@ -51,9 +51,9 @@ public class SynchronizationIT {
     protected static String deleteRow3 = "DELETE FROM categories WHERE id = 3";
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
     protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
+        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
         "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
+        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
         "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
         "INSERT INTO categories (id, name, description) VALUES (1, 'Beverages', 'Soft drinks')",
         "INSERT INTO categories (id, name, description) VALUES (2, 'Condiments', 'Sweet and ')",

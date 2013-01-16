@@ -23,11 +23,11 @@ public final class MessageReader {
      * Default conveyor is specified as field to avoid unnecessary searches through the map.
      */
     private static final IMessageConveyor DEFAULT_MESSAGE_CONVEYOR = DefaultMessageConveyorSearcher.search();
-    private static Map<Locale, IMessageConveyor> cache = newConcurrentHashMap(5);
+    private static final Map<Locale, IMessageConveyor> CACHE = newConcurrentHashMap(5);
 //</editor-fold>
 
     static {
-        cache.put(Locale.getDefault(), DEFAULT_MESSAGE_CONVEYOR);
+        CACHE.put(Locale.getDefault(), DEFAULT_MESSAGE_CONVEYOR);
     }
 
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
