@@ -1,5 +1,6 @@
 package de.consistec.syncframework.impl.adapter;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +19,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -80,10 +80,11 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -116,10 +117,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -148,10 +149,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -178,10 +179,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -210,10 +211,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -242,10 +243,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof UniqueConstraintException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -275,10 +276,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 
@@ -309,10 +310,10 @@ public class PostgresThrowsExceptionTest {
             if (e instanceof TransactionAbortedException) {
                 throw e;
             } else {
-                Assert.fail("There should be a TransactionAbortedException thrown");
+                fail("There should be a TransactionAbortedException thrown");
             }
         } catch (SQLException e) {
-            Assert.fail("There should be a TransactionAbortedException thrown");
+            fail("There should be a TransactionAbortedException thrown");
         }
     }
 }

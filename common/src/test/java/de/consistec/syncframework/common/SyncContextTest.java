@@ -35,24 +35,32 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
     @Test
     public void testProxyNewInstance() throws Exception {
 
-        final Config conf = Config.getInstance();
-
-        conf.setServerDatabaseAdapter(DumpDbAdapter.class);
-
-        Class<Object> innerClass = Whitebox.getInnerClassType(SyncContext.class, "ServerProxyFactory");
-        IllegalStateException stateEx = null;
+        Class<?> resultClass = null;
         try {
-            Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
-        } catch (IllegalStateException ex) {
-            stateEx = ex;
+            final Config conf = Config.getInstance();
+
+            conf.setServerDatabaseAdapter(DumpDbAdapter.class);
+
+            Class<Object> innerClass = Whitebox.getInnerClassType(SyncContext.class, "ServerProxyFactory");
+            IllegalStateException stateEx = null;
+            try {
+                Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
+            } catch (IllegalStateException ex) {
+                stateEx = ex;
+            }
+
+            // should return default provider, no proxy.
+            assertNotNull("When no server proxy is configured, IllegalStateException should be thrown", stateEx);
+
+            // setting custom proxy class
+            conf.setServerProxy(getClass());
+
+            resultClass = Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
+        } catch (Exception e) {
+            LOGGER.error(
+                e.getLocalizedMessage());  //To change body of catch statement use File | Settings | File Templates.
+            throw e;
         }
-
-        // should return default provider, no proxy.
-        assertNotNull("When no server proxy is configured, IllegalStateException should be thrown", stateEx);
-
-        // setting custom proxy class
-        conf.setServerProxy(getClass());
-        Class<?> resultClass = Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
         assertTrue(
             "Returned Server Proxy implementation is different then the specified in framework configuration class",
             getClass().equals(resultClass));
