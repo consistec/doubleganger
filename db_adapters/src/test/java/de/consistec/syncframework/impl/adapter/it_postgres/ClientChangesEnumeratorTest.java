@@ -6,6 +6,7 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
+import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientChangesEnumerator;
@@ -14,6 +15,7 @@ import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.server.ServerChangesEnumerator;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
@@ -40,22 +42,6 @@ import org.slf4j.LoggerFactory;
 @Ignore
 public class ClientChangesEnumeratorTest extends AbstractSyncTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientChangesEnumeratorTest.class.getCanonicalName());
 
     public static final String CONFIG_FILE = "/config_postgre.properties";
@@ -64,17 +50,8 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         ConnectionType.CLIENT);
     protected static final DumpDataSource serverDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
         ConnectionType.SERVER);
-
-    /**
-     * Jdbc connection for client database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection clientConnection;
-    /**
-     * Jdbc connection for server database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection serverConnection;
+    private List<Change> clientChanges;
+    private TableSyncStrategies tableStrategies;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -126,86 +103,26 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         }
     }
 
-    private List<Change> testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws SyncException,
-        ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category8_b_insert.xml";
-        String resource2 = "category8_a_insert.xml";
-        IDatabaseAdapter adapter = null;
-        List<Change> clientChanges = null;
-
-        try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
-
-            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-
-//            TableSyncStrategies strategies = new TableSyncStrategies();
-//            strategies.addSyncStrategyForTable();
-
-            Config configInstance = Config.getInstance();
-            configInstance.setConflictStrategy(strategy);
-            configInstance.setSyncDirection(direction);
-            ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter,
-                new TableSyncStrategies());
-
-            clientChanges = clientChangesEnumerator.getChanges();
-
-        } finally {
-            if (adapter != null) {
-                if (adapter.getConnection() != null) {
-                    adapter.getConnection().close();
-                }
-            }
-        }
-        return clientChanges;
-    }
-
-    private List<Change> testGetChangesPerTable(ConflictStrategy strategy, SyncDirection direction) throws
-        SyncException,
-        ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category9_b_insert.xml";
-        String resource2 = "category9_a_insert.xml";
-        IDatabaseAdapter adapter = null;
-        List<Change> clientChanges = null;
-
-        try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
-
-            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-
-            TableSyncStrategies strategies = new TableSyncStrategies();
-            TableSyncStrategy tablsSyncStrategy = new TableSyncStrategy(direction, strategy);
-            strategies.addSyncStrategyForTable("categories", tablsSyncStrategy);
-
-            ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter, strategies);
-
-            clientChanges = clientChangesEnumerator.getChanges();
-
-        } finally {
-            if (adapter != null) {
-                if (adapter.getConnection() != null) {
-                    adapter.getConnection().close();
-                }
-            }
-        }
-        return clientChanges;
-    }
-
     @Test
     public void getChangesServerToClient() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException
+        SQLException {
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
 
-    {
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.size() == 0);
+        tableStrategies = setGlobalStrategy(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
+        clientChanges = getChanges(tableStrategies);
+
+        assertTrue(clientChanges.isEmpty());
     }
 
     @Test
     public void getChangesClientToServer() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
+
+        tableStrategies = setGlobalStrategy(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        clientChanges = getChanges(tableStrategies);
+
         assertTrue(clientChanges.size() == 1);
     }
 
@@ -213,17 +130,22 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesBidirectional() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
+
+        tableStrategies = setGlobalStrategy(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        clientChanges = getChanges(tableStrategies);
+
         assertTrue(clientChanges.size() == 1);
     }
 
     @Test
     public void getChangesServerToClientPerTable() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException
+        SQLException {
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
 
-    {
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
-            SyncDirection.SERVER_TO_CLIENT);
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
+        clientChanges = getChanges(tableStrategies);
+
         assertTrue(clientChanges.size() == 1);
     }
 
@@ -231,8 +153,11 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesClientToServerPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
-            SyncDirection.CLIENT_TO_SERVER);
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
+
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        clientChanges = getChanges(tableStrategies);
+
         assertTrue(clientChanges.size() == 2);
     }
 
@@ -240,7 +165,45 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesBidirectionalPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
+
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        clientChanges = getChanges(tableStrategies);
+
         assertTrue(clientChanges.size() == 2);
+    }
+
+    private TableSyncStrategies setStrategyForTable(String tableName, ConflictStrategy strategy, SyncDirection direction) {
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        TableSyncStrategy tablsSyncStrategy = new TableSyncStrategy(direction, strategy);
+        strategies.addSyncStrategyForTable(tableName, tablsSyncStrategy);
+        return strategies;
+    }
+
+    private TableSyncStrategies setGlobalStrategy(ConflictStrategy conflictStrategy, SyncDirection syncDirection) {
+        Config configInstance = Config.getInstance();
+        configInstance.setConflictStrategy(conflictStrategy);
+        configInstance.setSyncDirection(syncDirection);
+        return new TableSyncStrategies();
+    }
+
+    private List<Change> getChanges(TableSyncStrategies strategies)
+        throws SyncException, ContextException, SQLException, DatabaseAdapterException {
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
+
+            ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter, strategies);
+
+            return clientChangesEnumerator.getChanges();
+
+        } finally {
+            if (adapter != null) {
+                if (adapter.getConnection() != null) {
+                    adapter.getConnection().close();
+                }
+            }
+        }
     }
 }

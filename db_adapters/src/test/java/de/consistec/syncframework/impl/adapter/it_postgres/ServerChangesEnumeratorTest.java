@@ -26,7 +26,6 @@ import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,41 +39,14 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerChangesEnumeratorTest extends AbstractSyncTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerChangesEnumeratorTest.class.getCanonicalName());
-
     public static final String CONFIG_FILE = "/config_postgre.properties";
-
     protected static final DumpDataSource clientDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
         ConnectionType.CLIENT);
     protected static final DumpDataSource serverDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
         ConnectionType.SERVER);
-
-    /**
-     * Jdbc connection for client database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection clientConnection;
-    /**
-     * Jdbc connection for server database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection serverConnection;
+    private Tuple<Integer, List<Change>> serverChanges;
+    private TableSyncStrategies tableStrategies;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -97,11 +69,6 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
         return clientConnection;
     }
 
-    /**
-     * Closes server and client connection.
-     *
-     * @throws java.sql.SQLException
-     */
     @AfterClass
     public static void tearDownClass() throws SQLException {
 
@@ -126,77 +93,13 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
         }
     }
 
-    private Tuple<Integer, List<Change>> testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws
-        SyncException,
-        ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category8_b_insert.xml";
-        String resource2 = "category8_a_insert.xml";
-        IDatabaseAdapter adapter = null;
-        Tuple<Integer, List<Change>> serverChanges = null;
-
-        try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
-
-            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
-            Config configInstance = Config.getInstance();
-            configInstance.setConflictStrategy(strategy);
-            configInstance.setSyncDirection(direction);
-            ServerChangesEnumerator serverChangesEnumerator = new ServerChangesEnumerator(adapter,
-                new TableSyncStrategies());
-
-            serverChanges = serverChangesEnumerator.getChanges(1);
-
-        } finally {
-            if (adapter != null) {
-                if (adapter.getConnection() != null) {
-                    adapter.getConnection().close();
-                }
-            }
-        }
-        return serverChanges;
-    }
-
-    private Tuple<Integer, List<Change>> testGetChangesPerTable(ConflictStrategy strategy, SyncDirection direction
-    ) throws
-        SyncException,
-        ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category9_b_insert.xml";
-        String resource2 = "category9_a_insert.xml";
-        IDatabaseAdapter adapter = null;
-        Tuple<Integer, List<Change>> serverChanges = null;
-
-        try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
-
-            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
-
-            TableSyncStrategies strategies = new TableSyncStrategies();
-            TableSyncStrategy tablsSyncStrategy = new TableSyncStrategy(direction, strategy);
-            strategies.addSyncStrategyForTable("categories", tablsSyncStrategy);
-
-            ServerChangesEnumerator serverChangesEnumerator = new ServerChangesEnumerator(adapter, strategies);
-
-            serverChanges = serverChangesEnumerator.getChanges(1);
-
-        } finally {
-            if (adapter != null) {
-                if (adapter.getConnection() != null) {
-                    adapter.getConnection().close();
-                }
-            }
-        }
-        return serverChanges;
-    }
-
     @Test
     public void getChangesServerToClient() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException
+        SQLException {
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
 
-    {
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesGlobal(ConflictStrategy.SERVER_WINS,
-            SyncDirection.SERVER_TO_CLIENT);
+        tableStrategies = setGlobalStrategy(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
+        serverChanges = getChanges(tableStrategies);
 
         assertTrue(serverChanges.getValue2().size() == 1);
         assertTrue(serverChanges.getValue1() == 3);
@@ -206,10 +109,12 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesClientToServer() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS,
-            SyncDirection.CLIENT_TO_SERVER);
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
 
-        assertTrue(serverChanges.getValue2().size() == 0);
+        tableStrategies = setGlobalStrategy(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        serverChanges = getChanges(tableStrategies);
+
+        assertTrue(serverChanges.getValue2().isEmpty());
         assertTrue(serverChanges.getValue1() == 3);
     }
 
@@ -217,8 +122,10 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesBidirectional() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS,
-            SyncDirection.BIDIRECTIONAL);
+        initClientAndServerWithoutSync("category8_b_insert.xml", "category8_a_insert.xml");
+
+        tableStrategies = setGlobalStrategy(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        serverChanges = getChanges(tableStrategies);
 
         assertTrue(serverChanges.getValue2().size() == 1);
         assertTrue(serverChanges.getValue1() == 3);
@@ -226,11 +133,11 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
 
     @Test
     public void getChangesServerToClientPerTable() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException
+        SQLException {
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
 
-    {
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
-            SyncDirection.SERVER_TO_CLIENT);
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
+        serverChanges = getChanges(tableStrategies);
 
         assertTrue(serverChanges.getValue2().size() == 2);
         assertTrue(serverChanges.getValue1() == 3);
@@ -240,8 +147,10 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesClientToServerPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
-            SyncDirection.CLIENT_TO_SERVER);
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
+
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        serverChanges = getChanges(tableStrategies);
 
         assertTrue(serverChanges.getValue2().size() == 1);
         assertTrue(serverChanges.getValue1() == 3);
@@ -251,10 +160,46 @@ public class ServerChangesEnumeratorTest extends AbstractSyncTest {
     public void getChangesBidirectionalPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        Tuple<Integer, List<Change>> serverChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
-            SyncDirection.BIDIRECTIONAL);
+        initClientAndServerWithoutSync("category9_b_insert.xml", "category9_a_insert.xml");
+
+        tableStrategies = setStrategyForTable("categories", ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        serverChanges = getChanges(tableStrategies);
 
         assertTrue(serverChanges.getValue2().size() == 2);
         assertTrue(serverChanges.getValue1() == 3);
+    }
+
+    private TableSyncStrategies setStrategyForTable(String tableName, ConflictStrategy strategy, SyncDirection direction) {
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        TableSyncStrategy tablsSyncStrategy = new TableSyncStrategy(direction, strategy);
+        strategies.addSyncStrategyForTable(tableName, tablsSyncStrategy);
+        return strategies;
+    }
+
+    private TableSyncStrategies setGlobalStrategy(ConflictStrategy conflictStrategy, SyncDirection syncDirection) {
+        Config configInstance = Config.getInstance();
+        configInstance.setConflictStrategy(conflictStrategy);
+        configInstance.setSyncDirection(syncDirection);
+        return new TableSyncStrategies();
+    }
+
+    private Tuple<Integer, List<Change>> getChanges(TableSyncStrategies strategies)
+        throws SyncException, ContextException, SQLException, DatabaseAdapterException {
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+
+            ServerChangesEnumerator serverChangesEnumerator = new ServerChangesEnumerator(adapter, strategies);
+
+            return serverChangesEnumerator.getChanges(1);
+
+        } finally {
+            if (adapter != null) {
+                if (adapter.getConnection() != null) {
+                    adapter.getConnection().close();
+                }
+            }
+        }
     }
 }

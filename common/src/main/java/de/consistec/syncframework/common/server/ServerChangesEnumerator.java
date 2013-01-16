@@ -66,9 +66,8 @@ public class ServerChangesEnumerator {
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
     /**
-     * The method {@code getChanges(int rev)} creates the list of {@code Change}
-     * objects for all inserted, modified or deleted data rows that revision is greater than
-     * the passed one.
+     * Creates the list of {@code Change} objects for all inserted, modified or deleted data rows
+     * which revision is greater than {@code rev}.
      *
      * @param rev the revision
      * @return the changes
