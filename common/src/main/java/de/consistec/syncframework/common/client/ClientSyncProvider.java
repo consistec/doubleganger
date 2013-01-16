@@ -1,6 +1,7 @@
 package de.consistec.syncframework.common.client;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
+import static de.consistec.syncframework.common.util.Preconditions.checkSyncDirectionOfServerChanges;
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.IConflictListener;
@@ -118,6 +119,8 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     @Override
     public int applyChanges(Tuple<Integer, List<Change>> maxRevWithserverChanges, List<Change> clientChanges) throws
         SyncException {
+
+        checkSyncDirectionOfServerChanges(maxRevWithserverChanges.getValue2(), getStrategies());
 
         IDatabaseAdapter adapter = null;
 

@@ -1,5 +1,6 @@
 package de.consistec.syncframework.common.server;
 
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -14,9 +15,9 @@ import java.util.List;
  * that will be then specified in framework configuration as proxy provider class
  * {@link de.consistec.syncframework.common.Config#setServerProxy(java.lang.Class)}
  *
+ * @author Markus Backes
  * @company Consistec Engineering and Consulting GmbH
  * @date unknown
- * @author Markus Backes
  * @since 0.0.1-SNAPSHOT
  */
 public interface IServerSyncProvider {
@@ -34,7 +35,6 @@ public interface IServerSyncProvider {
     /**
      * Gets the changes.
      *
-     *
      * @param rev the rev
      * @return the changes
      * @throws SyncException the sync exception
@@ -50,4 +50,11 @@ public interface IServerSyncProvider {
      */
     Schema getSchema() throws SyncException;
 
+    /**
+     * Validates the passed client settings and throws a SyncException if necessary.
+     *
+     * @param clientSettings the settings of the client to validate
+     * @throws SyncException thrown if validation failes
+     */
+    void validateClientSettings(SyncSettings clientSettings) throws SyncException;
 }

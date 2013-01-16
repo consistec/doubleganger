@@ -27,6 +27,7 @@ import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
@@ -267,6 +268,30 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
         } catch (JSONException e) {
             throw new SerializationException(read(Errors.CANT_CONVERT_SCHEMA_TO_JSON), e);
         }
+    }
+
+    @Override
+    public String serializeSettings(final SyncSettings clientSettings) throws SerializationException {
+        final JSONArray tableJSONArray = new JSONArray();
+        final JSONArray strategyJSONArray = new JSONArray();
+
+        try {
+            for (String table : clientSettings.getSyncTables()) {
+                tableJSONArray.put(table);
+                JSONObject obj = new JSONObject();
+                obj.put("direction", clientSettings.getStrategy(table).getDirection());
+                obj.put("conflictStrategy", clientSettings.getStrategy(table).getConflictStrategy());
+
+                strategyJSONArray.put(obj);
+            }
+        } catch (JSONException e) {
+            throw new SerializationException(e);
+        }
+
+        final JSONArray jsonArray = new JSONArray();
+        jsonArray.put(tableJSONArray);
+        jsonArray.put(strategyJSONArray);
+        return jsonArray.toString();
     }
     //</editor-fold>
 }

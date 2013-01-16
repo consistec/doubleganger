@@ -1,5 +1,6 @@
 package de.consistec.syncframework.impl.adapter;
 
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -83,4 +84,13 @@ public interface ISerializationAdapter<T> {
      * @throws SerializationException
      */
     T serializeSchema(Schema schema) throws SerializationException;
+
+    /**
+     * serialize the passed SyncSettings to Object{@code <T>}.
+     *
+     * @param clientSettings object representing the settings to sync.
+     * @return the serialized object
+     * @throws SerializationException
+     */
+    T serializeSettings(SyncSettings clientSettings) throws SerializationException;
 }

@@ -1,22 +1,27 @@
 package de.consistec.syncframework.common.server;
 
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
+import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
+import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.adapter.DumpDbAdapter;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
-import de.consistec.syncframework.common.data.Change;
+import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Properties;
+import java.util.Set;
 import javax.sql.DataSource;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,24 +80,55 @@ public class ServerSyncProviderTest {
         config.setGlobalSyncDirection(SyncDirection.BIDIRECTIONAL);
     }
 
-    @Test//(expected = TransactionAbortedException.class)
-    public void applyChanges() throws Exception {
+    @Test
+    public void validateClientSettings() throws DatabaseAdapterException, SyncException {
 
-        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
+        Config.getInstance().addSyncTable("categories", "items");
 
-//        doNothing().when(
-//            databaseAdapterMock).init(connection);
-        when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
-        doCallRealMethod().when(databaseAdapterMock).init(connectionMock);
-        doCallRealMethod().when(databaseAdapterMock).commit();
+        TableSyncStrategies serverSyncStrategies = new TableSyncStrategies();
+        serverSyncStrategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SERVER_TO_CLIENT, SERVER_WINS));
+        serverSyncStrategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
-        doThrow(TRANSACTION_EXCEPTION).when(
-            databaseAdapterMock).commit();
+        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies);
 
-        databaseAdapterMock.commit();
+        Set<String> tablesToSync = newHashSet();
+        tablesToSync.add("categories");
+        tablesToSync.add("items");
 
-        serverSyncProvider.applyChanges(new ArrayList<Change>(), 0);
+        TableSyncStrategies clientSyncStrategies = new TableSyncStrategies();
+        clientSyncStrategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SERVER_TO_CLIENT, SERVER_WINS));
+        clientSyncStrategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
-        verify(databaseAdapterMock).commit();
+        SyncSettings clientSettings = new SyncSettings(tablesToSync, clientSyncStrategies);
+        serverSyncProvider.validateClientSettings(clientSettings);
+    }
+
+    @Test(expected = SyncException.class)
+    public void validateClientSettingsFail() throws DatabaseAdapterException, SyncException {
+
+        TableSyncStrategies serverSyncStrategies = new TableSyncStrategies();
+        serverSyncStrategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SERVER_TO_CLIENT, SERVER_WINS));
+        serverSyncStrategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
+
+        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies);
+
+        Set<String> tablesToSync = newHashSet();
+        tablesToSync.add("categories");
+        tablesToSync.add("items");
+
+        TableSyncStrategies clientSyncStrategies = new TableSyncStrategies();
+        clientSyncStrategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(CLIENT_TO_SERVER, CLIENT_WINS));
+        clientSyncStrategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
+
+        SyncSettings clientSettings = new SyncSettings(tablesToSync, clientSyncStrategies);
+        serverSyncProvider.validateClientSettings(clientSettings);
     }
 }

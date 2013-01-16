@@ -3,10 +3,14 @@ package de.consistec.syncframework.common.server;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static de.consistec.syncframework.common.util.Preconditions.checkSyncDirectionOfClientChanges;
+import static de.consistec.syncframework.common.util.Preconditions.checkSyncState;
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
@@ -20,6 +24,7 @@ import de.consistec.syncframework.common.exception.database_adapter.TransactionA
 import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
+import de.consistec.syncframework.common.i18n.MessageReader;
 import de.consistec.syncframework.common.util.LoggingUtil;
 
 import java.sql.SQLException;
@@ -139,7 +144,26 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     }
 
     @Override
+    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
+        SyncSettings serverSettings = new SyncSettings(CONF.getSyncTables(), getStrategies());
+
+        checkSyncState(serverSettings.getSyncTables().containsAll(clientSettings.getSyncTables()),
+            Errors.COMMON_SYNCTABLE_SETTINGS_ERROR);
+
+        for (String clientTable : clientSettings.getSyncTables()) {
+            TableSyncStrategy clientSyncStrategy = clientSettings.getStrategy(clientTable);
+            TableSyncStrategy serverSyncStrategy = serverSettings.getStrategy(clientTable);
+            if (!clientSyncStrategy.equals(serverSyncStrategy)) {
+                throw new SyncException(MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
+                    serverSyncStrategy));
+            }
+        }
+    }
+
+    @Override
     public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+
+        checkSyncDirectionOfClientChanges(changes, getStrategies());
 
         int retries = CONF.getRetryNumberOfApplyChangesOnTransactionError();
         IDatabaseAdapter adapter = null;

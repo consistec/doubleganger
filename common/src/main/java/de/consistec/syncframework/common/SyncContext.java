@@ -208,6 +208,8 @@ public final class SyncContext {
 
     private void initClient(IServerSyncProvider serverProvider, IClientSyncProvider clientProvider) throws
         ContextException, SyncException {
+
+        validateSettings(serverProvider, clientProvider);
         prepareClientSchema(serverProvider, clientProvider);
         LOGGER.info(Infos.COMMON_FRAMEWORK_INITIALIZED_CLIENT);
     }
@@ -223,6 +225,14 @@ public final class SyncContext {
             LOGGER.info(Infos.COMMON_APPLYING_DB_SCHEMA);
             clientProvider.applySchema(schema);
         }
+    }
+
+    private void validateSettings(IServerSyncProvider serverProvider, IClientSyncProvider clientProvider) throws
+        SyncException {
+        LOGGER.info(Infos.COMMON_SETTINGS_VALIDATION);
+
+        SyncSettings clientSettings = new SyncSettings(CONF.getSyncTables(), this.strategies);
+        serverProvider.validateClientSettings(clientSettings);
     }
 
     /**

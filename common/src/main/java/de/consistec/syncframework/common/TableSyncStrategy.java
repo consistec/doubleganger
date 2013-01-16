@@ -83,10 +83,10 @@ public final class TableSyncStrategy implements Serializable {
         checkNotNull(direction, read(Errors.COMMON_SYNC_DIRECTION_CANT_BE_NULL));
         checkNotNull(strategy, read(Errors.COMMON_CONFLICT_ACTION_CANT_BE_NULL));
 
-        checkState(!((strategy == ConflictStrategy.SERVER_WINS && strategy == ConflictStrategy.FIRE_EVENT)
-            || direction == SyncDirection.CLIENT_TO_SERVER));
-        checkState(!((strategy == ConflictStrategy.CLIENT_WINS && strategy == ConflictStrategy.FIRE_EVENT)
-            || direction == SyncDirection.SERVER_TO_CLIENT));
+        checkState(!(strategy == ConflictStrategy.SERVER_WINS && direction == SyncDirection.CLIENT_TO_SERVER));
+        checkState(!(strategy == ConflictStrategy.FIRE_EVENT && direction == SyncDirection.CLIENT_TO_SERVER));
+        checkState(!(strategy == ConflictStrategy.CLIENT_WINS && direction == SyncDirection.SERVER_TO_CLIENT));
+        checkState(!(strategy == ConflictStrategy.FIRE_EVENT && direction == SyncDirection.SERVER_TO_CLIENT));
 
 //        checkSyncDirectionAndConflictStrategyState(direction, strategy);
     }

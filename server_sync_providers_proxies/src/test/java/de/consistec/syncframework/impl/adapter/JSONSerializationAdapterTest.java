@@ -25,11 +25,18 @@ package de.consistec.syncframework.impl.adapter;
 
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import de.consistec.syncframework.common.SyncDirection;
+import de.consistec.syncframework.common.SyncSettings;
+import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.TestBase;
 import de.consistec.syncframework.common.TestUtil;
 import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -39,6 +46,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.junit.Test;
 
 /**
@@ -161,5 +171,49 @@ public class JSONSerializationAdapterTest extends TestBase {
         final Schema deserializedSchema = adapter.deserializeSchema(jsonSchema);
         assertEquals("Original and deserialised schemas are different", schema, deserializedSchema);
 
+    }
+
+    @Test
+    public void serializeSettings() throws SerializationException, JSONException {
+        Set<String> tables = newHashSet();
+        tables.add("categories");
+        tables.add("items");
+        tables.add("customers");
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        strategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SyncDirection.BIDIRECTIONAL, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("customers",
+            new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER, ConflictStrategy.CLIENT_WINS));
+
+        SyncSettings settings = new SyncSettings(tables, strategies);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+        String serializedSettings = adapter.serializeSettings(settings);
+
+        JSONArray array = new JSONArray(serializedSettings);
+        assertTrue(array.length() == 2);
+
+        JSONArray tableArray = array.getJSONArray(0);
+        JSONArray strategyArray = array.getJSONArray(1);
+
+        int i = 0;
+        for (String table : tables) {
+            assertEquals(table, tableArray.getString(i));
+            i++;
+        }
+
+        int j = 0;
+        for (String table : settings.getSyncTables()) {
+            String direction = strategyArray.getJSONObject(j).getString("direction");
+            String conflictStrategy = strategyArray.getJSONObject(j).getString("conflictStrategy");
+
+            assertEquals(settings.getStrategy(table).getDirection().name(), direction);
+            assertEquals(settings.getStrategy(table).getConflictStrategy().name(),
+                conflictStrategy);
+
+            j++;
+        }
     }
 }

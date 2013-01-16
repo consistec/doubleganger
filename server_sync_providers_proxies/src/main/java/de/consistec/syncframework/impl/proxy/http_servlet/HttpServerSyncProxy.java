@@ -5,9 +5,11 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.SETTINGS;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -107,6 +109,20 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private void initializeDefaultSerializationAdapter() {
         this.serializationAdapter = new JSONSerializationAdapter();
+    }
+
+    @Override
+    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
+        try {
+            List<NameValuePair> data = newArrayList();
+            data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
+            data.add(new BasicNameValuePair(SETTINGS.name(),
+                serializationAdapter.serializeSettings(clientSettings).toString()));
+
+            request(data);
+        } catch (SerializationException e) {
+            throw new SyncException(read(Errors.CANT_APPLY_CHANGES_SERIALIZATION_FAILURE), e);
+        }
     }
 
     @Override

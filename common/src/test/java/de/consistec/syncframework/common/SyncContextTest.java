@@ -1,7 +1,7 @@
 package de.consistec.syncframework.common;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import de.consistec.syncframework.common.adapter.DumpDbAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -42,8 +42,8 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
         Class<Object> innerClass = Whitebox.getInnerClassType(SyncContext.class, "ServerProxyFactory");
         IllegalStateException stateEx = null;
         try {
-        Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
-        } catch(IllegalStateException ex) {
+            Whitebox.invokeMethod(innerClass, "newInstance", new Object[0]).getClass();
+        } catch (IllegalStateException ex) {
             stateEx = ex;
         }
 
@@ -73,6 +73,11 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
 
     @Override
     public Schema getSchema() throws SyncException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

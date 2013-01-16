@@ -59,6 +59,7 @@ public class PostgresThrowsExceptionTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        adapterMock.connection = connectionMock;
     }
 
     @Test(expected = TransactionAbortedException.class)

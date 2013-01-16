@@ -25,5 +25,9 @@ public enum SyncRequestHttpParams {
     /**
      * Header which holds the JSON String with the data.
      */
-    CHANGES;
+    CHANGES,
+    /**
+     * SyncSettings from client or server.
+     */
+    SETTINGS;
 }

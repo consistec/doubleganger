@@ -104,6 +104,8 @@ public class ServerSyncProviderTest {
         config.setGlobalSyncDirection(SyncDirection.BIDIRECTIONAL);
         config.setRetryNumberOfApplyChangesOnTransactionError(0);
         config.setRetryNumberOfGetChangesOnTransactionError(0);
+
+        databaseAdapterMock.connection = connectionMock;
     }
 
     @Test
