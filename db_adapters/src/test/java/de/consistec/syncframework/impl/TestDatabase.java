@@ -1,9 +1,11 @@
 package de.consistec.syncframework.impl;
 
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,10 +28,12 @@ public class TestDatabase {
         this.supportedDb = supportedDb;
     }
 
-    public void init() throws SQLException {
+    public void init() throws SQLException, IOException {
+        Config.getInstance().loadFromFile(getClass().getResourceAsStream(configFile));
+
         serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
         serverConnection = serverDs.getConnection();
-        
+
         clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
         clientConnection = clientDs.getConnection();
     }
@@ -118,5 +122,10 @@ public class TestDatabase {
                 throw new IllegalArgumentException("Unknown connection type: " + ConnectionType.class
                     .getSimpleName());
         }
+    }
+
+    @Override
+    public String toString() {
+        return "TestDatabase: " + supportedDb + ", " + configFile;
     }
 }
