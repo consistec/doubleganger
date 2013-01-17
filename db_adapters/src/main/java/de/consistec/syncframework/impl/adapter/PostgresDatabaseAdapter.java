@@ -2,6 +2,7 @@ package de.consistec.syncframework.impl.adapter;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.data.schema.Table;
@@ -77,11 +78,8 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
-    private static final String MD_TABLE_EXTENSION = "_md";
     private static final String SYNC_USER = "syncuser";
-    private static final String POSTGRES_CREATE_LANGUAGE_QUERY = "CREATE OR REPLACE FUNCTION make_plpgsql()\nRETURNS VOID"
-        + "\nLANGUAGE SQL\nAS $$\nCREATE LANGUAGE plpgsql;$$; SELECT CASE WHEN EXISTS( SELECT 1 FROM pg_catalog.pg_language "
-        + "WHERE lanname='plpgsql' ) THEN NULL ELSE make_plpgsql() END;DROP FUNCTION make_plpgsql();";
+    private static final Config CONF = Config.getInstance();
     private Integer port;
     private String host;
     private String databaseName;
@@ -164,19 +162,19 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private List<String> generateSqlTriggersForSchema(Schema schema) {
         List<String> triggers = new LinkedList<String>();
 
+        // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+        String triggerRawQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_triggers.sql"))
+            .useDelimiter("\\A").next();
+
         for (Table table : schema.getTables()) {
             String tableName = table.getName();
 
             // we don't want any trigger on the metadata tables
-            if (!tableName.endsWith(MD_TABLE_EXTENSION)) {
-
-                // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-                String triggerQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_triggers.sql"))
-                .useDelimiter("\\A").next();
-                triggerQuery = triggerQuery.replaceAll("%syncuser%", SYNC_USER);
+            if (!tableName.endsWith(CONF.getMdTableSuffix())) {
+                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
                 triggerQuery = triggerQuery.replaceAll("%table%", tableName);
                 triggerQuery = triggerQuery.replaceAll("%pk%", table.getPkColumnName());
-                triggerQuery = triggerQuery.replaceAll("%_md%", MD_TABLE_EXTENSION);
+                triggerQuery = triggerQuery.replaceAll("%_md%", CONF.getMdTableSuffix());
 
                 LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
 
