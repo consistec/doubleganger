@@ -413,7 +413,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * @param schema schema
      * @throws DatabaseAdapterException
      */
-    private void removeExistentTablesFromSchema(Schema schema) throws DatabaseAdapterException {
+    protected void removeExistentTablesFromSchema(Schema schema) throws DatabaseAdapterException {
         List<String> databaseTables = getTableNamesFromDatabase();
 
         for (Table tab : schema.getTables()) {

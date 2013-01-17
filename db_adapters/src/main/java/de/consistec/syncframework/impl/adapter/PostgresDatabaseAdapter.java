@@ -3,6 +3,9 @@ package de.consistec.syncframework.impl.adapter;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
+import de.consistec.syncframework.common.data.schema.Schema;
+import de.consistec.syncframework.common.data.schema.Table;
+import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.syncframework.common.exception.database_adapter.TransactionAbortedException;
@@ -11,10 +14,15 @@ import de.consistec.syncframework.common.util.PropertiesUtil;
 import de.consistec.syncframework.common.util.StringUtil;
 import de.consistec.syncframework.impl.i18n.DBAdapterErrors;
 
+import java.sql.BatchUpdateException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +48,6 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * Database property name.
      */
     public static final String PROPS_DB_NAME = "db_name";
-
     /**
      * Default jdbc driver class for PostgreSQL.
      * <p/>
@@ -61,7 +68,6 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * @see http://www.postgresql.org/docs/8.2/static/errcodes-appendix.html
      */
     private static final String TRANSACTION_FAILURE_PREFIX = "40";
-
     /**
      * PostgreSQL code for UNIQUE VIOLATION.
      */
@@ -71,6 +77,11 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
+    private static final String MD_TABLE_EXTENSION = "_md";
+    private static final String SYNC_USER = "syncuser";
+    private static final String POSTGRES_CREATE_LANGUAGE_QUERY = "CREATE OR REPLACE FUNCTION make_plpgsql()\nRETURNS VOID"
+        + "\nLANGUAGE SQL\nAS $$\nCREATE LANGUAGE plpgsql;$$; SELECT CASE WHEN EXISTS( SELECT 1 FROM pg_catalog.pg_language "
+        + "WHERE lanname='plpgsql' ) THEN NULL ELSE make_plpgsql() END;DROP FUNCTION make_plpgsql();";
     private Integer port;
     private String host;
     private String databaseName;
@@ -91,17 +102,88 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         }
     }
 
-
     @Override
     public void getRowForPrimaryKey(final Object primaryKey, final String tableName,
-                                    final DatabaseAdapterCallback<ResultSet> callback
-    ) throws DatabaseAdapterException {
+        final DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
         try {
             super.getRowForPrimaryKey(primaryKey, tableName, callback);
         } catch (DatabaseAdapterException ex) {
             handleTransactionAborted(ex);
         }
 
+    }
+
+    @Override
+    public void applySchema(Schema schema) throws DatabaseAdapterException {
+        Statement stmt = null;
+
+        List<String> triggers = generateSqlTriggersForSchema(schema);
+        removeExistentTablesFromSchema(schema);
+
+        try {
+            stmt = connection.createStatement();
+
+            String sqlSchema = getSchemaConverter().toSQL(schema);
+            String[] tableScripts = sqlSchema.split(";");
+            for (String tableSql : tableScripts) {
+                stmt.addBatch(tableSql);
+            }
+
+            LOGGER.debug("applying schema: {}", sqlSchema);
+            stmt.executeBatch();
+
+            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+            String createLanguageQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_language.sql"))
+                .useDelimiter("\\A").next();
+            LOGGER.debug("creating plpgsql language {}", createLanguageQuery);
+            stmt.execute(createLanguageQuery);
+
+            LOGGER.debug("adding triggers");
+            for (String trigger : triggers) {
+                stmt.execute(trigger);
+            }
+
+        } catch (BatchUpdateException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e.getNextException());
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        } finally {
+            closeStatements(stmt);
+        }
+    }
+
+    /**
+     * Creates a list of triggers to update the F flag in the metadata table
+     * for every change in the corresponding data table.
+     * <p/>
+     * @param schema
+     * @return list of sql queries for the triggers
+     */
+    private List<String> generateSqlTriggersForSchema(Schema schema) {
+        List<String> triggers = new LinkedList<String>();
+
+        for (Table table : schema.getTables()) {
+            String tableName = table.getName();
+
+            // we don't want any trigger on the metadata tables
+            if (!tableName.endsWith(MD_TABLE_EXTENSION)) {
+
+                // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+                String triggerQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_triggers.sql"))
+                .useDelimiter("\\A").next();
+                triggerQuery = triggerQuery.replaceAll("%syncuser%", SYNC_USER);
+                triggerQuery = triggerQuery.replaceAll("%table%", tableName);
+                triggerQuery = triggerQuery.replaceAll("%pk%", table.getPkColumnName());
+                triggerQuery = triggerQuery.replaceAll("%_md%", MD_TABLE_EXTENSION);
+
+                LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
+
+                triggers.add(triggerQuery);
+            }
+        }
+        return triggers;
     }
 
     @Override

@@ -125,12 +125,12 @@ CREATE OR REPLACE FUNCTION categories_update_flag() RETURNS trigger AS $BODY$
 
 
 CREATE TRIGGER trigger_items AFTER INSERT OR UPDATE OR DELETE
-    ON "items"
+    ON items
     FOR EACH ROW
     EXECUTE PROCEDURE items_update_flag();
 
 CREATE TRIGGER trigger_categories AFTER INSERT OR UPDATE OR DELETE
-    ON "categories"
+    ON categories
     FOR EACH ROW
     EXECUTE PROCEDURE categories_update_flag();
 
