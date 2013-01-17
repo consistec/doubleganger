@@ -25,6 +25,7 @@ import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +66,9 @@ public class TableSyncStrategyTest extends AbstractSyncTest {
     }
 
     @Before
-    public void before() throws IOException {
+    public void before() throws IOException, SyncException, SQLException, ContextException {
         MockitoAnnotations.initMocks(this);
+        resetClientAndServerDatabase();
     }
 
     @Test

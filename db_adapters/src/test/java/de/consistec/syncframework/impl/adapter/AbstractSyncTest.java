@@ -71,7 +71,7 @@ public abstract class AbstractSyncTest {
         return Arrays.asList(new Object[][]{
                 {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
                 {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)},
-//                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)}
+                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)}
             });
     }
     /**

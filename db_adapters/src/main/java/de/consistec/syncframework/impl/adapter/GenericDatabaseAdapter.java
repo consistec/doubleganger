@@ -1028,7 +1028,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         List<String> databaseTables = getTableNamesFromDatabase();
         Schema schema = new Schema();
-        Table table;
+        Table mdTable;
 
         for (String tableName : CONF.getSyncTables()) {
 
@@ -1044,15 +1044,15 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
             LOGGER.debug("creating new table: {}", mdTableName);
 
-            table = new Table(mdTableName);
+            mdTable = new Table(mdTableName);
             Column pkColumn = getPrimaryKeyColumn(tableName);
-            table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-            table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-            table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-            table.add(new Column("f", Types.INTEGER, 0, 0, true));
+            mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+            mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+            mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
+            mdTable.add(new Column("f", Types.INTEGER, 0, 0, true));
 
-            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
-            schema.addTables(table);
+            mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+            schema.addTables(mdTable);
         }
         if (schema.countTables() > 0) {
             applySchema(schema);
