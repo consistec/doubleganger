@@ -20,7 +20,8 @@ import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.HashCalculator;
-import de.consistec.syncframework.impl.adapter.TestBase;
+import de.consistec.syncframework.impl.TestDatabase;
+import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -34,18 +35,15 @@ import org.mockito.MockitoAnnotations;
 import org.powermock.reflect.Whitebox;
 
 /**
- * The test class <code>TableSyncStrategy</code> tests,
- * if the sync stategy for a specific table, added to the <code>Config</code> instance
- * is really used in the resolveConflict method in the <code>ClientHashProcessor</code>.
+ * Tests if the sync stategy for a specific table, added to the {@link Config} instance
+ * is really used in the resolveConflict method in the {@link ClientHashProcessor}.
  *
  * @author Marcel
  * @company Consistec Engineering and Consulting GmbH
  * @date 31.10.12 09:56
  * @since 0.0.1-SNAPSHOT
  */
-public class TableSyncStrategyTest extends TestBase {
-
-    public static final String CONFIG_FILE = "/config_postgre.properties";
+public class TableSyncStrategyTest extends AbstractSyncTest {
 
     private static final String TEST_STRING = "testString";
     private static final String TEST_TABLE_NAME = "testTablename";
@@ -55,7 +53,6 @@ public class TableSyncStrategyTest extends TestBase {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
-
     @Mock
     private ResultSet localDataResultSet;
     @Mock
@@ -63,12 +60,13 @@ public class TableSyncStrategyTest extends TestBase {
     @Mock
     private IDatabaseAdapter dbAdapter;
 
+    public TableSyncStrategyTest(TestDatabase db) {
+        super(db);
+    }
+
     @Before
     public void before() throws IOException {
-        // bezieht sich auf obige(s) @Mock
         MockitoAnnotations.initMocks(this);
-
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(CONFIG_FILE));
     }
 
     @Test
@@ -169,16 +167,13 @@ public class TableSyncStrategyTest extends TestBase {
 
         TableSyncStrategy tableSyncStrategy = ctx.getStrategies().getSyncStrategyForTable(TEST_TABLE_NAME);
 
-        assertTrue(
-            tableSyncStrategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
-        assertTrue(
-            tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
+        assertTrue(tableSyncStrategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
+        assertTrue(tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
     }
 
     /**
      * Tests for nullable arguments
      */
-
     @Test(expected = NullPointerException.class)
     public void validateStateNullableSyncDirection() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(null, ConflictStrategy.SERVER_WINS);
@@ -205,8 +200,6 @@ public class TableSyncStrategyTest extends TestBase {
      * server->client => client.wins
      * server->client => fire.event
      */
-
-
     @Test(expected = IllegalStateException.class)
     public void validateStateClientToServerAndServerWins() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER,
@@ -228,7 +221,6 @@ public class TableSyncStrategyTest extends TestBase {
 //        assertTrue(strategy.getDirection() == SyncDirection.CLIENT_TO_SERVER);
 //        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.CLIENT_WINS);
 //    }
-
     @Test(expected = IllegalStateException.class)
     public void validateStateClientToServerAndFireEvent() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER,
@@ -250,7 +242,6 @@ public class TableSyncStrategyTest extends TestBase {
 //        assertTrue(strategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
 //        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
 //    }
-
     @Test(expected = IllegalStateException.class)
     public void validateStateServerToClientAndClientWins() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,

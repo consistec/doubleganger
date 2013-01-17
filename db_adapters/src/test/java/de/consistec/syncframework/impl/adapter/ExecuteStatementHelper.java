@@ -30,7 +30,7 @@ import org.junit.Assert;
  */
 public class ExecuteStatementHelper {
 
-    private ChangeLogToSQLAdapter converter = new ChangeLogToSQLConverter();
+    private ChangeLogToSQLConverter converter = new ChangeLogToSQLConverter();
     private ResultSet clientResultSet, serverResultSet;
     private Connection clientConnection, serverConnection;
     private Map<String, String> clientTableContentMap = newHashMap(), serverTableContentMap = newHashMap();

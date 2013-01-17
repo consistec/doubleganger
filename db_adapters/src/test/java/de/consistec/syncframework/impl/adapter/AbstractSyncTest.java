@@ -93,7 +93,7 @@ public abstract class AbstractSyncTest {
         }
     };
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
-    protected static final Config CONF = Config.getInstance();
+    protected static Config CONF;
     private static final String[] tableNames = new String[]{"categories_md", "categories", "items", "items_md"};
     private transient ExecuteStatementHelper helper;
     protected TestDatabase db;
@@ -107,6 +107,7 @@ public abstract class AbstractSyncTest {
 
     @Before
     public void setUp() throws IOException, SQLException {
+        Config.getInstance().loadFromFile(getClass().getResourceAsStream(db.getConfigFile()));
         db.init();
         helper = new ExecuteStatementHelper(db.getClientConnection(), db.getServerConnection());
     }
