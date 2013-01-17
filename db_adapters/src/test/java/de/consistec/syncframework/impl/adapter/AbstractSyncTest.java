@@ -93,10 +93,8 @@ public abstract class AbstractSyncTest {
         }
     };
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
-    /**
-     * Framework configuration singleton.
-     */
     protected static final Config CONF = Config.getInstance();
+    private static final String[] tableNames = new String[]{"categories_md", "categories", "items", "items_md"};
     private transient ExecuteStatementHelper helper;
     protected TestDatabase db;
 
@@ -154,17 +152,14 @@ public abstract class AbstractSyncTest {
 
     public void resetClientAndServerDatabase() throws SyncException, SQLException, ContextException {
         Statement stmt = null;
-        String[] tables = new String[]{"categories_md", "categories", "items", "items_md"};
 
         try {
             LOGGER.info("Dropping tables...");
-
-            helper.createAndExecuteDropBatch(SERVER, tables);
-            helper.createAndExecuteDropBatch(ConnectionType.CLIENT, tables);
+            db.dropTablesOnClient(tableNames);
+            db.dropTablesOnServer(tableNames);
 
             LOGGER.info("Creating tables...");
-
-            helper.createAndExecuteBatch(SERVER, getCreateTableQueries());
+            db.executeQueriesOnServer(getCreateTableQueries());
 
             syncWithoutCompare(SERVER_WINS);
 
