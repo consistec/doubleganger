@@ -1,6 +1,7 @@
 package de.consistec.syncframework.common;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
+import static de.consistec.syncframework.common.util.Preconditions.checkGlobalSyncDirectionAndConflictStrategyState;
 import static de.consistec.syncframework.common.util.Preconditions.checkNotNull;
 import static de.consistec.syncframework.common.util.Preconditions.checkState;
 
@@ -129,6 +130,7 @@ public final class SyncContext {
      */
     private SyncContext() {
     }
+
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc=" Class accessors " >
 //</editor-fold>
@@ -206,6 +208,8 @@ public final class SyncContext {
 
     private void initClient(IServerSyncProvider serverProvider, IClientSyncProvider clientProvider) throws
         ContextException, SyncException {
+
+        validateSettings(serverProvider, clientProvider);
         prepareClientSchema(serverProvider, clientProvider);
         LOGGER.info(Infos.COMMON_FRAMEWORK_INITIALIZED_CLIENT);
     }
@@ -221,6 +225,14 @@ public final class SyncContext {
             LOGGER.info(Infos.COMMON_APPLYING_DB_SCHEMA);
             clientProvider.applySchema(schema);
         }
+    }
+
+    private void validateSettings(IServerSyncProvider serverProvider, IClientSyncProvider clientProvider) throws
+        SyncException {
+        LOGGER.info(Infos.COMMON_SETTINGS_VALIDATION);
+
+        SyncSettings clientSettings = new SyncSettings(CONF.getSyncTables(), this.strategies);
+        serverProvider.validate(clientSettings);
     }
 
     /**
@@ -239,7 +251,9 @@ public final class SyncContext {
     public static ClientContext client() throws ContextException, SyncException {
 
         checkState(CONF.getServerProxy() != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
-        return new SyncContext().new ClientContext(null);
+        checkGlobalSyncDirectionAndConflictStrategyState();
+        SyncContext mainCtx = new SyncContext();
+        return mainCtx.new ClientContext(null);
     }
 
     /**
@@ -259,7 +273,9 @@ public final class SyncContext {
     public static ClientContext client(DataSource ds) throws ContextException, SyncException {
 
         checkState(CONF.getServerProxy() != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
-        return new SyncContext().new ClientContext(ds);
+        checkGlobalSyncDirectionAndConflictStrategyState();
+        SyncContext mainCtx = new SyncContext();
+        return mainCtx.new ClientContext(ds);
     }
 
     /**
@@ -279,6 +295,7 @@ public final class SyncContext {
     public static ClientContext client(TableSyncStrategies strategies) throws ContextException, SyncException {
 
         checkState(CONF.getServerProxy() != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new ClientContext(null);
@@ -302,6 +319,7 @@ public final class SyncContext {
         SyncException {
 
         checkState(CONF.getServerProxy() != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new ClientContext(ds);
@@ -320,7 +338,9 @@ public final class SyncContext {
      * @throws ContextException When creation of database adapter or server provider fails.
      */
     public static ServerContext server() throws ContextException {
-        return new SyncContext().new ServerContext(null);
+        checkGlobalSyncDirectionAndConflictStrategyState();
+        SyncContext mainCtx = new SyncContext();
+        return mainCtx.new ServerContext(null);
     }
 
     /**
@@ -337,7 +357,9 @@ public final class SyncContext {
      * @throws ContextException When creation of database adapter or server provider fails.
      */
     public static ServerContext server(DataSource ds) throws ContextException {
-        return new SyncContext().new ServerContext(ds);
+        checkGlobalSyncDirectionAndConflictStrategyState();
+        SyncContext mainCtx = new SyncContext();
+        return mainCtx.new ServerContext(ds);
     }
 
     /**
@@ -354,6 +376,7 @@ public final class SyncContext {
      * @throws ContextException When creation of database adapter or server provider fails.
      */
     public static ServerContext server(TableSyncStrategies strategies) throws ContextException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new ServerContext(null);
@@ -374,6 +397,7 @@ public final class SyncContext {
      * @throws ContextException When creation of database adapter or server provider fails.
      */
     public static ServerContext server(DataSource ds, TableSyncStrategies strategies) throws ContextException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new ServerContext(ds);
@@ -393,6 +417,7 @@ public final class SyncContext {
      * @throws SyncException When request for database schema fails.
      */
     public static LocalContext local() throws ContextException, SyncException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         return mainCtx.new LocalContext(null, null);
     }
@@ -412,6 +437,7 @@ public final class SyncContext {
      * @throws SyncException When request for database schema fails.
      */
     public static LocalContext local(TableSyncStrategies strategies) throws ContextException, SyncException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new LocalContext(null, null);
@@ -434,6 +460,7 @@ public final class SyncContext {
      */
     public static LocalContext local(DataSource serverDs, DataSource clientDs) throws ContextException,
         SyncException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         return mainCtx.new LocalContext(serverDs, clientDs);
     }
@@ -456,6 +483,7 @@ public final class SyncContext {
      */
     public static LocalContext local(DataSource serverDs, DataSource clientDs, TableSyncStrategies strategies)
         throws ContextException, SyncException {
+        checkGlobalSyncDirectionAndConflictStrategyState();
         SyncContext mainCtx = new SyncContext();
         mainCtx.strategies.addAll(strategies);
         return mainCtx.new LocalContext(serverDs, clientDs);
@@ -634,6 +662,16 @@ public final class SyncContext {
          */
         public Schema getSchema() throws SyncException {
             return serverProvider.getSchema();
+        }
+
+        /**
+         * Validates the passed client settings and throws a SyncException if necessary.
+         *
+         * @param syncSettings client settings
+         * @throws SyncException
+         */
+        public void validate(SyncSettings syncSettings) throws SyncException {
+            serverProvider.validate(syncSettings);
         }
     }
 
@@ -855,6 +893,8 @@ public final class SyncContext {
         public static <T extends IServerSyncProvider> T newInstance() throws SyncProviderInstantiationException {
 
             Class<? extends IServerSyncProvider> proxyClass = CONF.getServerProxy();
+            LOGGER.info("instantiate following proxy class: {}",
+                proxyClass == null ? "null" : proxyClass.getCanonicalName());
             checkState(proxyClass != null, read(Errors.CONFIG_NO_SERVER_PROXY_SPECIFIED));
             T instance;
             try {

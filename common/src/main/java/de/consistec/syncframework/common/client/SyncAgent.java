@@ -27,8 +27,8 @@ import org.slf4j.cal10n.LocLogger;
 /**
  * The SyncAgent class coordinates synchronization process on client site.
  * <p>
- * Do not use directly! Instead, use {@link SyncContext.ClientContext} factory methods to obtain client context and
- * performs client site operations.
+ * Do not use directly! Instead, use {@link de.consistec.syncframework.common.SyncContext.client()}
+ * factory methods to obtain client context and performs client site operations.
  * </p>
  * <p>
  * This class is used by the {@link de.consistec.syncframework.common.SyncContext.ClientContext} to carry out
@@ -154,8 +154,8 @@ public class SyncAgent {
         }
 
         try {
-            int currentRevision = requestAndApplyChangesFromServer();
-            ApplyClientChangesResult result = applyChangesFromClientOnServer(currentRevision);
+            ClientData clientData = phaseProcessServerChanges();
+            ApplyClientChangesResult result = phaseProcessClientChanges(clientData);
             updateClientRevision(result);
 
         } catch (ServerStatusException ex) {
@@ -184,7 +184,7 @@ public class SyncAgent {
         }
     }
 
-    private int requestAndApplyChangesFromServer() throws SyncException, DatabaseAdapterException {
+    private ClientData phaseProcessServerChanges() throws SyncException, DatabaseAdapterException {
 
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER);
         updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER));
@@ -208,27 +208,32 @@ public class SyncAgent {
         time = System.currentTimeMillis() - time;
         LOGGER.debug("client.applyChanges duration: {}ms", time);
 
-        return currentRevision;
+        return new ClientData(currentRevision, clientChanges);
     }
 
-    private ApplyClientChangesResult applyChangesFromClientOnServer(int currentRevision) throws SyncException,
+    private ApplyClientChangesResult phaseProcessClientChanges(ClientData clientData
+    ) throws SyncException,
         DatabaseAdapterException {
 
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
+
+        int clientRevision = clientData.getRevision();
+        List<Change> clientChanges = clientData.getChanges();
+
         updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT));
         long time = System.currentTimeMillis();
-        List<Change> changes = clientProvider.getChanges();
+//        List<Change> changes = clientProvider.getChanges();
         time = System.currentTimeMillis() - time;
-        LOGGER.debug("client.getChanges duration: {}ms, ClientChanges: {}", time, changes);
+        LOGGER.debug("client.getChanges duration: {}ms, ClientChanges: {}", time, clientChanges);
 
         LOGGER.info(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT);
         updateProgress(read(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT));
         time = System.currentTimeMillis();
-        int serverRev = serverProvider.applyChanges(changes, currentRevision);
+        int serverRev = serverProvider.applyChanges(clientChanges, clientRevision);
         time = System.currentTimeMillis() - time;
         LOGGER.debug("server.applyChanges duration: {}ms", time);
 
-        ApplyClientChangesResult result = new ApplyClientChangesResult(changes, serverRev);
+        ApplyClientChangesResult result = new ApplyClientChangesResult(clientChanges, serverRev);
         return result;
     }
 
@@ -319,6 +324,24 @@ public class SyncAgent {
             return ApplyClientChangesResult.class.getSimpleName() + "{ changeSetLength="
                 + (changeSet == null ? "null" : changeSet.size())
                 + ", currentRevision=" + currentRevision + '}';
+        }
+    }
+
+    private class ClientData {
+        private int revision;
+        private List<Change> changes;
+
+        public ClientData(int revision, List<Change> changes) {
+            this.revision = revision;
+            this.changes = changes;
+        }
+
+        public int getRevision() {
+            return revision;
+        }
+
+        public List<Change> getChanges() {
+            return changes;
         }
     }
 }

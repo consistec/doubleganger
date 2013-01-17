@@ -1,14 +1,14 @@
 package de.consistec.syncframework.impl.proxy.http_servlet;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newSyncMap;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.SETTINGS;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.SyncContext;
-import de.consistec.syncframework.common.Tuple;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.ServerStatusException;
@@ -19,13 +19,17 @@ import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.common.util.StringUtil;
 import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
 import de.consistec.syncframework.impl.adapter.JSONSerializationAdapter;
+import de.consistec.syncframework.impl.commands.ApplyChangesCommand;
+import de.consistec.syncframework.impl.commands.GetChangesCommand;
+import de.consistec.syncframework.impl.commands.GetSchemaCommand;
+import de.consistec.syncframework.impl.commands.RequestCommand;
+import de.consistec.syncframework.impl.commands.ValidateSettingsCommand;
 import de.consistec.syncframework.impl.i18n.Errors;
-import de.consistec.syncframework.impl.i18n.Infos;
 import de.consistec.syncframework.impl.i18n.Warnings;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
@@ -49,6 +53,8 @@ public class HttpServletProcessor {
     private static final LocLogger LOGGER = LoggingUtil.createLogger(HttpServletProcessor.class.getCanonicalName());
     private ISerializationAdapter serializationAdapter;
     private final SyncContext.ServerContext serverContext;
+
+    private Map<String, RequestCommand> actionCommands = newSyncMap();
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructor " >
@@ -65,6 +71,11 @@ public class HttpServletProcessor {
     public HttpServletProcessor() throws ContextException {
         serverContext = SyncContext.server();
         serializationAdapter = new JSONSerializationAdapter();
+
+        actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
+        actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
+        actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
+        actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
     }
 
     /**
@@ -106,112 +117,40 @@ public class HttpServletProcessor {
 
         if (!StringUtil.isNullOrEmpty(req.getParameter(ACTION.name()))) {
 
-            SyncAction action = SyncAction.fromStringName(req.getParameter(ACTION.name()));
-            String response;
+            RequestCommand command = actionCommands.get(req.getParameter(ACTION.name()));
+            if (command == null) {
+                throw new UnsupportedOperationException(read(Errors.SERVER_UNSUPPORTED_ACTION));
+            } else {
+                try {
 
-            if (action != null) {
+                    HttpRequestParamValues paramValues = new HttpRequestParamValues(serverContext, serializationAdapter,
+                        req.getParameter(REVISION.name()), req.getParameter(CHANGES.name()),
+                        req.getParameter(SETTINGS.name()));
+                    String response = command.execute(paramValues);
+                    if (response != null) {
+                        String encodedResponse = URLEncoder.encode(response, "UTF-8");
+                        resp.getWriter().print(encodedResponse);
+                        resp.getWriter().flush();
+                    }
+                } catch (SyncException e) {
 
-                switch (action) {
-                    case GET_SCHEMA:
-                        response = executeGetSchema(resp);
-                        break;
-                    case GET_CHANGES:
-                        response = executeGetChanges(req, resp);
-                        break;
-
-                    case APPLY_CHANGES:
-                        response = executeApplyChanges(req, resp);
-                        break;
-                    default:
-                        throw new UnsupportedOperationException(read(Errors.SERVER_UNSUPPORTED_ACTION));
-                }
-                if (response != null) {
-                    String encodedResponse = URLEncoder.encode(response, "UTF-8");
-                    resp.getWriter().print(encodedResponse);
-                    resp.getWriter().flush();
-                }
-            }
-        }
-    }
-
-    private String executeApplyChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException,
-        SerializationException {
-
-        final String changes = req.getParameter(CHANGES.name());
-        final String revision = req.getParameter(REVISION.name());
-
-        if (!StringUtil.isNullOrEmpty(changes) && !StringUtil.isNullOrEmpty(revision)) {
-            try {
-                final int clientRevision = Integer.valueOf(revision);
-
-                List<Change> deserializedChanges = serializationAdapter.deserializeChangeList(
-                    changes);
-                LOGGER.debug("deserialized Changes:");
-                LOGGER.debug("<{}>", deserializedChanges);
-                int nextServerRevisionSendToClient = serverContext.applyChanges(deserializedChanges, clientRevision);
-                LOGGER.info(Infos.NEW_SERVER_REVISION, nextServerRevisionSendToClient);
-                return String.valueOf(nextServerRevisionSendToClient);
-            } catch (SyncException e) {
-                if (e instanceof ServerStatusException) {
-                    ServerStatusException ex = (ServerStatusException) e;
-                    if (ex.getStatus().equals(ServerStatus.CLIENT_NOT_UPTODATE)) {
-                        LOGGER.warn(read(Warnings.CANT_APPLY_CHANGES_CLIENT_NOT_UP_TO_DATE));
-                        resp.addHeader(HttpServerSyncProxy.HEADER_NAME_SERVER_EXCEPTION,
-                            String.valueOf(ServerStatus.CLIENT_NOT_UPTODATE.getCode()));
-                    } else {
-                        LOGGER.warn(read(Errors.CANT_APPLY_CHANGES), e);
+                    if (e instanceof ServerStatusException) {
+                        ServerStatusException ex = (ServerStatusException) e;
+                        if (ex.getStatus().equals(ServerStatus.CLIENT_NOT_UPTODATE)) {
+                            LOGGER.warn(read(Warnings.CANT_APPLY_CHANGES_CLIENT_NOT_UP_TO_DATE));
+                            resp.addHeader(HttpServerSyncProxy.HEADER_NAME_SERVER_EXCEPTION,
+                                String.valueOf(ServerStatus.CLIENT_NOT_UPTODATE.getCode()));
+                        } else {
+                            LOGGER.warn(read(Errors.CANT_APPLY_CHANGES), e);
+                        }
                     }
                     resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-                    return null;
+                } catch (SerializationException e) {
+                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+                } catch (IOException e) {
+                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
                 }
             }
-        }
-        return null;
-    }
-
-    private String executeGetChanges(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-
-        try {
-            final String tmpClientRev = req.getParameter(REVISION.name());
-            Tuple<Integer, List<Change>> changesTuple;
-
-            if (!StringUtil.isNullOrEmpty(tmpClientRev)) {
-
-                try {
-                    changesTuple = serverContext.getChanges(Integer.parseInt(tmpClientRev));
-                } catch (NumberFormatException ex) {
-                    LOGGER.error(read(Errors.CANT_PARSE_CLIENT_REVISION), ex);
-                    throw new SyncException(ex.getLocalizedMessage(), ex);
-                }
-            } else {
-                LOGGER.error(Errors.CANT_GETCHANGES_NO_CLIENT_REVISION);
-                throw new SyncException(read(Errors.CANT_GETCHANGES_NO_CLIENT_REVISION));
-            }
-
-            return serializationAdapter.serializeChangeList(changesTuple).toString();
-
-        } catch (SyncException e) {
-            LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-            return null;
-        } catch (SerializationException e) {
-            LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-            return null;
-        }
-    }
-
-    private String executeGetSchema(HttpServletResponse resp) throws IOException {
-        try {
-            return serializationAdapter.serializeSchema(serverContext.getSchema()).toString();
-        } catch (SyncException e) {
-            LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-            return null;
-        } catch (SerializationException e) {
-            LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-            return null;
         }
     }
     //</editor-fold>

@@ -11,10 +11,17 @@ import de.consistec.syncframework.common.exception.SerializationException;
  * @company Consistec Engineering and Consulting GmbH
  * @date 04.12.12 11:11
  */
-public abstract class SchemaToSQLAdapter implements ISQLConverter {
+public abstract class SQLConverterAdapter<T> implements ISQLConverter<T> {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
+    //<editor-fold defaultstate="expanded" desc=" Class fields " >
+    /**
+     * space constant.
+     */
+    protected static final char QUOTE = ' ';
+    /**
+     * sparator constant.
+     */
+    protected static final String LITERALS_COMMA = ",";
 //</editor-fold>
 
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
@@ -30,13 +37,13 @@ public abstract class SchemaToSQLAdapter implements ISQLConverter {
 //</editor-fold>
 
     /**
-     * @param schema Schema to convert.
+     * @param objectToConvert object to convert.
      * @return SQL query for the type Schema
      * @throws SchemaConverterException if conversion fails
-     * @see de.consistec.syncframework.common.data.schema.ISQLConverter.toSQL(final Schema schema)
+     * @see de.consistec.syncframework.common.data.schema.ISQLConverter.toSQL(final T objectToConvert)
      */
     @Override
-    public abstract String toSQL(final Schema schema) throws SchemaConverterException;
+    public abstract String toSQL(final T objectToConvert) throws SchemaConverterException;
 
     /**
      * @param xml Change log.

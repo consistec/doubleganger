@@ -71,7 +71,7 @@ public abstract class AbstractSyncTest {
         return Arrays.asList(new Object[][]{
                 {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
                 {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)},
-                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)}
+//                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)}
             });
     }
     /**
@@ -107,8 +107,8 @@ public abstract class AbstractSyncTest {
 
     @Before
     public void setUp() throws IOException, SQLException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(db.getConfigFile()));
         db.init();
+        CONF = Config.getInstance();
         helper = new ExecuteStatementHelper(db.getClientConnection(), db.getServerConnection());
     }
 
@@ -447,8 +447,8 @@ public abstract class AbstractSyncTest {
 
     public TableSyncStrategies setGlobalStrategy(ConflictStrategy conflictStrategy, SyncDirection syncDirection) {
         Config configInstance = Config.getInstance();
-        configInstance.setConflictStrategy(conflictStrategy);
-        configInstance.setSyncDirection(syncDirection);
+        configInstance.setGlobalConflictStrategy(conflictStrategy);
+        configInstance.setGlobalSyncDirection(syncDirection);
         return new TableSyncStrategies();
     }
 

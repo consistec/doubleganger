@@ -12,6 +12,7 @@ import de.consistec.syncframework.common.data.schema.Column;
 import de.consistec.syncframework.common.data.schema.Constraint;
 import de.consistec.syncframework.common.data.schema.ConstraintType;
 import de.consistec.syncframework.common.data.schema.CreateSchemaToSQLConverter;
+import de.consistec.syncframework.common.data.schema.CreateTableToSQLConverter;
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.data.schema.Table;
@@ -354,8 +355,54 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
+        List<String> tableNames = getTableNamesFromDatabase();
+        return tableNames.contains(tableName);
+    }
+
+    @Override
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+        Table table;
+
+        String mdTableName = tableName + CONF.getMdTableSuffix();
+
+        LOGGER.debug("creating new table: {}", mdTableName);
+
+        table = new Table(mdTableName);
+        Column pkColumn = getPrimaryKeyColumn(tableName);
+        table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+        table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        table.add(new Column("rev", Types.INTEGER, 0, 0, true));
+        table.add(new Column("f", Types.INTEGER, 0, 0, true));
+
+        table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+
+
+        Statement stmt = null; //NOSONAR
+        try {
+            stmt = connection.createStatement();
+            String sqlTableStatement = getTableConverter().toSQL(table);
+
+            LOGGER.debug("applying sql-table creation: {}", sqlTableStatement);
+
+            stmt.execute(sqlTableStatement);
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        } finally {
+            closeStatements(stmt);
+        }
+    }
+
+    @Override
     public ISQLConverter getSchemaConverter() {
         return new CreateSchemaToSQLConverter();
+    }
+
+    @Override
+    public ISQLConverter getTableConverter() {
+        return new CreateTableToSQLConverter();
     }
 
     @Override

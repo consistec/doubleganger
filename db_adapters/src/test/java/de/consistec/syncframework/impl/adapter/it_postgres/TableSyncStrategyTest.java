@@ -219,7 +219,7 @@ public class TableSyncStrategyTest extends AbstractSyncTest {
 //
 //        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
 //        assertTrue(strategy.getDirection() == SyncDirection.CLIENT_TO_SERVER);
-//        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.CLIENT_WINS);
+//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.CLIENT_WINS);
 //    }
     @Test(expected = IllegalStateException.class)
     public void validateStateClientToServerAndFireEvent() throws ContextException, SyncException {
@@ -240,7 +240,7 @@ public class TableSyncStrategyTest extends AbstractSyncTest {
 //
 //        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
 //        assertTrue(strategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
-//        assertTrue(strategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
+//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.SERVER_WINS);
 //    }
     @Test(expected = IllegalStateException.class)
     public void validateStateServerToClientAndClientWins() throws ContextException, SyncException {

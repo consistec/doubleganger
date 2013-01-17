@@ -1,8 +1,8 @@
 package de.consistec.syncframework.common.util;
 
+import static de.consistec.syncframework.common.ConfigConstants.DELIMITER;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
-import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.exception.ConfigException;
 import de.consistec.syncframework.common.i18n.Errors;
 
@@ -32,6 +32,7 @@ public final class PropertiesUtil {
     //</editor-fold>
 
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
+
     /**
      * Reads the enumeration value from given Properties object, and if the property isn't found,
      * then depending on the <i>"required"</i> param value, method will ends program
@@ -49,7 +50,8 @@ public final class PropertiesUtil {
      * @throws InvocationTargetException
      */
     public static <T extends Enum> T readEnum(final Properties props, final String name, final boolean required,
-        final Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+                                              final Class<T> clazz
+    ) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final String stringValue = readString(props, name, required);
         if (StringUtil.isNullOrEmpty(stringValue) && !required) {
             return null;
@@ -71,7 +73,8 @@ public final class PropertiesUtil {
      * @return The number specified in given Properties object under the key <i>"name"</i>
      */
     public static <T extends Number> T readNumber(final Properties props, final String name, final boolean required,
-        final Class<T> clazz) { //NOSONAR
+                                                  final Class<T> clazz
+    ) { //NOSONAR
         String stringValue = readString(props, name, required);
 
         if (!required && StringUtil.isNullOrEmpty(stringValue)) {
@@ -113,7 +116,7 @@ public final class PropertiesUtil {
      * @param name Key to find the String in <i>props</i> object.
      * @param required true if methods should ends with ConfigException in cease of property absence.
      * @return String value specified in given Properties object under the key <i>"name"</i>
-     * or null if {@code required} parameter is {@code false}.
+     *         or null if {@code required} parameter is {@code false}.
      */
     public static String readString(final Properties props, final String name, final boolean required) {
 
@@ -135,13 +138,14 @@ public final class PropertiesUtil {
      * @param required true if methods should ends with ConfigException in cease of property absence.
      * @param clazz type of returned collection
      * @return Collection of Strings specified as one String separated with
-     * {@link de.consistec.syncframework.common.Config#DELIMITER } in given Properties object under the key
-     * <i>"name"</i>
+     *         {@link de.consistec.syncframework.common.Config#DELIMITER } in given Properties object under the key
+     *         <i>"name"</i>
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
     public static Collection<String> readCollection(final Properties props, final String name, final boolean required,
-        final Class<? extends Collection> clazz) throws InstantiationException, IllegalAccessException {
+                                                    final Class<? extends Collection> clazz
+    ) throws InstantiationException, IllegalAccessException {
 
         final String value = readString(props, name, required);
         if (StringUtil.isNullOrEmpty(value) && !required) {
@@ -150,7 +154,7 @@ public final class PropertiesUtil {
 
         final Collection<String> result = clazz.newInstance();
         if (!StringUtil.isNullOrEmpty(value)) {
-            result.addAll(Arrays.asList(value.split(Config.DELIMITER)));
+            result.addAll(Arrays.asList(value.split(DELIMITER)));
         }
 
         return result;
@@ -212,7 +216,7 @@ public final class PropertiesUtil {
      * @param defaultValue default value.
      * @param valueToCheck current value.
      * @return If <i>valueToCheck</i> is <i>null</i> then return <i>defaultValue</i>.
-     * Otherwise return <i>valueToCheck</i>.
+     *         Otherwise return <i>valueToCheck</i>.
      */
     public static <T> T defaultIfNull(final T defaultValue, final T valueToCheck) {
 

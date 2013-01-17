@@ -4,7 +4,7 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.common.util.PropertiesUtil.readString;
 import static de.consistec.syncframework.common.util.StringUtil.isNullOrEmpty;
 
-import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.ConfigConstants;
 import de.consistec.syncframework.common.util.StringUtil;
 
 import java.io.IOException;
@@ -24,21 +24,21 @@ import org.powermock.reflect.Whitebox;
  * <p>This class provides only implementation for {@link javax.sql.DataSource#getConnection() getConnection()} method.
  * All others will throw {@link UnsupportedOperationException} </p>
  *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 10.12.2012 16:11:34
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 public class DumpDataSource implements DataSource {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
+    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private SupportedDatabases dbType;
     private ConnectionType conType;
     private List<Connection> createdConnections;
     private String propertiesPrefix;
 //</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
+    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
     public DumpDataSource(SupportedDatabases dbType, ConnectionType conType) {
         this.dbType = dbType;
         this.conType = conType;
@@ -46,12 +46,14 @@ public class DumpDataSource implements DataSource {
         try {
             if (conType == ConnectionType.CLIENT) {
 
-                propertiesPrefix = String.valueOf(Whitebox.getField(Config.class, "OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP").get(
-                    null));
+                propertiesPrefix = String.valueOf(
+                    Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP").get(
+                        null));
 
             } else {
-                propertiesPrefix = String.valueOf(Whitebox.getField(Config.class, "OPTIONS_COMMON_SERV_DB_ADAP_GROUP").get(
-                    null));
+                propertiesPrefix = String.valueOf(
+                    Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_SERV_DB_ADAP_GROUP").get(
+                        null));
             }
 
             propertiesPrefix += ".";
@@ -64,7 +66,7 @@ public class DumpDataSource implements DataSource {
     }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
+    //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
     public SupportedDatabases getDbType() {
         return dbType;
     }
@@ -74,7 +76,7 @@ public class DumpDataSource implements DataSource {
     }
 //</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
+    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private Connection create() throws Exception {
 
         Connection con = null;
@@ -170,7 +172,6 @@ public class DumpDataSource implements DataSource {
     }
 
     /**
-     *
      * @return Unmodifiable list of created connections.
      */
     public List<Connection> getCreatedConnections() {
@@ -214,11 +215,13 @@ public class DumpDataSource implements DataSource {
     }
     //</editor-fold>
 
-//</editor-fold>
+    //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Inner types " >
     public enum SupportedDatabases {
 
         POSTGRESQL, MYSQL, SQLITE;
-    };
+    }
+
+    ;
     //</editor-fold>
 }

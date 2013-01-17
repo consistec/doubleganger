@@ -7,9 +7,10 @@ import ch.qos.cal10n.LocaleData;
 /**
  * List of info messages used in framework.
  * <p/>
+ *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 30.11.2012 12:16:31
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 @BaseName("de/consistec/syncframework/common/i18n/infos")
@@ -233,6 +234,10 @@ public enum Infos {
      * <b>Parameters:</b> isolation level.
      * </p>
      */
-    DATA_TRANS_ISOLATION_LEVEL;
+    DATA_TRANS_ISOLATION_LEVEL,
+    /**
+     * Information about validation of settings.
+     */
+    COMMON_SETTINGS_VALIDATION;
     //</editor-fold>
 }

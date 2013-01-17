@@ -29,7 +29,7 @@ public class TestDatabase {
     }
 
     public void init() throws SQLException, IOException {
-        Config.getInstance().loadFromFile(getClass().getResourceAsStream(configFile));
+        Config.getInstance().init(getClass().getResourceAsStream(configFile));
 
         serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
         serverConnection = serverDs.getConnection();

@@ -3,7 +3,7 @@
 # script which is called from jmeter-tests to run the TestSyncClient
 
 FILE="${basedir}/target/TestSyncClientFull.jar"
-#DEBUG="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+# DEBUG="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
 # ------------------------------------------
 # ---------- arguments description ---------

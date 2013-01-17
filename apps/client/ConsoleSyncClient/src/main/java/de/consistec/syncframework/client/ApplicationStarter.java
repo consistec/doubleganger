@@ -60,7 +60,7 @@ public class ApplicationStarter {
     private static final String OPTION_OUPTUT_FILE = "o";
     private static final String OPTION_SETTINGS_FILE = "s";
     private static final Config CONF = Config.getInstance();
-//    private static final String OPTION_MULTITHREADED_MODE = "m";
+    //    private static final String OPTION_MULTITHREADED_MODE = "m";
     private Options options = new Options();
 
     public void start(final String[] args) throws DatabaseAdapterException, ContextException, SyncException {
@@ -80,7 +80,7 @@ public class ApplicationStarter {
             }
 
             InputStream in = new FileInputStream(line.getOptionValue(OPTION_SETTINGS_FILE));
-            CONF.loadFromFile(in);
+            CONF.init(in);
 
             //</editor-fold>
 
@@ -90,11 +90,11 @@ public class ApplicationStarter {
 //            }
 
             if (line.hasOption("--server-wins")) {
-                CONF.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
             } else if (line.hasOption("--client-wins")) {
-                CONF.setConflictStrategy(ConflictStrategy.CLIENT_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.CLIENT_WINS);
             } else {
-                CONF.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+                CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
             }
 
             if (CONF.getServerProxy() == null) {
@@ -110,7 +110,7 @@ public class ApplicationStarter {
         }
     }
 
-//    /**
+    //    /**
 //     * @param threadNumber
 //     * @throws DatabaseAdapterException
 //     */

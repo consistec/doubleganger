@@ -16,6 +16,21 @@
 package de.consistec.syncframework.common.util;
 
 
+import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
+import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
+import static de.consistec.syncframework.common.i18n.MessageReader.read;
+
+import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncDirection;
+import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.conflict.ConflictStrategy;
+import de.consistec.syncframework.common.data.Change;
+import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.i18n.Errors;
+import de.consistec.syncframework.common.i18n.MessageReader;
+
+import java.util.List;
+
 /**
  * This class was copied from <a href="http://code.google.com/p/guava-libraries/">Guava</a> library.
  * <p/>
@@ -417,5 +432,120 @@ public final class Preconditions {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Validates the state of the global configured sync direction and conflict strategy.
+     * <p/>
+     * Invalid states are the following:
+     * <ul>
+     * <li>
+     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+     * </li>
+     * <li>
+     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+     * </li>
+     * </ul>
+     */
+    public static void checkGlobalSyncDirectionAndConflictStrategyState() {
+        SyncDirection globalSyncDirection = Config.getInstance().getGlobalSyncDirection();
+        ConflictStrategy globalConflictStrategy = Config.getInstance().getGlobalConflictStrategy();
+
+        checkSyncDirectionAndConflictStrategyState(globalSyncDirection, globalConflictStrategy);
+    }
+
+    /**
+     * Validates the state of sync direction and conflict strategy.
+     * <p/>
+     * Invalid states are the following:
+     * <ul>
+     * <li>
+     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+     * </li>
+     * <li>
+     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+     * </li>
+     * </ul>
+     *
+     * @param direction - sync direction to validate
+     * @param strategy - conflict strategy to validate
+     */
+    public static void checkSyncDirectionAndConflictStrategyState(SyncDirection direction, ConflictStrategy strategy
+    ) {
+        if ((strategy == ConflictStrategy.SERVER_WINS || strategy == ConflictStrategy.FIRE_EVENT)
+            && direction == SyncDirection.CLIENT_TO_SERVER
+            || (strategy == ConflictStrategy.CLIENT_WINS || strategy == ConflictStrategy.FIRE_EVENT)
+            && direction == SyncDirection.SERVER_TO_CLIENT) {
+            throw new IllegalStateException(
+                read(Errors.NOT_SUPPORTED_CONFLICT_STRATEGY, strategy.name(), direction.name()));
+        }
+    }
+
+    /**
+     * Checks the expression. If the expression is false then a SyncException will be thrown.
+     *
+     * @param expression expression to check
+     * @param errorMsg the error message passed through the SyncException
+     * @throws SyncException thrown if expression is false
+     */
+    public static void checkSyncState(boolean expression, Errors errorMsg) throws SyncException {
+        if (!expression) {
+            throw new SyncException(MessageReader.read(errorMsg));
+        }
+    }
+
+    /**
+     * Checks if the passed server changes are valid synced. This means that the client has a valid
+     * table sync strategy for the change.
+     * For example:
+     * The client has for table "categories" the table sync strategy: direction -> client_to_server
+     * then the server should not sync changes for this table. In this case the method will throw a
+     * SyncException.
+     *
+     * @param changes synced server changes
+     * @param clientStrategies the table sync strategies on client
+     * @throws SyncException if changes are invalid synced
+     */
+    public static void checkSyncDirectionOfServerChanges(List<Change> changes, TableSyncStrategies clientStrategies
+    ) throws SyncException {
+        checkSyncDirectionOfChanges(changes, clientStrategies, CLIENT_TO_SERVER,
+            Errors.COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE);
+    }
+
+    /**
+     * Checks if the passed client changes are valid synced. This means that the server has a valid
+     * table sync strategy for the change.
+     * For example:
+     * The server has for table "categories" the table sync strategy: direction -> server_to_client
+     * then the client should not sync changes for this table. In this case the method will throw a
+     * SyncException.
+     *
+     * @param changes synced client changes
+     * @param serverStrategies the table sync strategies on server
+     * @throws SyncException if changes are invalid synced
+     */
+    public static void checkSyncDirectionOfClientChanges(List<Change> changes, TableSyncStrategies serverStrategies
+    ) throws SyncException {
+        checkSyncDirectionOfChanges(changes, serverStrategies, SERVER_TO_CLIENT,
+            Errors.COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE);
+    }
+
+    private static void checkSyncDirectionOfChanges(List<Change> changes, TableSyncStrategies serverStrategies,
+                                                    SyncDirection direction, Errors errorMsg
+    ) throws SyncException {
+        StringBuilder invalidTableNames = new StringBuilder();
+        for (Change change : changes) {
+            String tableName = change.getMdEntry().getTableName();
+
+            if ((serverStrategies.getSyncStrategyForTable(tableName).getDirection() == direction)) {
+                invalidTableNames.append(tableName).append(", ");
+            }
+        }
+
+        if (!invalidTableNames.toString().isEmpty()) {
+            invalidTableNames.delete(invalidTableNames.length() - 2, invalidTableNames.length());
+            throw new SyncException(
+                MessageReader.read(errorMsg, invalidTableNames));
+        }
     }
 }

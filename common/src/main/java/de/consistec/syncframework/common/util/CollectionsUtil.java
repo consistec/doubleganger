@@ -7,8 +7,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -248,6 +250,56 @@ public final class CollectionsUtil {
         }
         return tupleList;
     }
+
+    /**
+     * Returns true iff a is a sub-collection of b, that is,
+     * if the cardinality of e in a is less than or equal to the cardinality of e in b,
+     * for each element e in a.
+     *
+     * @param a
+     * @param b
+     * @return
+     */
+    public static boolean isSubCollection(final Collection a, final Collection b) {
+        Map mapa = getCardinalityMap(a);
+        Map mapb = getCardinalityMap(b);
+        Iterator it = a.iterator();
+        while (it.hasNext()) {
+            Object obj = it.next();
+            if (getFreq(obj, mapa) > getFreq(obj, mapb)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static final int getFreq(final Object obj, final Map freqMap) {
+        try {
+            return ((Integer) (freqMap.get(obj))).intValue();
+        } catch (NullPointerException e) {
+            // ignored
+        } catch (NoSuchElementException e) {
+            // ignored
+        }
+        return 0;
+    }
+
+    private static Map getCardinalityMap(final Collection col) {
+        HashMap count = new HashMap();
+        Iterator it = col.iterator();
+
+        while (it.hasNext()) {
+            Object obj = it.next();
+            Integer c = (Integer) (count.get(obj));
+            if (null == c) {
+                count.put(obj, new Integer(1));
+            } else {
+                count.put(obj, new Integer(c.intValue() + 1));
+            }
+        }
+        return count;
+    }
+
     /**
      * CHECKSTYLE:ON
      */

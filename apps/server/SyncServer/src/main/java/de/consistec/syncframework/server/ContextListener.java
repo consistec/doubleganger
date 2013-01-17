@@ -62,7 +62,7 @@ public class ContextListener implements ServletContextListener {
         } catch (IOException ex) {
             throw new ConfigException("Error while loading server configuration", ex);
         }
-        
+
         try {
             prepareHttpProcessor();
         } catch (Exception ex) {
@@ -111,7 +111,8 @@ public class ContextListener implements ServletContextListener {
         try {
             fis = new FileInputStream(readFile(readParamFromContext(DEFAULT_FRAMEWORK_CONFIG_FILE,
                 PARAMA_SYNC_CONFIG_FILE_NAME)));
-            Config.getInstance().loadFromFile(fis);
+            Config config = Config.getInstance();
+            config.init(fis);
         } finally {
             if (fis != null) {
                 try {

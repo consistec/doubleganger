@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
 import de.consistec.syncframework.common.exception.SerializationException;
 
-import java.io.InputStream;
-import java.util.Scanner;
 import org.junit.Test;
 
 /**

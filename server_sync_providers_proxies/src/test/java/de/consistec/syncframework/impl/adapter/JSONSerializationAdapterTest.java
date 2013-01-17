@@ -25,10 +25,19 @@ package de.consistec.syncframework.impl.adapter;
 
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import de.consistec.syncframework.common.SyncDirection;
+import de.consistec.syncframework.common.SyncSettings;
+import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.TestBase;
 import de.consistec.syncframework.common.TestUtil;
+import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -38,6 +47,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.junit.Test;
 
 /**
@@ -94,6 +106,64 @@ public class JSONSerializationAdapterTest extends TestBase {
     }
 
     @Test
+    public void testTupleSerialization() throws SerializationException {
+
+        final List<Change> changeList = newArrayList();
+        MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
+        Map<String, Object> rowData = newHashMap();
+        rowData.put(COLUMNNAME1, 1);
+        rowData.put(COLUMNNAME2, TEST_STRING);
+        rowData.put(COLUMNNAME3, true);
+        rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
+        rowData.put(COLUMNNAME5, 4.5);
+        rowData.put(COLUMNNAME6, null);
+        changeList.add(new Change(entry, rowData));
+
+        entry = new MDEntry(2, false, 2, TABLENAME2, TEST_MDV);
+        rowData = new HashMap<String, Object>();
+        rowData.put(COLUMNNAME1, 2);
+        rowData.put(COLUMNNAME2, TEST_STRING);
+        rowData.put(COLUMNNAME3, "false");
+        rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
+        rowData.put(COLUMNNAME5, 3.14);
+        rowData.put(COLUMNNAME6, null);
+        changeList.add(new Change(entry, rowData));
+
+        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+//        final String jsonChangeList = adapter.serializeChangeList(changeList);
+        final String jsonChangeList = adapter.serializeChangeList(tuple);
+        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+            jsonChangeList);
+
+        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
+            deserializedTuple.getValue1());
+        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
+            deserializedTuple.getValue2());
+    }
+
+    @Test
+    public void testTupleSerializationEmptyChangeList() throws SerializationException {
+
+        final List<Change> changeList = newArrayList();
+
+        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+//        final String jsonChangeList = adapter.serializeChangeList(changeList);
+        final String jsonChangeList = adapter.serializeChangeList(tuple);
+        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+            jsonChangeList);
+
+        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
+            deserializedTuple.getValue1());
+        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
+            deserializedTuple.getValue2());
+    }
+
+
+    @Test
     public void testSchemaSerialization() throws SerializationException {
 
         final Schema schema = TestUtil.getSchema();
@@ -102,5 +172,78 @@ public class JSONSerializationAdapterTest extends TestBase {
         final Schema deserializedSchema = adapter.deserializeSchema(jsonSchema);
         assertEquals("Original and deserialised schemas are different", schema, deserializedSchema);
 
+    }
+
+    @Test
+    public void serializeSettings() throws SerializationException, JSONException {
+        Set<String> tables = newHashSet();
+        tables.add("categories");
+        tables.add("items");
+        tables.add("customers");
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        strategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SyncDirection.BIDIRECTIONAL, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("customers",
+            new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER, ConflictStrategy.CLIENT_WINS));
+
+        SyncSettings settings = new SyncSettings(tables, strategies);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+        String serializedSettings = adapter.serializeSettings(settings);
+
+        JSONArray array = new JSONArray(serializedSettings);
+        assertTrue(array.length() == 2);
+
+        JSONArray tableArray = array.getJSONArray(0);
+        JSONArray strategyArray = array.getJSONArray(1);
+
+        int i = 0;
+        for (String table : tables) {
+            assertEquals(table, tableArray.getString(i));
+            i++;
+        }
+
+        int j = 0;
+        for (String table : settings.getSyncTables()) {
+            String direction = strategyArray.getJSONObject(j).getString("direction");
+            String conflictStrategy = strategyArray.getJSONObject(j).getString("conflictStrategy");
+
+            assertEquals(settings.getStrategy(table).getDirection().name(), direction);
+            assertEquals(settings.getStrategy(table).getConflictStrategy().name(),
+                conflictStrategy);
+
+            j++;
+        }
+    }
+
+    @Test
+    public void deserializeSettings() throws SerializationException, JSONException {
+        Set<String> tables = newHashSet();
+        tables.add("categories");
+        tables.add("items");
+        tables.add("customers");
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        strategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SyncDirection.BIDIRECTIONAL, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("customers",
+            new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER, ConflictStrategy.CLIENT_WINS));
+
+        SyncSettings settings = new SyncSettings(tables, strategies);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+        String serializedSettings = adapter.serializeSettings(settings);
+
+        SyncSettings deserializedSettings = adapter.deserializeSettings(serializedSettings);
+
+        assertArrayEquals(settings.getSyncTables().toArray(new String[0]),
+            deserializedSettings.getSyncTables().toArray(new String[0]));
+
+        for (String tableName : settings.getSyncTables()) {
+            assertEquals(settings.getStrategy(tableName), deserializedSettings.getStrategy(tableName));
+        }
     }
 }

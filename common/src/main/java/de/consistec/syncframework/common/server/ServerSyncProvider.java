@@ -3,10 +3,14 @@ package de.consistec.syncframework.common.server;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static de.consistec.syncframework.common.util.Preconditions.checkSyncDirectionOfClientChanges;
+import static de.consistec.syncframework.common.util.Preconditions.checkSyncState;
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
@@ -20,6 +24,7 @@ import de.consistec.syncframework.common.exception.database_adapter.TransactionA
 import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
+import de.consistec.syncframework.common.i18n.MessageReader;
 import de.consistec.syncframework.common.util.LoggingUtil;
 
 import java.sql.SQLException;
@@ -63,6 +68,9 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerSyncProvider.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
 
+    // database adapter only for test classes
+    private IDatabaseAdapter dbAdapter;
+
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
@@ -89,6 +97,19 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         super(strategies, ds);
     }
 
+    /**
+     * Creates provider which will be using the passed database adapter.
+     *
+     * @param strategies Special synchronization strategies for tables. given
+     * @param dbAdapter external db adapter
+     * @throws DatabaseAdapterException
+     */
+    public ServerSyncProvider(TableSyncStrategies strategies, IDatabaseAdapter dbAdapter) throws
+        DatabaseAdapterException {
+        super(strategies);
+        this.dbAdapter = dbAdapter;
+    }
+
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
@@ -97,7 +118,12 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
      *
      * @return Adapter object.
      */
-    private IDatabaseAdapter prepareDbAdapter() throws DatabaseAdapterInstantiationException {
+    private IDatabaseAdapter prepareDbAdapter() throws
+        DatabaseAdapterInstantiationException {
+
+        if (dbAdapter != null) {
+            return dbAdapter;
+        }
 
         IDatabaseAdapter adapter;
         try {
@@ -118,7 +144,47 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     }
 
     @Override
+    public void validate(final SyncSettings clientSettings) throws SyncException {
+
+        SyncSettings serverSettings = new SyncSettings(CONF.getSyncTables(), getStrategies());
+
+        checkSyncState(serverSettings.getSyncTables().containsAll(clientSettings.getSyncTables()),
+            Errors.COMMON_SYNCTABLE_SETTINGS_ERROR);
+
+        for (String clientTable : clientSettings.getSyncTables()) {
+            TableSyncStrategy clientSyncStrategy = clientSettings.getStrategy(clientTable);
+            TableSyncStrategy serverSyncStrategy = serverSettings.getStrategy(clientTable);
+            if (!clientSyncStrategy.equals(serverSyncStrategy)) {
+                throw new SyncException(MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
+                    serverSyncStrategy));
+            }
+
+            IDatabaseAdapter adapter = null;
+            boolean mdTableExists = false;
+            try {
+                adapter = prepareDbAdapter();
+
+                // prepareDbAdapter sets the autocommit to false but here we need it set to true
+                adapter.getConnection().setAutoCommit(true);
+
+                String mdTable = clientTable + CONF.getMdTableSuffix();
+                mdTableExists = adapter.existsMDTable(mdTable);
+
+                if (!mdTableExists) {
+                    adapter.createMDTable(clientTable);
+                }
+            } catch (SQLException e) {
+                throw new SyncException(e);
+            } catch (DatabaseAdapterException e) {
+                throw new SyncException(e);
+            }
+        }
+    }
+
+    @Override
     public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+
+        checkSyncDirectionOfClientChanges(changes, getStrategies());
 
         int retries = CONF.getRetryNumberOfApplyChangesOnTransactionError();
         IDatabaseAdapter adapter = null;

@@ -19,16 +19,16 @@ import de.consistec.syncframework.common.exception.SerializationException;
  * @date 26.07.12 15:25
  * @since 0.0.1-SNAPSHOT
  */
-public interface ISQLConverter {
+public interface ISQLConverter<T> {
 
     /**
      * Converts {@link de.consistec.syncframework.common.data.schema.Schema Schema} object to SQL query.
      *
-     * @param schema Schema to convert.
+     * @param objectToConvert object to convert.
      * @return Sql queries to build the schema in database.
      * @throws SchemaConverterException if conversion fails.
      */
-    String toSQL(Schema schema) throws SchemaConverterException;
+    String toSQL(T objectToConvert) throws SchemaConverterException;
 
     /**
      * Converts any xml document to SQL query.

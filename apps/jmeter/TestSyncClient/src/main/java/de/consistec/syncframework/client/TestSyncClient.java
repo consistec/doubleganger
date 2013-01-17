@@ -102,7 +102,7 @@ public class TestSyncClient {
 
             int clientThreadNumber = Integer.valueOf(line.getOptionValue("m")).intValue();
 
-            CONF.loadFromFile(new FileInputStream(line.getOptionValue("s")));
+            CONF.init(new FileInputStream(line.getOptionValue("s")));
 
             LOGGER.debug("Client db adapter: {}", CONF.getClientDatabaseAdapter());
             LOGGER.debug("Client db adapter properties {}", CONF.getClientDatabaseProperties().entrySet());
@@ -122,7 +122,7 @@ public class TestSyncClient {
                 LOGGER.info("SyncRetryNumber set to {}", Integer.valueOf(CONF.getSyncRetryNumber()));
             }
 
-            CONF.setConflictStrategy(ConflictStrategy.SERVER_WINS);
+            CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
             // initial sync
             sync(clientThreadNumber);
 

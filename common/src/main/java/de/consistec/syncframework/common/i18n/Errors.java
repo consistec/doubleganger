@@ -311,7 +311,33 @@ public enum Errors {
      * This is an implementation error.
      * The conflict should never occur due to the configured sync direction and conflict strategy.
      */
-    CONFLICT_CAN_NOT_HAPPEN;
+    CONFLICT_CAN_NOT_HAPPEN,
+    /**
+     * Synctables which are configured on client side contains table(s) which are not
+     * configured on server side.
+     */
+    COMMON_SYNCTABLE_SETTINGS_ERROR,
+
+    /**
+     * The sync strategy from client differ from servers sync strategy.
+     */
+    COMMON_NOT_IDENTICAL_SYNCSTRATEGY,
+    /**
+     * synced changes from client to server with sync direction SERVER_TO_CLIENT are not allowed.
+     */
+    COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE,
+    /**
+     * synced changes from client to server with sync direction SERVER_TO_CLIENT are not allowed.
+     */
+    COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC,
+    /**
+     * synced changes from server to client with sync direction CLIENT_TO_SERVER are not allowed.
+     */
+    COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE,
+    /**
+     * synced changes from server to client with sync direction CLIENT_TO_SERVER are not allowed.
+     */
+    COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC;
 
     //</editor-fold>
 }

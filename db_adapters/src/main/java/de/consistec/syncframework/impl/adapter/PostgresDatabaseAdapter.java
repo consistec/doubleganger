@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * @date 05.07.12 14:29
  * @since 0.0.1-SNAPSHOT
  */
-public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
+public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
     /**
      * Host property name.
@@ -87,7 +87,7 @@ public final class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Do not let direct object creation.
      */
-    private PostgresDatabaseAdapter() {
+    public PostgresDatabaseAdapter() {
         LOGGER.debug("created new {}", getClass().getCanonicalName());
     }
 

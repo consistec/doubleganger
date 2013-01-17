@@ -3,7 +3,6 @@ package de.consistec.syncframework.impl.adapter;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
-import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.i18n.Errors;
@@ -39,7 +38,7 @@ public class ChangeLogToSQLConverter implements ISQLConverter {
      * @see de.consistec.syncframework.common.data.schema.ISQLConverter.toSQL(final de.consistec.syncframework.common.data.schema.Schema schema)
      */
     @Override
-    public String toSQL(final Schema schema) throws SchemaConverterException {
+    public String toSQL(Object objectToConvert) throws SchemaConverterException {
         return "";
     }
 

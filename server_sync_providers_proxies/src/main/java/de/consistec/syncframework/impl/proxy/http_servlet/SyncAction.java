@@ -3,9 +3,10 @@ package de.consistec.syncframework.impl.proxy.http_servlet;
 /**
  * Available actions to invoke on synchronization Servlet.
  * <p/>
+ *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 02.11.2012 11:10:39
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 public enum SyncAction {
@@ -26,7 +27,15 @@ public enum SyncAction {
      * method of
      * server provider.
      */
-    APPLY_CHANGES("applychanges");
+    APPLY_CHANGES("applychanges"),
+    /**
+     * Corresponds with
+     * {@link de.consistec.syncframework.common.server.IServerSyncProvider#validate(
+     *de.consistec.syncframework.common.SyncSettings)}
+     * method of
+     * server provider.
+     */
+    VALIDATE_SETTINGS("validate");
 
     private String name;
 
@@ -46,6 +55,7 @@ public enum SyncAction {
     /**
      * Produces SyncAction instances.
      * <p/>
+     *
      * @param stringName Action name as it is used in http request.
      * @return Instance of SyncAction corresponding to given <i>stringName</i>
      */
