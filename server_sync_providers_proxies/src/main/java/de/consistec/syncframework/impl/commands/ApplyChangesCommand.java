@@ -2,15 +2,14 @@ package de.consistec.syncframework.impl.commands;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
-import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.common.util.StringUtil;
-import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
 import de.consistec.syncframework.impl.i18n.Errors;
 import de.consistec.syncframework.impl.i18n.Infos;
+import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues;
 
 import java.util.List;
 import org.slf4j.cal10n.LocLogger;
@@ -43,30 +42,28 @@ public class ApplyChangesCommand implements RequestCommand {
      * {@link de.consistec.syncframework.common.SyncContext.ServerContext applyChanges() }
      * and returns the result.
      *
-     * @param ctx serverContext
-     * @param serializationAdapter adapter for serialize the request parameter
-     * @param revision the client revision
-     * @param clientChanges the client changes
+     * @param paramValues values transfered through the http request parameter
      * @return the result of the server operation applyChanges().
      * @throws SyncException
      * @throws SerializationException
      */
     @Override
-    public String execute(final SyncContext.ServerContext ctx, final ISerializationAdapter serializationAdapter,
-                          final String revision, final String clientChanges
+    public String execute(final HttpRequestParamValues paramValues
     ) throws
         SyncException,
         SerializationException {
 
-        if (!StringUtil.isNullOrEmpty(clientChanges) && !StringUtil.isNullOrEmpty(revision)) {
+        if (!StringUtil.isNullOrEmpty(paramValues.getClientChanges()) && !StringUtil.isNullOrEmpty(
+            paramValues.getClientRevision())) {
             try {
-                final int clientRevision = Integer.valueOf(revision);
+                final int clientRevision = Integer.valueOf(paramValues.getClientRevision());
 
-                List<Change> deserializedChanges = serializationAdapter.deserializeChangeList(
-                    clientChanges);
+                List<Change> deserializedChanges = paramValues.getSerializationAdapter().deserializeChangeList(
+                    paramValues.getClientChanges());
                 LOGGER.debug("deserialized Changes:");
                 LOGGER.debug("<{}>", deserializedChanges);
-                int nextServerRevisionSendToClient = ctx.applyChanges(deserializedChanges, clientRevision);
+                int nextServerRevisionSendToClient = paramValues.getCtx().applyChanges(deserializedChanges,
+                    clientRevision);
                 LOGGER.info(Infos.NEW_SERVER_REVISION, nextServerRevisionSendToClient);
 
                 return String.valueOf(nextServerRevisionSendToClient);

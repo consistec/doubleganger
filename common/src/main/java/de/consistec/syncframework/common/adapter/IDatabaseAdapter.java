@@ -64,6 +64,14 @@ public interface IDatabaseAdapter {
     ISQLConverter getSchemaConverter();
 
     /**
+     * Returns a table sql converter for the current database.
+     *
+     * @return the converter object
+     * @see de.consistec.syncframework.common.data.schema.ISQLConverter
+     */
+    ISQLConverter getTableConverter();
+
+    /**
      * Return a list of changes since the given revision.
      * <p/>
      *
@@ -305,4 +313,19 @@ public interface IDatabaseAdapter {
      * @throws DatabaseAdapterException
      */
     void commit() throws DatabaseAdapterException;
+
+    /**
+     * Checks if the meta data table for the passed db table name exists.
+     *
+     * @param tableName name of db table which meta data table is checked
+     * @return true if meta data table exists otherwise false
+     */
+    boolean existsMDTable(String tableName) throws DatabaseAdapterException;
+
+    /**
+     * Creates the meta data table for the passed db table name.
+     *
+     * @param tableName name of db table which meta data table will be created.
+     */
+    void createMDTable(String tableName) throws DatabaseAdapterException;
 }

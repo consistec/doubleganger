@@ -26,9 +26,14 @@ package de.consistec.syncframework.impl.adapter;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
 
+import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.SyncSettings;
+import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -40,6 +45,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -292,6 +298,29 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
         jsonArray.put(tableJSONArray);
         jsonArray.put(strategyJSONArray);
         return jsonArray.toString();
+    }
+
+    @Override
+    public SyncSettings deserializeSettings(final String serializedObject) throws SerializationException {
+        try {
+            final JSONArray settingsJSONArray = new JSONArray(serializedObject);
+            final JSONArray tableJSONArray = settingsJSONArray.getJSONArray(0);
+            final JSONArray strategyJSONArray = settingsJSONArray.getJSONArray(1);
+            Set<String> tableNames = newHashSet();
+            TableSyncStrategies strategies = new TableSyncStrategies();
+            for (int i = 0; i < tableJSONArray.length(); i++) {
+                String tableName = tableJSONArray.getString(i);
+                tableNames.add(tableName);
+                JSONObject strategyObject = strategyJSONArray.getJSONObject(i);
+                SyncDirection direction = SyncDirection.valueOf(strategyObject.getString("direction"));
+                ConflictStrategy strategy = ConflictStrategy.valueOf(strategyObject.getString("conflictStrategy"));
+                strategies.addSyncStrategyForTable(tableName, new TableSyncStrategy(direction, strategy));
+            }
+            return new SyncSettings(tableNames, strategies);
+
+        } catch (JSONException e) {
+            throw new SerializationException(e);
+        }
     }
     //</editor-fold>
 }

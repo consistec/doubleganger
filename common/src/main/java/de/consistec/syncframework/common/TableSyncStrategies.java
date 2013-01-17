@@ -132,4 +132,37 @@ public class TableSyncStrategies {
     public final void addAll(TableSyncStrategies strat) {
         this.addAll(strat.strategies);
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        TableSyncStrategies that = (TableSyncStrategies) o;
+
+        for (String tableName : strategies.keySet()) {
+            TableSyncStrategy strategy = strategies.get(tableName);
+            TableSyncStrategy thatStrategy = that.strategies.get(tableName);
+            if (!strategy.equals(thatStrategy)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+
+        int sumHashCode = 0;
+        for (String tableName : strategies.keySet()) {
+            TableSyncStrategy strategy = strategies.get(tableName);
+            sumHashCode += strategy.hashCode();
+        }
+        return sumHashCode;
+    }
 }

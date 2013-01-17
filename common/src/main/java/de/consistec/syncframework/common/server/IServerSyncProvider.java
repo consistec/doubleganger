@@ -56,5 +56,5 @@ public interface IServerSyncProvider {
      * @param clientSettings the settings of the client to validate
      * @throws SyncException thrown if validation failes
      */
-    void validateClientSettings(SyncSettings clientSettings) throws SyncException;
+    void validate(SyncSettings clientSettings) throws SyncException;
 }

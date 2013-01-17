@@ -144,7 +144,8 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     }
 
     @Override
-    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
+    public void validate(final SyncSettings clientSettings) throws SyncException {
+
         SyncSettings serverSettings = new SyncSettings(CONF.getSyncTables(), getStrategies());
 
         checkSyncState(serverSettings.getSyncTables().containsAll(clientSettings.getSyncTables()),
@@ -156,6 +157,26 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             if (!clientSyncStrategy.equals(serverSyncStrategy)) {
                 throw new SyncException(MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
                     serverSyncStrategy));
+            }
+
+            IDatabaseAdapter adapter = null;
+            boolean mdTableExists = false;
+            try {
+                adapter = prepareDbAdapter();
+
+                // prepareDbAdapter sets the autocommit to false but here we need it set to true
+                adapter.getConnection().setAutoCommit(true);
+
+                String mdTable = clientTable + CONF.getMdTableSuffix();
+                mdTableExists = adapter.existsMDTable(mdTable);
+
+                if (!mdTableExists) {
+                    adapter.createMDTable(clientTable);
+                }
+            } catch (SQLException e) {
+                throw new SyncException(e);
+            } catch (DatabaseAdapterException e) {
+                throw new SyncException(e);
             }
         }
     }

@@ -93,4 +93,12 @@ public interface ISerializationAdapter<T> {
      * @throws SerializationException
      */
     T serializeSettings(SyncSettings clientSettings) throws SerializationException;
+
+    /**
+     * deserialize the passed Object{@code <T>} to SyncSettings.
+     *
+     * @param serializedObject the serialized settings object
+     * @return SyncSettings
+     */
+    SyncSettings deserializeSettings(T serializedObject) throws SerializationException;
 }

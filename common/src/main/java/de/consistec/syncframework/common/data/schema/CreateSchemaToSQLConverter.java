@@ -12,14 +12,11 @@ import de.consistec.syncframework.common.util.SQLTypesUtil;
  * @date 26.07.12 14:21
  * @since 0.0.1-SNAPSHOT
  */
-public class CreateSchemaToSQLConverter extends SchemaToSQLAdapter {
+public class CreateSchemaToSQLConverter extends SQLConverterAdapter<Schema> {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
 
     //</editor-fold>
-
-    private static final char QUOTE = ' ';
-    private static final String LITERALS_COMMA = ",";
 
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
 

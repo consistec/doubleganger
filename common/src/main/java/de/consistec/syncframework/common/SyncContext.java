@@ -232,7 +232,7 @@ public final class SyncContext {
         LOGGER.info(Infos.COMMON_SETTINGS_VALIDATION);
 
         SyncSettings clientSettings = new SyncSettings(CONF.getSyncTables(), this.strategies);
-        serverProvider.validateClientSettings(clientSettings);
+        serverProvider.validate(clientSettings);
     }
 
     /**
@@ -662,6 +662,16 @@ public final class SyncContext {
          */
         public Schema getSchema() throws SyncException {
             return serverProvider.getSchema();
+        }
+
+        /**
+         * Validates the passed client settings and throws a SyncException if necessary.
+         *
+         * @param syncSettings client settings
+         * @throws SyncException
+         */
+        public void validate(SyncSettings syncSettings) throws SyncException {
+            serverProvider.validate(syncSettings);
         }
     }
 

@@ -6,6 +6,7 @@ import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static org.mockito.Mockito.when;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
@@ -13,6 +14,7 @@ import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.adapter.DumpDbAdapter;
+import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
@@ -62,7 +64,7 @@ public class ServerSyncProviderTest {
     @Mock
     private Connection connectionMock;
     @Mock
-    private DumpDbAdapter databaseAdapterMock;
+    private IDatabaseAdapter databaseAdapterMock;
 
 //    @Mock
 //    private ServerSyncProvider serverSyncProviderMock;
@@ -78,10 +80,13 @@ public class ServerSyncProviderTest {
 
         config.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
         config.setGlobalSyncDirection(SyncDirection.BIDIRECTIONAL);
+
+//        databaseAdapterMock.get.connection = connectionMock;
     }
 
     @Test
     public void validateClientSettings() throws DatabaseAdapterException, SyncException {
+
 
         Config.getInstance().addSyncTable("categories", "items");
 
@@ -91,7 +96,7 @@ public class ServerSyncProviderTest {
         serverSyncStrategies.addSyncStrategyForTable("items",
             new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
-        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies);
+        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies, databaseAdapterMock);
 
         Set<String> tablesToSync = newHashSet();
         tablesToSync.add("categories");
@@ -103,8 +108,11 @@ public class ServerSyncProviderTest {
         clientSyncStrategies.addSyncStrategyForTable("items",
             new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
+
+        when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
+
         SyncSettings clientSettings = new SyncSettings(tablesToSync, clientSyncStrategies);
-        serverSyncProvider.validateClientSettings(clientSettings);
+        serverSyncProvider.validate(clientSettings);
     }
 
     @Test(expected = SyncException.class)
@@ -116,7 +124,7 @@ public class ServerSyncProviderTest {
         serverSyncStrategies.addSyncStrategyForTable("items",
             new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
-        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies);
+        ServerSyncProvider serverSyncProvider = new ServerSyncProvider(serverSyncStrategies, databaseAdapterMock);
 
         Set<String> tablesToSync = newHashSet();
         tablesToSync.add("categories");
@@ -129,6 +137,6 @@ public class ServerSyncProviderTest {
             new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
 
         SyncSettings clientSettings = new SyncSettings(tablesToSync, clientSyncStrategies);
-        serverSyncProvider.validateClientSettings(clientSettings);
+        serverSyncProvider.validate(clientSettings);
     }
 }

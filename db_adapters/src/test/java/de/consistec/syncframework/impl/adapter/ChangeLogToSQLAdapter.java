@@ -1,7 +1,6 @@
 package de.consistec.syncframework.impl.adapter;
 
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
-import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.SerializationException;
 
@@ -13,7 +12,7 @@ import de.consistec.syncframework.common.exception.SerializationException;
  * @company Consistec Engineering and Consulting GmbH
  * @date 04.12.12 11:07
  */
-public abstract class ChangeLogToSQLAdapter implements ISQLConverter {
+public abstract class ChangeLogToSQLAdapter<T> implements ISQLConverter<T> {
 
 //<editor-fold defaultstate="expanded" desc=" Class fields " >
 
@@ -32,13 +31,13 @@ public abstract class ChangeLogToSQLAdapter implements ISQLConverter {
 //</editor-fold>
 
     /**
-     * @param schema Schema to convert.
+     * @param objectToConvert object to convert.
      * @return empty String because it is not necessary to implement
      * @throws SchemaConverterException if conversion fails.
      * @see de.consistec.syncframework.common.data.schema.ISQLConverter.toSQL(final de.consistec.syncframework.common.data.schema.Schema schema)
      */
     @Override
-    public String toSQL(final Schema schema) throws SchemaConverterException {
+    public String toSQL(final T objectToConvert) throws SchemaConverterException {
         return "";
     }
 

@@ -2,12 +2,11 @@ package de.consistec.syncframework.impl.commands;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
-import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
 import de.consistec.syncframework.impl.i18n.Errors;
+import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues;
 
 import org.slf4j.cal10n.LocLogger;
 
@@ -39,21 +38,17 @@ public class GetSchemaCommand implements RequestCommand {
      * {@link de.consistec.syncframework.common.SyncContext.ServerContext getSchema() }
      * and returns the result.
      *
-     * @param ctx serverContext
-     * @param serializationAdapter adapter for serialize the request parameter
-     * @param clientRevision the client revision
-     * @param clientChanges the client changes
+     * @param paramValues values transfered through the http request parameter
      * @return the result of the server operation getSchema().
      * @throws SyncException
      * @throws SerializationException
      */
     @Override
-    public String execute(SyncContext.ServerContext ctx, ISerializationAdapter serializationAdapter,
-                          String clientRevision, String clientChanges
+    public String execute(final HttpRequestParamValues paramValues
     ) throws
         SyncException, SerializationException {
         try {
-            return serializationAdapter.serializeSchema(ctx.getSchema()).toString();
+            return paramValues.getSerializationAdapter().serializeSchema(paramValues.getCtx().getSchema()).toString();
         } catch (SyncException e) {
             LOGGER.error(read(Errors.CANT_GET_CREATE_DB_SCHEMA), e);
             throw e;

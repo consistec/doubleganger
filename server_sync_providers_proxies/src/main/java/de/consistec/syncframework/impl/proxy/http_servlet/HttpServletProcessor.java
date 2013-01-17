@@ -1,10 +1,11 @@
 package de.consistec.syncframework.impl.proxy.http_servlet;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
-import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newSyncMap;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
+import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.SETTINGS;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.SyncContext;
@@ -22,6 +23,7 @@ import de.consistec.syncframework.impl.commands.ApplyChangesCommand;
 import de.consistec.syncframework.impl.commands.GetChangesCommand;
 import de.consistec.syncframework.impl.commands.GetSchemaCommand;
 import de.consistec.syncframework.impl.commands.RequestCommand;
+import de.consistec.syncframework.impl.commands.ValidateSettingsCommand;
 import de.consistec.syncframework.impl.i18n.Errors;
 import de.consistec.syncframework.impl.i18n.Warnings;
 
@@ -52,7 +54,7 @@ public class HttpServletProcessor {
     private ISerializationAdapter serializationAdapter;
     private final SyncContext.ServerContext serverContext;
 
-    private Map<String, RequestCommand> actionCommands = newHashMap();
+    private Map<String, RequestCommand> actionCommands = newSyncMap();
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructor " >
@@ -73,6 +75,7 @@ public class HttpServletProcessor {
         actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
         actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
         actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
+        actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
     }
 
     /**
@@ -119,8 +122,11 @@ public class HttpServletProcessor {
                 throw new UnsupportedOperationException(read(Errors.SERVER_UNSUPPORTED_ACTION));
             } else {
                 try {
-                    String response = command.execute(serverContext, serializationAdapter,
-                        req.getParameter(REVISION.name()), req.getParameter(CHANGES.name()));
+
+                    HttpRequestParamValues paramValues = new HttpRequestParamValues(serverContext, serializationAdapter,
+                        req.getParameter(REVISION.name()), req.getParameter(CHANGES.name()),
+                        req.getParameter(SETTINGS.name()));
+                    String response = command.execute(paramValues);
                     if (response != null) {
                         String encodedResponse = URLEncoder.encode(response, "UTF-8");
                         resp.getWriter().print(encodedResponse);

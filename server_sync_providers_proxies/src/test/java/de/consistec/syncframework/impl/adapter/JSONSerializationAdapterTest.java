@@ -26,6 +26,7 @@ package de.consistec.syncframework.impl.adapter;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -214,6 +215,35 @@ public class JSONSerializationAdapterTest extends TestBase {
                 conflictStrategy);
 
             j++;
+        }
+    }
+
+    @Test
+    public void deserializeSettings() throws SerializationException, JSONException {
+        Set<String> tables = newHashSet();
+        tables.add("categories");
+        tables.add("items");
+        tables.add("customers");
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        strategies.addSyncStrategyForTable("categories",
+            new TableSyncStrategy(SyncDirection.BIDIRECTIONAL, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("items",
+            new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT, ConflictStrategy.SERVER_WINS));
+        strategies.addSyncStrategyForTable("customers",
+            new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER, ConflictStrategy.CLIENT_WINS));
+
+        SyncSettings settings = new SyncSettings(tables, strategies);
+
+        final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
+        String serializedSettings = adapter.serializeSettings(settings);
+
+        SyncSettings deserializedSettings = adapter.deserializeSettings(serializedSettings);
+
+        assertArrayEquals(settings.getSyncTables().toArray(new String[0]),
+            deserializedSettings.getSyncTables().toArray(new String[0]));
+
+        for (String tableName : settings.getSyncTables()) {
+            assertEquals(settings.getStrategy(tableName), deserializedSettings.getStrategy(tableName));
         }
     }
 }

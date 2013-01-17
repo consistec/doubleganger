@@ -84,7 +84,7 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
     }
 
     @Override
-    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
+    public void validate(final SyncSettings clientSettings) throws SyncException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

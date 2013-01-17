@@ -114,10 +114,11 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     }
 
     @Override
-    public void validateClientSettings(final SyncSettings clientSettings) throws SyncException {
+    public void validate(final SyncSettings clientSettings) throws SyncException {
         try {
             List<NameValuePair> data = newArrayList();
             data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
+            data.add(new BasicNameValuePair(ACTION.name(), SyncAction.VALIDATE_SETTINGS.getStringName()));
             data.add(new BasicNameValuePair(SETTINGS.name(),
                 serializationAdapter.serializeSettings(clientSettings).toString()));
 

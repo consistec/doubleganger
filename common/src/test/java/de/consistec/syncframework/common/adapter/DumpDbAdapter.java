@@ -49,6 +49,11 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public ISQLConverter getTableConverter() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public void getChangesForRevision(int revision, String tableName, DatabaseAdapterCallback<ResultSet> callback)
         throws DatabaseAdapterException, TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -161,6 +166,15 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     @Override
     public void commit() throws DatabaseAdapterException, TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
+        return false;
+    }
+
+    @Override
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
     }
 
 //</editor-fold>

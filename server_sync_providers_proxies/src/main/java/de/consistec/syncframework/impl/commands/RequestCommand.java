@@ -1,9 +1,8 @@
 package de.consistec.syncframework.impl.commands;
 
-import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
+import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues;
 
 /**
  * This interface represents any server method call through http requests.
@@ -33,18 +32,14 @@ public interface RequestCommand {
      * {@link de.consistec.syncframework.common.SyncContext.ServerContext any method }
      * and returns the result.
      *
-     * @param ctx serverContext
-     * @param serializationAdapter adapter for serialize the request parameter
-     * @param clientRevision the client revision
-     * @param clientChanges the client changes
-     * @return the result of the server of any operation.
+     * @param paramValues values transfered through the http request parameter
+     * @return json serialized response from server
      * @throws SyncException
      * @throws SerializationException
      */
-    String execute(SyncContext.ServerContext ctx, ISerializationAdapter serializationAdapter,
-                   String clientRevision, String clientChanges
-    ) throws SyncException,
+    String execute(HttpRequestParamValues paramValues) throws SyncException,
         SerializationException;
+
 //</editor-fold>
 
 }
