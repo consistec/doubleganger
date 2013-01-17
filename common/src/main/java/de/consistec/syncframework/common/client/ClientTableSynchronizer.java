@@ -121,6 +121,13 @@ public class ClientTableSynchronizer {
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);
+                                        } else if (result.getInt("f") == CLIENT_FLAG) {
+                                            // if synchronization is repeated then previous changes or inserts are
+                                            // marked with teh CLIENT_FLAG
+                                            MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
+                                            change.setMdEntry(mdEntry);
+                                            change.setRowData(rowData);
+                                            changeList.add(change);
                                         }
                                     } else {
                                         // create new entry
