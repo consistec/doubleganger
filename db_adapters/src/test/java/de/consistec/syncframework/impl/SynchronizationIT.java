@@ -50,22 +50,24 @@ public class SynchronizationIT {
     protected static final Config CONF = Config.getInstance();
     protected TestDatabase db;
     protected TestScenario scenario;
-    protected static String deleteRow2 = "DELETE FROM categories WHERE id = 2";
-    protected static String updateRow2b = "UPDATE categories SET name = 'Cat2b', description = '2b' WHERE id = 2";
-    protected static String updateRow2c = "UPDATE categories SET name = 'Cat2c', description = '2c' WHERE id = 2";
-    protected static String insertRow3 = "INSERT INTO categories (id, name, description) VALUES (3, 'Cat3a', '3a')";
-    protected static String updateRow3 = "UPDATE categories SET name = 'Cat3b', description = '3b' WHERE id = 3";
-    protected static String deleteRow3 = "DELETE FROM categories WHERE id = 3";
+    protected static String deleteRow2 = "DELETE FROM categories WHERE categoryid = 2";
+    protected static String updateRow2b = "UPDATE categories SET categoryname = 'Cat2b', description = '2b' WHERE categoryid = 2";
+    protected static String updateRow2c = "UPDATE categories SET categoryname = 'Cat2c', description = '2c' WHERE categoryid = 2";
+    protected static String insertRow3 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (3, 'Cat3a', '3a')";
+    protected static String updateRow3 = "UPDATE categories SET categoryname = 'Cat3b', description = '3b' WHERE categoryid = 3";
+    protected static String deleteRow3 = "DELETE FROM categories WHERE categoryid = 3";
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
     protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
+        "CREATE TABLE categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (300),description VARCHAR (300));",
         "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
         "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
         "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "INSERT INTO categories (id, name, description) VALUES (1, 'Beverages', 'Soft drinks')",
-        "INSERT INTO categories (id, name, description) VALUES (2, 'Condiments', 'Sweet and ')",
-        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8B7132AE51A73532FBD29CCA15B2CB38', 1, 0)",
-        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, 'FB5EF33FE008589C86C0007AC0597E00', 2, 0)",};
+        "INSERT INTO categories (categoryid, categoryname, description) VALUES (1, 'Beverages', 'Soft drinks')",
+        "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
+//        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8B7132AE51A73532FBD29CCA15B2CB38', 1, 0)",
+        //        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, 'FB5EF33FE008589C86C0007AC0597E00', 2, 0)",};
+        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 0)",
+        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '75901F57520C09EB990837C7AA93F717', 2, 0)",};
 
     public SynchronizationIT(TestScenario scenario) {
         this.scenario = scenario;
@@ -98,7 +100,7 @@ public class SynchronizationIT {
         scenario.setConnections(db.getServerConnection(), db.getClientConnection());
 
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by id asc",
+            "select * from categories order by categoryid asc",
             "select * from categories_md order by pk asc"
         });
 
