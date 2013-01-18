@@ -72,6 +72,72 @@ public class TableSyncStrategyTest extends TestBase {
     }
 
     @Test
+    public void resolveConflictRemoveClientChange() throws Exception {
+
+        List<Change> changeList = newArrayList();
+        MDEntry entry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
+        Map<String, Object> rowServerData = newHashMap();
+        rowServerData.put(TEST_COLUMN1, 1);
+        rowServerData.put(TEST_COLUMN2, TEST_STRING);
+        rowServerData.put(TEST_COLUMN3, true);
+        rowServerData.put(TEST_COLUMN4, new Date(System.currentTimeMillis()));
+        rowServerData.put(TEST_COLUMN5, 4.5);
+        Change remoteChange = new Change(entry, rowServerData);
+
+        MDEntry clientEntry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
+        Map<String, Object> rowClientData = newHashMap();
+        rowClientData.put(TEST_COLUMN1, 1);
+        rowClientData.put(TEST_COLUMN2, TEST_STRING + "_updateClient");
+        rowClientData.put(TEST_COLUMN3, true);
+        rowClientData.put(TEST_COLUMN4, new Date(System.currentTimeMillis()));
+        rowClientData.put(TEST_COLUMN5, 4.5);
+        Change localChange = new Change(clientEntry, rowClientData);
+
+        List<Change> clientChanges = newArrayList();
+        clientChanges.add(localChange);
+
+        when(localDataResultSet.next()).thenReturn(false);
+
+        when(localHashResultSet.getInt("rev")).thenReturn(7);
+        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        HashCalculator clc = new HashCalculator();
+        String hashValue = clc.getHash(rowServerData);
+        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+
+        TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,
+            ConflictStrategy.SERVER_WINS);
+
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        strategies.addSyncStrategyForTable(TEST_TABLE_NAME, strategy);
+
+        final SyncContext.LocalContext ctx = SyncContext.local(strategies);
+
+        Whitebox.<Void>invokeMethod(new ClientHashProcessor(dbAdapter, strategies, null),
+            "resolveConflict", remoteChange, localChange, clientChanges);
+
+        TableSyncStrategy tableSyncStrategy = ctx.getStrategies().getSyncStrategyForTable(TEST_TABLE_NAME);
+
+        assertTrue(
+            tableSyncStrategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
+        assertTrue(
+            tableSyncStrategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
+        assertTrue(clientChanges.size() == 0);
+
+        // sollte mindestens einmal
+        // mit irgendeinem Parameterwert
+        // aufgerufen worden sein
+//        verify(model, atLeast(1)).setPeriod(anyInt());
+
+
+        // model.run(1) sollte genau einmal aufgerufen worden sein
+        verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 0, entry.getPrimaryKey(), hashValue,
+            entry.getTableName());
+
+        // mode.fail() sollte gar nicht aufgerufen worden sein
+//        verify(model, never()).fail();
+    }
+
+    @Test
     public void resolveConflict() throws Exception {
 
         List<Change> changeList = newArrayList();
@@ -93,6 +159,9 @@ public class TableSyncStrategyTest extends TestBase {
         rowClientData.put(TEST_COLUMN5, 4.5);
         Change localChange = new Change(clientEntry, rowClientData);
 
+        List<Change> clientChanges = newArrayList();
+        clientChanges.add(localChange);
+
         when(localDataResultSet.next()).thenReturn(false);
 
         when(localHashResultSet.getInt("rev")).thenReturn(7);
@@ -101,8 +170,8 @@ public class TableSyncStrategyTest extends TestBase {
         String hashValue = clc.getHash(rowServerData);
         when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
 
-        TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,
-            ConflictStrategy.SERVER_WINS);
+        TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.BIDIRECTIONAL,
+            ConflictStrategy.CLIENT_WINS);
 
         TableSyncStrategies strategies = new TableSyncStrategies();
         strategies.addSyncStrategyForTable(TEST_TABLE_NAME, strategy);
@@ -110,14 +179,15 @@ public class TableSyncStrategyTest extends TestBase {
         final SyncContext.LocalContext ctx = SyncContext.local(strategies);
 
         Whitebox.<Void>invokeMethod(new ClientHashProcessor(dbAdapter, strategies, null),
-            "resolveConflict", remoteChange, localChange);
+            "resolveConflict", remoteChange, localChange, clientChanges);
 
         TableSyncStrategy tableSyncStrategy = ctx.getStrategies().getSyncStrategyForTable(TEST_TABLE_NAME);
 
         assertTrue(
-            tableSyncStrategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
+            tableSyncStrategy.getConflictStrategy() == ConflictStrategy.CLIENT_WINS);
         assertTrue(
-            tableSyncStrategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
+            tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
+        assertTrue(clientChanges.size() == 1);
 
         // sollte mindestens einmal
         // mit irgendeinem Parameterwert
@@ -126,12 +196,13 @@ public class TableSyncStrategyTest extends TestBase {
 
 
         // model.run(1) sollte genau einmal aufgerufen worden sein
-        verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 0, entry.getPrimaryKey(), hashValue,
+        verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 1, entry.getPrimaryKey(), TEST_MDV,
             entry.getTableName());
 
         // mode.fail() sollte gar nicht aufgerufen worden sein
 //        verify(model, never()).fail();
     }
+
 
     @Test
     public void resolveConflictsWithNullableSyncStrategy() throws Exception {
@@ -154,6 +225,9 @@ public class TableSyncStrategyTest extends TestBase {
         rowClientData.put(TEST_COLUMN5, 4.5);
         Change localChange = new Change(clientEntry, rowClientData);
 
+        List<Change> clientChanges = newArrayList();
+        clientChanges.add(localChange);
+
         when(localDataResultSet.next()).thenReturn(false);
 
         when(localHashResultSet.getInt("rev")).thenReturn(7);
@@ -165,7 +239,7 @@ public class TableSyncStrategyTest extends TestBase {
         SyncContext.LocalContext ctx = SyncContext.local(new TableSyncStrategies());
 
         Whitebox.<Void>invokeMethod(new ClientHashProcessor(dbAdapter, new TableSyncStrategies(), null),
-            "resolveConflict", remoteChange, localChange);
+            "resolveConflict", remoteChange, localChange, clientChanges);
 
         TableSyncStrategy tableSyncStrategy = ctx.getStrategies().getSyncStrategyForTable(TEST_TABLE_NAME);
 
@@ -173,6 +247,7 @@ public class TableSyncStrategyTest extends TestBase {
             tableSyncStrategy.getConflictStrategy() == ConflictStrategy.SERVER_WINS);
         assertTrue(
             tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
+        assertTrue(clientChanges.size() == 0);
     }
 
     /**
