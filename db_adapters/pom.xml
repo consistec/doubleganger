@@ -14,7 +14,7 @@
     <name>databases adapters</name>
 
     <properties>
-        <skipItTests>true</skipItTests>
+        <skipItTests>false</skipItTests>
     </properties>
 
     <dependencies>

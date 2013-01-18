@@ -28,6 +28,7 @@ import de.consistec.syncframework.impl.i18n.Infos;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
@@ -71,6 +72,11 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
      * Header name in which server exception message will be stored.
      */
     protected static final String HEADER_NAME_SERVER_EXCEPTION = "server_exception";
+    /**
+     * Header name in which a flag is stored to tell the client that
+     * an serialized server exception is in the http response.
+     */
+    protected static final String HEADER_NAME_EXCEPTION = "exception";
     private static final String PROPS_SERVER_URL = "url";
     private static final String PROPS_USERNAME = "username";
     private static final String PROPS_PASSWORD = "password";
@@ -200,11 +206,12 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
      */
     private String request(List<NameValuePair> data) throws SyncException {
 
-        StringBuilder sb;
+        StringBuilder sb = new StringBuilder("");
         HttpPost post;
         DefaultHttpClient client;
         HttpResponse response;
         BufferedReader in = null;
+        ObjectInputStream oIn = null;
 
         try {
 
@@ -236,12 +243,24 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
                         response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
                 }
             }
-            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            sb = new StringBuilder("");
-            String line;
 
-            while ((line = in.readLine()) != null) {
-                sb.append(line);
+            Header serverException = response.getFirstHeader(HEADER_NAME_EXCEPTION);
+            if (serverException != null) {
+                boolean isException = Boolean.valueOf(serverException.getValue());
+                if (isException) {
+                    oIn = new ObjectInputStream(response.getEntity().getContent());
+
+                    SyncException exception = (SyncException) oIn.readObject();
+                    LOGGER.error(Errors.SERVER_EXCEPTION_RECEIVED, exception);
+                    throw exception;
+                }
+            } else {
+                in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+                String line;
+
+                while ((line = in.readLine()) != null) {
+                    sb.append(line);
+                }
             }
 
         } catch (ClientProtocolException e) {
@@ -250,10 +269,20 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
             throw new SyncException(e.getLocalizedMessage(), e);
         } catch (IOException e) {
             throw new SyncException(e.getLocalizedMessage(), e);
+        } catch (ClassNotFoundException e) {
+            throw new SyncException(e.getLocalizedMessage(), e);
         } finally {
             if (in != null) {
                 try {
                     in.close();
+                } catch (IOException e) {
+                    throw new SyncException(e.getLocalizedMessage(), e);
+                }
+            }
+
+            if (oIn != null) {
+                try {
+                    oIn.close();
                 } catch (IOException e) {
                     throw new SyncException(e.getLocalizedMessage(), e);
                 }

@@ -5,10 +5,9 @@ import ch.qos.cal10n.Locale;
 import ch.qos.cal10n.LocaleData;
 
 /**
- *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 04.12.2012 12:24:22
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 @BaseName("de/consistec/syncframework/impl/i18n/errors")
@@ -79,5 +78,9 @@ public enum Errors {
      * When attempt to create an instance of {@link de.consistec.syncframework.common.data.schema.Schema Schema} class
      * fails.
      */
-    CANT_GET_CREATE_DB_SCHEMA;
+    CANT_GET_CREATE_DB_SCHEMA,
+    /**
+     * When the server servlet can not write to servlet output stream.
+     */
+    CANT_WRITE_TO_OUTPUTSTREAM;
 }

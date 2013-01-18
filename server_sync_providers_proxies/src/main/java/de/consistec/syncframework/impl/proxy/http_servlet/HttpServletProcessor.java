@@ -28,6 +28,7 @@ import de.consistec.syncframework.impl.i18n.Errors;
 import de.consistec.syncframework.impl.i18n.Warnings;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.URLEncoder;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -144,12 +145,33 @@ public class HttpServletProcessor {
                             LOGGER.warn(read(Errors.CANT_APPLY_CHANGES), e);
                         }
                     }
-                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+                    writeExceptionToHttpOutputStream(resp, e);
                 } catch (SerializationException e) {
-                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
-                } catch (IOException e) {
-                    resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+                    writeExceptionToHttpOutputStream(resp, e);
                 }
+            }
+        }
+    }
+
+    private void writeExceptionToHttpOutputStream(HttpServletResponse resp, Throwable th) throws IOException {
+
+        resp.addHeader(HttpServerSyncProxy.HEADER_NAME_EXCEPTION, String.valueOf(true));
+
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(resp.getOutputStream());
+            oos.writeObject(th);
+            oos.flush();
+        } catch (IOException e) {
+            // try to send IOException
+            try {
+                oos = new ObjectOutputStream(resp.getOutputStream());
+                oos.writeObject(e);
+                oos.flush();
+            } catch (IOException ex) {
+                LOGGER.error(Errors.CANT_WRITE_TO_OUTPUTSTREAM, e.getLocalizedMessage());
+                resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+
             }
         }
     }

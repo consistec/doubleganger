@@ -104,38 +104,13 @@ public class ClientHashProcessor {
             if (isConflict(foundIndex)) {
                 Change clientChange = clientChanges.get(foundIndex);
                 try {
-                    resolveConflict(remoteChange, clientChange);
+                    resolveConflict(remoteChange, clientChange, clientChanges);
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);
                 }
             } else {
                 applyServerChange(remoteChange);
             }
-
-//            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(),
-//                remoteEntry.getTableName() + CONF.getMdTableSuffix(),
-//                new DatabaseAdapterCallback<ResultSet>() {
-//                    @Override
-//                    public void onSuccess(final ResultSet localHashResultSet) throws DatabaseAdapterException {
-//
-//                        adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
-//                            new DatabaseAdapterCallback<ResultSet>() {
-//                                @Override
-//                                public void onSuccess(final ResultSet localDataResultSet) throws
-//                                    DatabaseAdapterException {
-//                                    try {
-//                                        processServerChange(localHashResultSet, localDataResultSet, remoteChange);
-//                                    } catch (SQLException e) {
-//                                        throw new DatabaseAdapterException(e);
-//                                    } catch (NoSuchAlgorithmException e) {
-//                                        throw new DatabaseAdapterException(e);
-//                                    } catch (SyncException e) {
-//                                        throw new DatabaseAdapterException(e);
-//                                    }
-//                                }
-//                            });
-//                    }
-//                });
         }
         LOGGER.debug("applyChangesFromServerOnClient finished");
     }
@@ -196,54 +171,12 @@ public class ClientHashProcessor {
         return foundIndex >= 0;
     }
 
-//    private void processServerChange(ResultSet localHashResultSet, ResultSet localDataResultSet, Change remoteChange)
-//        throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException, SyncException {
-//
-//        MDEntry remoteEntry = remoteChange.getMdEntry();
-//        Map<String, Object> remoteRowData = remoteChange.getRowData();
-//
-//        if (localHashResultSet.next()) {
-//            resolveConflicts(remoteChange, localDataResultSet, localHashResultSet);
-//        } else {
-//
-//            // SERVER ADD
-//            if (remoteEntry.isExists()) {
-//
-//                // on initialization everything is a server add, but deleted items no longer need to be added
-//                adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
-//                adapter.insertMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
-//                    remoteChange.calculateHash(), remoteEntry.getTableName());
-//
-//            } else {
-//                adapter.insertMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(), null,
-//                    remoteEntry.getTableName());
-//            }
-//        }
-//    }
-
-    private void logConflictInfo(final String conflict, final Change remoteChange, final int localRev,
-                                 final int localFlag
-    ) {
-
-        StringBuilder builder = new StringBuilder("\n/*---------------------  Conflict info   ---------------------");
-        builder.append("\n * Conflict: ");
-        builder.append(conflict);
-        builder.append("\n * Server Change: ");
-        builder.append(remoteChange);
-        builder.append("\n * Client localRev: ");
-        builder.append(localRev);
-        builder.append(", localFlag: ");
-        builder.append(localFlag);
-        builder.append("\n * ---------------------  Conflict info   -------------------*/\n");
-
-        LOGGER.debug(builder.toString());
-    }
-
-    private void resolveConflict(final Change serverChange, final Change clientChange)
+    private void resolveConflict(final Change serverChange, final Change clientChange,
+                                 final List<Change> clientChangeList
+    )
         throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
 
         MDEntry remoteEntry = serverChange.getMdEntry();
-//        Map<String, Object> remoteRowData = serverChange.getRowData();
 
         ConflictHandlingData data = new ConflictHandlingData(clientChange, serverChange);
 
@@ -264,30 +197,26 @@ public class ClientHashProcessor {
                 break;
             case SERVER_WINS:
                 conflictHandlingStrategy.resolveByServerWinsStrategy(adapter, data);
+                // remove client change from change list if syncdirection is server_to_client
+                removeClientChange(clientChangeList, clientChange);
                 break;
             case FIRE_EVENT:
                 resolveConflictsFireEvent(data, conflictHandlingStrategy);
+                // remove client change from change list if syncdirection is server_to_client
+                removeClientChange(clientChangeList, clientChange);
                 break;
             default:
                 throw new IllegalStateException(
                     String.format("not allowed conflict strategy %s configured!", conflictStrategy.name()));
-//            default:
-//                LOGGER.debug("ClientHashProcessor#resolveConflicts-default");
-//                if (ConflictType.SERVER_DEL.isTheCase(localRev, localFlag, localMdv, remoteEntry)) {
-//                    // SERVER Del
-//                    LOGGER.debug("Server DEL");
-//                } else {
-//                    // SERVER MOD
-//                    LOGGER.debug("Server MOD");
-//                }
-//
-//                if (!localDataResultSet.next()) {
-//                    adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
-//                } else {
-//                    adapter.updateDataRow(remoteRowData, remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-//                }
-//                adapter.updateMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
-//                    remoteChange.calculateHash(), remoteEntry.getTableName());
+        }
+    }
+
+    private void removeClientChange(List<Change> clientChangeList, Change clientChange) {
+        // remove client change from change list if syncdirection is server_to_client
+        TableSyncStrategy tableStrategy = strategies.getSyncStrategyForTable(
+            clientChange.getMdEntry().getTableName());
+        if (tableStrategy.getConflictStrategy() != ConflictStrategy.CLIENT_WINS) {
+            clientChangeList.remove(clientChange);
         }
     }
 
@@ -336,29 +265,5 @@ public class ClientHashProcessor {
             conflictHandlingStrategy.resolveByFireEvent(adapter, data, data.getLocalData(), conflictListener);
         }
     }
-
-//    private void resolveConflictsFireEvent(ConflictHandlingData data,
-//                                           IConflictStrategy conflictHandlingStrategy
-//    )
-//        throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
-//
-//        if (null == conflictListener) {
-//            throw new SyncException(read(Errors.COMMON_NO_CONFLICT_LISTENER_FOUND));
-//        } else {
-//
-//            Map<String, Object> clientData = newHashMap();
-//            if (localDataResultSet.next()) {
-//                ResultSetMetaData meta = localDataResultSet.getMetaData();
-//                int columnCount = meta.getColumnCount();
-//                for (int i = 1; i <= columnCount; i++) {
-//                    clientData.put(meta.getColumnName(i),
-//                        localDataResultSet.getObject(i));
-//                }
-//            }
-//
-//            conflictHandlingStrategy.resolveByFireEvent(adapter, data, clientData, conflictListener);
-//        }
-//    }
-
     //</editor-fold>
 }

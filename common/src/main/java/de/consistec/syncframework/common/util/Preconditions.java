@@ -482,6 +482,31 @@ public final class Preconditions {
     }
 
     /**
+     * Validates the state of sync direction and conflict strategy.
+     * <p/>
+     * Invalid states are the following:
+     * <ul>
+     * <li>
+     * the conflict strategies SERVER_WINS and FIRE_EVENT in combination with the CLIENT_TO_SERVER direction and
+     * </li>
+     * <li>
+     * the conflict strategies CLIENT_WINS and FIRE_EVENT in combination with the SERVER_TO_CLIENT direction
+     * </li>
+     * </ul>
+     *
+     * @param expression expression to check
+     * @param direction - sync direction to validate
+     * @param strategy - conflict strategy to validate
+     */
+    public static void checkState(boolean expression, SyncDirection direction, ConflictStrategy strategy
+    ) {
+        if (!expression) {
+            throw new IllegalStateException(
+                read(Errors.NOT_SUPPORTED_CONFLICT_STRATEGY, strategy.name(), direction.name()));
+        }
+    }
+
+    /**
      * Checks the expression. If the expression is false then a SyncException will be thrown.
      *
      * @param expression expression to check

@@ -83,7 +83,7 @@
           <stringProp name="checkQuery">Select 1</stringProp>
           <stringProp name="connectionAge">2000</stringProp>
           <stringProp name="dataSource">common-client-pool</stringProp>
-          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port_for_performance_test}/${serverdb}</stringProp>
+          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port}/${serverdb}</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <boolProp name="keepAlive">true</boolProp>
           <stringProp name="password">${postgres_admin_pwd}</stringProp>
@@ -340,9 +340,9 @@
           <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="JDBC Request" enabled="true">
             <stringProp name="dataSource">client-pool-per-thread_${__threadNum}</stringProp>
             <stringProp name="queryType">Update Statement</stringProp>
-            <stringProp name="query">CREATE TABLE categories (categoryid integer NOT NULL, categoryname character varying(30000), description character varying(30000), 
+            <stringProp name="query">CREATE TABLE categories (categoryid integer NOT NULL, categoryname character varying(30000), description character varying(30000),
                         	CONSTRAINT categories_pkey PRIMARY KEY (categoryid )) WITH (OIDS=FALSE);
-                        
+
 ALTER TABLE categories OWNER TO syncuser;</stringProp>
             <stringProp name="queryArguments"></stringProp>
             <stringProp name="queryArgumentsTypes"></stringProp>
