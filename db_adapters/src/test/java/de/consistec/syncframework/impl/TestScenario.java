@@ -39,9 +39,6 @@ import org.junit.Assert;
  */
 public class TestScenario {
 
-//    @Rule
-//    public ExpectedException thrown = ExpectedException.none();
-
     private final String name;
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
@@ -53,6 +50,7 @@ public class TestScenario {
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
     private String expectedErrorMsg;
+    private Class expectedException;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
@@ -70,6 +68,14 @@ public class TestScenario {
 
     public ConflictStrategy getStrategy() {
         return strategy;
+    }
+
+    public String getExpectedErrorMsg() {
+        return expectedErrorMsg;
+    }
+
+    public Class getExpectedException() {
+        return expectedException;
     }
 
     /**
@@ -113,8 +119,9 @@ public class TestScenario {
      * @param errorMsg expected error message
      * @return this test scenario
      */
-    public TestScenario expectException(Errors errorMsg) {
-        this.expectedErrorMsg = read(errorMsg);
+    public TestScenario expectException(Class clazz, Errors errorMsg) {
+        this.expectedException = clazz;
+        this.expectedErrorMsg = read(errorMsg).split("\\{")[0];
         return this;
     }
 
@@ -164,6 +171,11 @@ public class TestScenario {
     }
 
     public void saveCurrentState() throws SQLException {
+        if (this.expectedException != null) {
+            // An exception will be thrown, no need to save the state
+            return;
+        }
+
         expectedFlatClientResultSets = new String[selectTableQueries.length];
         expectedFlatServerResultSets = new String[selectTableQueries.length];
 
