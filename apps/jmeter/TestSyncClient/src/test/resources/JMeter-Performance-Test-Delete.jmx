@@ -88,7 +88,7 @@
           <boolProp name="keepAlive">true</boolProp>
           <stringProp name="connectionAge">2000</stringProp>
           <stringProp name="checkQuery">Select 1</stringProp>
-          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port}/${serverdb}</stringProp>
+          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port_for_performance_test}/${postgres_connect_db}</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <stringProp name="username">${postgres_admin}</stringProp>
           <stringProp name="password">${postgres_admin_pwd}</stringProp>
