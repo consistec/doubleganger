@@ -1,4 +1,7 @@
 BEGIN;
+    DROP TABLE IF EXISTS categories;
+    DROP TABLE IF EXISTS items;
+
     CREATE TABLE categories
     (
         categoryid integer NOT NULL,

@@ -88,7 +88,7 @@
           <stringProp name="checkQuery">Select 1</stringProp>
           <stringProp name="connectionAge">5000</stringProp>
           <stringProp name="dataSource">common-client-pool</stringProp>
-          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port}/${serverdb}</stringProp>
+          <stringProp name="dbUrl">jdbc:postgresql://${postgres_server}:${postgres_port_for_performance_test}/${postgres_connect_db}</stringProp>
           <stringProp name="driver">org.postgresql.Driver</stringProp>
           <boolProp name="keepAlive">false</boolProp>
           <stringProp name="password">${postgres_admin_pwd}</stringProp>
