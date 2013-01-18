@@ -220,7 +220,7 @@
         <profile>
             <id>init_database</id>
             <properties>
-                <skipItTests>false</skipItTests>
+                <skipItTests>true</skipItTests>
             </properties>
 
             <build>
@@ -309,6 +309,7 @@
                                         <srcFile>${basedir}/target/test-classes/sql-scripts/create_dbs_postgresql.sql
                                         </srcFile>
                                     </srcFiles>
+                                    <onError>continue</onError>
                                 </configuration>
                             </execution>
                             <execution>
@@ -327,6 +328,7 @@
                                             ${basedir}/target/test-classes/sql-scripts/create_tables_postgresql.sql
                                         </srcFile>
                                     </srcFiles>
+                                    <onError>continue</onError>
                                 </configuration>
                             </execution>
                         </executions>
