@@ -6,6 +6,8 @@ import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.syncframework.common.i18n.Errors.COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE;
+import static de.consistec.syncframework.common.i18n.Errors.COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +25,9 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -39,6 +43,10 @@ import org.slf4j.LoggerFactory;
 public class SynchronizationIT {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(SynchronizationIT.class.getCanonicalName());
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
     protected static final Config CONF = Config.getInstance();
     protected TestDatabase db;
     protected TestScenario scenario;
@@ -107,13 +115,17 @@ public class SynchronizationIT {
                 assertTrue(ex.getMessage().startsWith("The configured conflict strategy " + scenario.getStrategy()));
             }
         } else {
-            scenario.synchronize(tableNames);
-
-            scenario.assertServerIsInExpectedState();
-
-            scenario.assertClientIsInExpectedState();
+            try {
+                scenario.synchronize(tableNames);
+                scenario.assertServerIsInExpectedState();
+                scenario.assertClientIsInExpectedState();
+            } catch (SyncException ex) {
+                // this exception could happen!
+                thrown.expect(SyncException.class);
+                thrown.expectMessage(ex.getLocalizedMessage());
+                throw ex;
+            }
         }
-
     }
 
     @After
@@ -167,7 +179,8 @@ public class SynchronizationIT {
             {new TestScenario("ServerUc ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(CLIENT, insertRow3)
                 .expectServer("SS")
-                .expectClient("CCC")},
+                .expectClient("CCC")
+                .expectException(COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
                 .addStep(CLIENT, insertRow3)
                 .expectServer("SSC")
@@ -180,7 +193,7 @@ public class SynchronizationIT {
                 .addStep(CLIENT, insertRow3)
                 .expectServer("invalid")
                 .expectClient("invalid")},
-            //
+            //.expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, SERVER_WINS)
                 .addStep(CLIENT, updateRow2b)
                 .expectServer("SC")
@@ -196,7 +209,8 @@ public class SynchronizationIT {
             {new TestScenario("ServerUc ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(CLIENT, updateRow2b)
                 .expectServer("SS")
-                .expectClient("CC")},
+                .expectClient("CC")
+                .expectException(COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, FIRE_EVENT)
                 .addStep(CLIENT, updateRow2b)
                 .expectServer("SC")
@@ -225,7 +239,8 @@ public class SynchronizationIT {
             {new TestScenario("ServerUc ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(CLIENT, deleteRow2)
                 .expectServer("SS")
-                .expectClient("C")},
+                .expectClient("C")
+                .expectException(COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, FIRE_EVENT)
                 .addStep(CLIENT, deleteRow2)
                 .expectServer("S")
@@ -250,11 +265,13 @@ public class SynchronizationIT {
             {new TestScenario("ServerAdd ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
                 .addStep(SERVER, insertRow3)
                 .expectServer("SSS")
-                .expectClient("CC")},
+                .expectClient("CC")
+                .expectException(COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerAdd ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(SERVER, insertRow3)
                 .expectServer("SSS")
                 .expectClient("CCS")},
+//                .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, FIRE_EVENT)
                 .addStep(SERVER, insertRow3)
                 .expectServer("SSS")
@@ -303,7 +320,6 @@ public class SynchronizationIT {
                 .addStep(CLIENT, insertRow3)
                 .expectServer("invalid")
                 .expectClient("invalid")},
-            //
             {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, SERVER_WINS)
                 .addStep(SERVER, insertRow3)
                 .addStep(CLIENT, updateRow2b)
@@ -387,7 +403,8 @@ public class SynchronizationIT {
             {new TestScenario("ServerMod ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
                 .addStep(SERVER, updateRow2b)
                 .expectServer("SS")
-                .expectClient("CC")},
+                .expectClient("CC")
+                .expectException(COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerMod ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(SERVER, updateRow2b)
                 .expectServer("SS")
@@ -531,7 +548,8 @@ public class SynchronizationIT {
             {new TestScenario("ServerDel ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
                 .addStep(SERVER, deleteRow2)
                 .expectServer("S")
-                .expectClient("CC")},
+                .expectClient("CC")
+                .expectException(COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
             {new TestScenario("ServerDel ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
                 .addStep(SERVER, deleteRow2)
                 .expectServer("S")

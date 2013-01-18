@@ -5,6 +5,7 @@ import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncContext;
@@ -14,6 +15,7 @@ import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 
@@ -30,12 +32,15 @@ import org.junit.Assert;
 /**
  * Use this class to reflect your integration test scenario
  * <p/>
+ *
+ * @author davidm
  * @company Consistec Engineering and Consulting GmbH
  * @date 10.01.2013 14:50:08
- * @author davidm
- * @since
  */
 public class TestScenario {
+
+//    @Rule
+//    public ExpectedException thrown = ExpectedException.none();
 
     private final String name;
     private final SyncDirection direction;
@@ -47,6 +52,7 @@ public class TestScenario {
     private String[] selectTableQueries;
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
+    private String expectedErrorMsg;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
@@ -97,6 +103,18 @@ public class TestScenario {
      */
     public TestScenario expectClient(String clientMask) {
         this.expectedClientState = clientMask;
+        return this;
+    }
+
+    /**
+     * Tells if this szenario expects an exception of passed exception class type and
+     * what error message will be expected.
+     *
+     * @param errorMsg expected error message
+     * @return this test szenario
+     */
+    public TestScenario expectException(Errors errorMsg) {
+        this.expectedErrorMsg = read(errorMsg);
         return this;
     }
 
@@ -159,11 +177,13 @@ public class TestScenario {
 
             serverRs = serverStmt.executeQuery(query);
             clientRs = clientStmt.executeQuery(query);
-            expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs, expectedServerState);
+            expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                expectedServerState);
 
             serverRs = serverStmt.executeQuery(query);
             clientRs = clientStmt.executeQuery(query);
-            expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs, expectedClientState);
+            expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                expectedClientState);
         }
 
         serverStmt.close();

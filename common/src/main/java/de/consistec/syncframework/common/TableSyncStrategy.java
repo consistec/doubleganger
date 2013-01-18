@@ -1,5 +1,10 @@
 package de.consistec.syncframework.common;
 
+import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
+import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.Preconditions.checkNotNull;
 import static de.consistec.syncframework.common.util.Preconditions.checkState;
@@ -83,10 +88,10 @@ public final class TableSyncStrategy implements Serializable {
         checkNotNull(direction, read(Errors.COMMON_SYNC_DIRECTION_CANT_BE_NULL));
         checkNotNull(strategy, read(Errors.COMMON_CONFLICT_ACTION_CANT_BE_NULL));
 
-        checkState(!(strategy == ConflictStrategy.SERVER_WINS && direction == SyncDirection.CLIENT_TO_SERVER));
-        checkState(!(strategy == ConflictStrategy.FIRE_EVENT && direction == SyncDirection.CLIENT_TO_SERVER));
-        checkState(!(strategy == ConflictStrategy.CLIENT_WINS && direction == SyncDirection.SERVER_TO_CLIENT));
-        checkState(!(strategy == ConflictStrategy.FIRE_EVENT && direction == SyncDirection.SERVER_TO_CLIENT));
+        checkState(!(strategy == SERVER_WINS && direction == CLIENT_TO_SERVER), direction, strategy);
+        checkState(!(strategy == FIRE_EVENT && direction == CLIENT_TO_SERVER), direction, strategy);
+        checkState(!(strategy == CLIENT_WINS && direction == SERVER_TO_CLIENT), direction, strategy);
+        checkState(!(strategy == FIRE_EVENT && direction == SERVER_TO_CLIENT), direction, strategy);
 
 //        checkSyncDirectionAndConflictStrategyState(direction, strategy);
     }
