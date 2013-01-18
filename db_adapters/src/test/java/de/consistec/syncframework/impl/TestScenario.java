@@ -125,6 +125,10 @@ public class TestScenario {
         return this;
     }
 
+    public boolean shouldThrowAnException() {
+        return expectedException != null;
+    }
+
     public void setDataSources(DumpDataSource serverDs, DumpDataSource clientDs) {
         this.serverDs = serverDs;
         this.clientDs = clientDs;
@@ -200,11 +204,6 @@ public class TestScenario {
 
         serverStmt.close();
         clientStmt.close();
-    }
-
-    public boolean hasInvalidDirectionAndStrategyCombination() {
-        return direction.equals(CLIENT_TO_SERVER) && strategy.equals(SERVER_WINS)
-            || direction.equals(SERVER_TO_CLIENT) && strategy.equals(CLIENT_WINS);
     }
 
     public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {

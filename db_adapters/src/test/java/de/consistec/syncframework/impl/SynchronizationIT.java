@@ -104,7 +104,7 @@ public class SynchronizationIT {
         try {
             scenario.synchronize(tableNames);
 
-            if (scenario.getExpectedException() != null) {
+            if (scenario.shouldThrowAnException()) {
                 fail("Expected exception (" + scenario.getExpectedException() + ") wasn't thrown.");
             }
 
