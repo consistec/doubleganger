@@ -56,6 +56,7 @@ public class HttpServletProcessor {
     private final SyncContext.ServerContext serverContext;
 
     private Map<String, RequestCommand> actionCommands = newSyncMap();
+
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc=" Class constructor " >
@@ -72,11 +73,7 @@ public class HttpServletProcessor {
     public HttpServletProcessor() throws ContextException {
         serverContext = SyncContext.server();
         serializationAdapter = new JSONSerializationAdapter();
-
-        actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
-        actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
-        actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
-        actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
+        initializeActionCommands();
     }
 
     /**
@@ -93,6 +90,18 @@ public class HttpServletProcessor {
     public HttpServletProcessor(DataSource ds) throws ContextException {
         serverContext = SyncContext.server(ds);
         serializationAdapter = new JSONSerializationAdapter();
+        initializeActionCommands();
+    }
+
+    /**
+     * Puts the supported action commands into actionCommands hashMap.
+     */
+
+    private void initializeActionCommands() {
+        actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
+        actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
+        actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
+        actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
     }
 
     //</editor-fold>
