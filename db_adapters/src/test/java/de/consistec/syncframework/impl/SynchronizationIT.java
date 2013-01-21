@@ -192,8 +192,6 @@ public class SynchronizationIT {
                     .expectClient("CC")},
                 {new TestScenario("ServerUc ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(CLIENT, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CC")
                     .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
                 {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(CLIENT, updateRow2b)
