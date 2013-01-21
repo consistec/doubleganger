@@ -45,7 +45,6 @@ public class ClientChangesEnumerator {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Instantiates a new client changes enumerator.
      *
@@ -55,12 +54,11 @@ public class ClientChangesEnumerator {
     public ClientChangesEnumerator(IDatabaseAdapter adapter, TableSyncStrategies tableSyncStrategies) {
         this.adapter = adapter;
         this.tableSyncStrategies = tableSyncStrategies;
-        LOGGER.debug("ChangesEnumerator Constructor finished");
+        LOGGER.debug("ClientChangesEnumerator Constructor finished");
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * The method {@code getChanges()} creates the list of {@code Change}
      * objects for all inserted, modified or deleted data rows in the client tables to sync.
@@ -72,7 +70,7 @@ public class ClientChangesEnumerator {
 
         LOGGER.debug("getClientChanges called");
 
-        final List<Change> list = newArrayList();
+        final List<Change> allChanges = newArrayList();
 
         for (final String tableName : CONF.getSyncTables()) {
 
@@ -83,21 +81,19 @@ public class ClientChangesEnumerator {
                 public void onSuccess(ResultSet resultSet) throws DatabaseAdapterException {
                     try {
                         while (resultSet.next()) {
-                            Change tmpChange = new Change();
 
                             MDEntry tmpEntry = DBMapperUtil.getMetadata(resultSet, tableName);
-                            tmpChange.setMdEntry(tmpEntry);
 
                             Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
-                            tmpChange.setRowData(rowData);
 
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
                                 tableName).getDirection();
-                            if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
-                                list.add(tmpChange);
-                            }
 
-                            LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, tmpChange.toString());
+                            if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
+                                Change change = new Change(tmpEntry, rowData);
+                                allChanges.add(change);
+                                LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, change);
+                            }
                         }
                     } catch (SQLException e) {
                         throw new DatabaseAdapterException(e);
@@ -106,7 +102,7 @@ public class ClientChangesEnumerator {
             });
         }
         LOGGER.debug("getClientChanges finished");
-        return list;
+        return allChanges;
     }
     //</editor-fold>
 }
