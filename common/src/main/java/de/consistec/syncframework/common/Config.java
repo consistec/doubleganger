@@ -1,6 +1,7 @@
 package de.consistec.syncframework.common;
 
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
+import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_IS_SQL_TRIGGER_ACTIVATED;
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_MD_TABLE_SUFFIX;
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR;
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_NR_GET_CHANGES_ON_TRANS_ERR;
@@ -9,6 +10,7 @@ import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_SYNC_DIR
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAPTER_CLASS;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CONFLICT_ACTION;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_MD_TABLE_SUFFIX;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR;
@@ -59,7 +61,6 @@ public final class Config {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     //<editor-fold defaultstate="collapsed" desc=" ------------- Default values ------------- " >
-
     /**
      * .
      * CHECKSTYLE:ON
@@ -72,6 +73,7 @@ public final class Config {
     private Class<? extends IDatabaseAdapter> clientDatabaseAdapter;
     private Class<? extends IServerSyncProvider> serverProxy;
     private Set<String> syncTables = newSyncSet();
+    private boolean isSqlTriggerActivated;
     private int retryNumberOfApplyChangesOnTransactionError;
     private int retryNumberOfGetChangesOnTransactionError;
     private String mdTableSuffix;
@@ -81,7 +83,6 @@ public final class Config {
     private ConflictStrategy globalConflictStrategy;
     private SyncDirection globalSyncDirection;
     private int syncRetryNumber;
-//    private TableSyncStrategies syncStrategyPerTable = new TableSyncStrategies();
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
@@ -176,87 +177,6 @@ public final class Config {
     public void setGlobalSyncDirection(SyncDirection globalSyncDirection) {
         this.globalSyncDirection = globalSyncDirection;
     }
-
-    /**
-     * Returns custom synchronization direction for a <i>table</i>.
-     * <p/>
-     * If table is binded with a synchronization strategy, this methods will return sync direction from this strategy.
-     *
-     * @param table Table name.
-     * @return Synchronization direction for table.
-     */
-//    public SyncDirection getSyncDirectionForTable(String table) {
-//        TableSyncStrategy syncStrategy = syncStrategyPerTable.getSyncStrategyForTable(table);
-//        if (syncStrategy == null) {
-//            if (globalSyncDirection == null) {
-//                LOGGER.debug("use default sync direction {}", DEFAULT_SYNC_DIRECTION);
-//                return DEFAULT_SYNC_DIRECTION;
-//            } else {
-//                LOGGER.debug("use sync direction {}", globalSyncDirection);
-//                return globalSyncDirection;
-//            }
-//        }
-//
-//        LOGGER.info("use sync direction {}", syncStrategy.getDirection());
-//        return syncStrategy.getDirection();
-//    }
-
-    /**
-     * Binds a table with a custom sync strategy.
-     *
-     * @param table table to be synchronized
-     * @param syncStrategy strategy of synchronization
-     */
-//    public void addSyncStrategyForTable(String table, TableSyncStrategy syncStrategy) {
-//        checkNotNull(table, read(Errors.COMMON_TABLE_NAME_IS_NULL));
-//        LOGGER.debug("put sync strategy to map with key {}", syncStrategy, table);
-//        this.syncStrategyPerTable.addSyncStrategyForTable(table, syncStrategy);
-//    }
-
-    /**
-     * Removes binding of <i>table</i> with strategy.
-     * <p/>
-     *
-     * @param table Table name.
-     */
-//    public void removeSyncStrategyForTable(String table) {
-//        checkNotNull(table, read(Errors.COMMON_TABLE_NAME_IS_NULL));
-//        LOGGER.debug("remove sync strategy from map with key {}", table);
-//        this.syncStrategyPerTable.removeSyncStrategyForTable(table);
-//    }
-
-    /**
-     * Return synchronization strategy for <i>table</i>.
-     *
-     * @param table Table name.
-     * @return Synchronization strategy for table.
-     */
-//    public TableSyncStrategy getSyncStrategyForTable(String table) {
-//        return this.syncStrategyPerTable.getSyncStrategyForTable(table);
-//    }
-
-    /**
-     * Return custom conflict action for a <i>table</i>.
-     * <p/>
-     * If table is binded with a synchronization strategy, this method will return conflict action from this strategy.
-     *
-     * @param table Table name.
-     * @return Conflict action for table.
-     */
-//    public ConflictStrategy getConflictActionForTable(String table) {
-//        TableSyncStrategy syncStrategy = syncStrategyPerTable.getSyncStrategyForTable(table);
-//        if (syncStrategy == null) {
-//            if (globalConflictStrategy == null) {
-//                LOGGER.debug("No strategy for table {}.Using default conflict action {}", table,
-//                    DEFAULT_CONFLICT_STRATEGY);
-//                return DEFAULT_CONFLICT_STRATEGY;
-//            } else {
-//                return globalConflictStrategy;
-//            }
-//        }
-//
-//        return syncStrategy.getConflictAction();
-//    }
 
     /**
      * Configuration options for remote server provider proxy.
@@ -477,6 +397,25 @@ public final class Config {
         this.mdTableSuffix = mdTableSuffix;
     }
 
+    /**
+     * Returns true if the SQL triggers are activated.
+     *
+     * @return boolean isSqlTriggerActivated
+     */
+    public boolean isSqlTriggerActivated() {
+        return isSqlTriggerActivated;
+    }
+
+    /**
+     * Sets the SQL triggers activation.
+     * <p/>
+     *
+     * @param active de/activate the sql triggers
+     */
+    public void setSqlTriggerActivated(boolean active) {
+        this.isSqlTriggerActivated = active;
+    }
+
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
@@ -509,26 +448,30 @@ public final class Config {
             OPTIONS_COMMON_MD_TABLE_SUFFIX, false));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_MD_TABLE_SUFFIX, mdTableSuffix);
 
+        isSqlTriggerActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
+            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED, isSqlTriggerActivated);
+
         retryNumberOfApplyChangesOnTransactionError = PropertiesUtil.defaultIfNull(
             DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR,
             PropertiesUtil.readNumber(props, OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR,
-                false,
-                Integer.class));
+            false,
+            Integer.class));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR,
             retryNumberOfApplyChangesOnTransactionError);
 
         retryNumberOfGetChangesOnTransactionError = PropertiesUtil.defaultIfNull(DEFAULT_NR_GET_CHANGES_ON_TRANS_ERR,
             PropertiesUtil.readNumber(props, OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR,
-                false,
-                Integer.class));
+            false,
+            Integer.class));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR,
             retryNumberOfGetChangesOnTransactionError);
 
         try {
             globalConflictStrategy = PropertiesUtil.defaultIfNull(DEFAULT_CONFLICT_STRATEGY,
                 PropertiesUtil.readEnum(props,
-                    OPTIONS_COMMON_CONFLICT_ACTION, false,
-                    ConflictStrategy.class));
+                OPTIONS_COMMON_CONFLICT_ACTION, false,
+                ConflictStrategy.class));
             LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_CONFLICT_ACTION, globalConflictStrategy.name());
 
         } catch (Exception ex) {
