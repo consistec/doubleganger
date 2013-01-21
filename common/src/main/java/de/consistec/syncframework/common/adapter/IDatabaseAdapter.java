@@ -22,7 +22,7 @@ import java.util.Properties;
  * Configuration options for your adapter implementation can be added to frameworks configuration file.
  * Just use {@code "framework.server.db_adapter."} prefix for each key.
  * <b>Remember</b> to expose your options key names as {@code public static final String } fields without the
- * {@code "framework.server.db_adapter."} prefix in your implementation.<br>
+ * {@code "framework.server.db_adapter."} prefix in your implementation.<br/>
  * In {@link java.util.Properties} object returned by
  * {@link de.consistec.syncframework.common.Config#getServerDatabaseProperties() } method, options will have
  * keys without the {@code "framework.server.db_adapter."} prefix.
@@ -270,35 +270,6 @@ public interface IDatabaseAdapter {
      * @throws DatabaseAdapterException
      */
     boolean hasSchema() throws DatabaseAdapterException;
-
-    /**
-     * Closes the Connection and wraps raising SQLExceptions to DatabaseAdapterException.
-     * <p/>
-     * @throws DatabaseAdapterException
-     */
-//    void closeConnection() throws DatabaseAdapterClosingException;
-
-    /**
-     * Commits the underling database connection.
-     * <p/>
-     * @throws DatabaseAdapterException
-     */
-//    void commit() throws DatabaseAdapterException;
-
-    /**
-     * Rolls back the underling database connection.
-     * <p/>
-     * @throws DatabaseAdapterException
-     */
-//    void rollback() throws DatabaseAdapterException;
-
-    /**
-     * En- or disables auto commit for the underling database connection.
-     * <p/>
-     * @param b true to enable, false to disable
-     * @throws DatabaseAdapterException
-     */
-//    void setAutoCommit(boolean b) throws DatabaseAdapterException;
 
     /**
      * Return database connection used by the adapter.
