@@ -17,25 +17,17 @@ import java.util.Map;
 public final class DBMapperUtil {
 
 //<editor-fold defaultstate="expanded" desc=" Class fields " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
 //</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
 //</editor-fold>
-
     private static final int METADATA_COLUMN_COUNT = 4;
+    private static final String MDV_COLUMN_NAME = "mdv";
 
     private DBMapperUtil() {
-
     }
 
     /**
@@ -94,5 +86,28 @@ public final class DBMapperUtil {
             rowData.put(meta.getColumnName(i), resultSet.getObject(i));
         }
         return rowData;
+    }
+
+    /**
+     * Checks if the current row is already marked as deleted, i.e the hash value in the metadata is null or empty.
+     * @param deletedRows result set positioned on the current row
+     * @return true if the row is already deleted
+     * @throws SQLException
+     */
+    public static boolean rowIsAlreadyDeleted(ResultSet deletedRows) throws SQLException {
+        return StringUtil.isNullOrEmpty(deletedRows.getString(MDV_COLUMN_NAME));
+    }
+
+    /**
+     * Compares the current hash value in the metadata with the given hash, to assert if a row data has changed or not.
+     * <p/>
+     * @param rows the result set
+     * @param hash the calculated hash
+     * @return true in case of equality
+     * @throws SQLException
+     */
+    public static boolean rowHasSameHash(ResultSet rows, String hash) throws SQLException {
+        String mdTableHash = rows.getString(MDV_COLUMN_NAME);
+        return mdTableHash != null && mdTableHash.equalsIgnoreCase(hash);
     }
 }
