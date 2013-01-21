@@ -207,7 +207,7 @@ public class ClientHashProcessor {
                 break;
             default:
                 throw new IllegalStateException(
-                    String.format("not allowed conflict strategy %s configured!", conflictStrategy.name()));
+                    String.format("Unknown conflict strategy %s", conflictStrategy.name()));
         }
     }
 
@@ -218,17 +218,6 @@ public class ClientHashProcessor {
         if (tableStrategy.getConflictStrategy() != ConflictStrategy.CLIENT_WINS) {
             clientChangeList.remove(clientChange);
         }
-    }
-
-    private boolean rowHasData(Map<String, Object> clientData) {
-        if (clientData.size() > 0) {
-            for (Object obj : clientData.values()) {
-                if (obj != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
