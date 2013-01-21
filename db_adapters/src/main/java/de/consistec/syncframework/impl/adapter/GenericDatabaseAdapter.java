@@ -117,7 +117,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_NAME = "COLUMN_NAME";
     /**
@@ -133,7 +133,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_SIZE = "COLUMN_SIZE";
     /**
@@ -152,7 +152,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String NULLABLE = "NULLABLE";
     /**
@@ -164,7 +164,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DATA_TYPE = "DATA_TYPE";
     /**
@@ -176,7 +176,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
     /**
@@ -188,7 +188,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String TABLE_NAME = "TABLE_NAME";
     /**
@@ -200,7 +200,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getPrimaryKeys(String catalog,
-     *      String schema, String table) throws SQLException
+     * String schema, String table) throws SQLException
      */
     protected static final String PK_NAME = "PK_NAME";
     /**
@@ -253,7 +253,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Do not create adapter instances directly!.
      * This constructor has scope {@code protected} only to allow subclasses.
@@ -264,7 +263,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Initialize adapter with external connection.
      *
@@ -702,7 +700,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         LOGGER.debug(
             String.format("inserting md row with values: pk:%s mdv:%s rev:%d flag: %d tablename:%s", pk, mdv, rev, f,
-                tableName));
+            tableName));
 
         final String statement;
         if (-1 != f) {
@@ -859,7 +857,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         DatabaseAdapterException {
 
         String mdTableName = table + CONF.getMdTableSuffix();
-        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where f = 1", mdTableName,
+        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where f <> 0", mdTableName,
             table, mdTableName, table, getPrimaryKeyColumn(table).getName());
 
         LOGGER.debug("reading changes by flag with query: {}", query);
@@ -943,7 +941,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
                 String.format("select rev, pk, mdv, f from %s left join %s on %s.pk = %s where %s is null", mdTable,
-                    tableName, mdTable, tmpPkName, tmpPkName));
+                tableName, mdTable, tmpPkName, tmpPkName));
             callback.onSuccess(deletedRows);
 
         } catch (SQLException e) {
@@ -1037,7 +1035,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             LOGGER.debug("searching md table for table with name: {}", tableName);
 
             if (databaseTables.contains(tableName) && databaseTables.contains(mdTableName)) {
-                LOGGER.debug("skipping creation of table: {}. Does already exist.", tableName);
+                LOGGER.debug("skipping creation of metadata table for: {}. Does already exist.", tableName);
                 // skip table creation because table already exists
                 continue;
             }
