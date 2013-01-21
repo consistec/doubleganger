@@ -123,7 +123,7 @@ public class ClientTableSynchronizer {
                                             changeList.add(change);
                                         } else if (result.getInt("f") == CLIENT_FLAG) {
                                             // if synchronization is repeated then previous changes or inserts are
-                                            // marked with teh CLIENT_FLAG
+                                            // marked with th CLIENT_FLAG
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
@@ -173,10 +173,22 @@ public class ClientTableSynchronizer {
                 try {
                     while (deletedRows.next()) {
                         String mdvValue = deletedRows.getString(MDV_COLUMN_NAME);
+                        Change change = new Change();
                         if (StringUtil.isNullOrEmpty(mdvValue)) {
-                            // this row has already been deleted
-                            continue;
+                            if (deletedRows.getInt("f") == CLIENT_FLAG) {
+                                // if synchronization is repeated then previous changes or inserts are
+                                // marked with th CLIENT_FLAG
+                                MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
+                                change.setMdEntry(mdEntry);
+                                Map<String, Object> rowData = newHashMap();
+                                change.setRowData(rowData);
+                                changeList.add(change);
+                            } else {
+                                // this row has already been deleted
+                                continue;
+                            }
                         }
+
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
                         adapter.updateMdRow(deletedRows.getInt("rev"), CLIENT_FLAG, deletedRows.getObject("pk"), "",
                             table);
@@ -184,9 +196,9 @@ public class ClientTableSynchronizer {
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
                         mdEntry.setMdv("");
                         mdEntry.setDeleted();
-                        Change change = new Change();
+
                         change.setMdEntry(mdEntry);
-//                        change.setRowData(rowData);
+                        //                        change.setRowData(rowData);
                         changeList.add(change);
                     }
                 } catch (SQLException e) {
