@@ -50,6 +50,8 @@ public class SyncAgent {
     private boolean isSyncAgain;
     private int recursionDepth;
 
+    private long phaseTime;
+
     /**
      * Instantiates a new sync agent.
      * Before objects will be initialized, a check will be performed, if client context was initialized.
@@ -154,8 +156,12 @@ public class SyncAgent {
         }
 
         try {
+            doBeforePhaseProcessServerChanges();
             ClientData clientData = phaseProcessServerChanges();
+            doAfterPhaseProcessServerChanges();
+            doBeforePhaseProcessClientChanges();
             ApplyClientChangesResult result = phaseProcessClientChanges(clientData);
+            doAfterPhaseClientChanges();
             updateClientRevision(result);
 
         } catch (ServerStatusException ex) {
@@ -184,13 +190,21 @@ public class SyncAgent {
         }
     }
 
-    private ClientData phaseProcessServerChanges() throws SyncException, DatabaseAdapterException {
-
+    /**
+     * @todo write comment
+     */
+    protected void doBeforePhaseProcessServerChanges() {
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER);
         updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER));
 
-        long time = System.currentTimeMillis();
+        phaseTime = System.currentTimeMillis();
+    }
+
+    private ClientData phaseProcessServerChanges() throws SyncException, DatabaseAdapterException {
+
         int clientRevision = clientProvider.getLastRevision();
+
+        long time = System.currentTimeMillis();
         Tuple<Integer, List<Change>> serverChanges = serverProvider.getChanges(clientRevision);
 
         logInfo(clientRevision, serverChanges.getValue2());
@@ -211,11 +225,22 @@ public class SyncAgent {
         return new ClientData(currentRevision, clientChanges);
     }
 
+    /**
+     * @todo write comment.
+     */
+    protected void doAfterPhaseProcessServerChanges() {
+        phaseTime = System.currentTimeMillis() - phaseTime;
+        LOGGER.debug("phase process -server-changes duration: {}ms", phaseTime);
+    }
+
+    protected void doBeforePhaseProcessClientChanges() {
+        LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
+        phaseTime = System.currentTimeMillis();
+    }
+
     private ApplyClientChangesResult phaseProcessClientChanges(ClientData clientData
     ) throws SyncException,
         DatabaseAdapterException {
-
-        LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
 
         int clientRevision = clientData.getRevision();
         List<Change> clientChanges = clientData.getChanges();
@@ -235,6 +260,14 @@ public class SyncAgent {
 
         ApplyClientChangesResult result = new ApplyClientChangesResult(clientChanges, serverRev);
         return result;
+    }
+
+    /**
+     * @todo write comment.
+     */
+    protected void doAfterPhaseClientChanges() {
+        phaseTime = System.currentTimeMillis() - phaseTime;
+        LOGGER.debug("phase process-client-changes duration: {}ms", phaseTime);
     }
 
     private void updateClientRevision(ApplyClientChangesResult result) throws DatabaseAdapterException, SyncException {
@@ -301,7 +334,7 @@ public class SyncAgent {
         return builder.toString();
     }
 
-    private static class ApplyClientChangesResult {
+    private class ApplyClientChangesResult {
 
         private List<Change> changeSet;
         private int currentRevision;

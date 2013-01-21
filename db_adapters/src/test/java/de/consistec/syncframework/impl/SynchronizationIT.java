@@ -64,8 +64,6 @@ public class SynchronizationIT {
         "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
         "INSERT INTO categories (categoryid, categoryname, description) VALUES (1, 'Beverages', 'Soft drinks')",
         "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
-//        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8B7132AE51A73532FBD29CCA15B2CB38', 1, 0)",
-        //        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, 'FB5EF33FE008589C86C0007AC0597E00', 2, 0)",};
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 0)",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '75901F57520C09EB990837C7AA93F717', 2, 0)",};
 
