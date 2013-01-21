@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.After;
 import org.junit.Before;
@@ -74,10 +76,6 @@ public class SynchronizationIT {
 
     @Before
     public void init() throws SyncException, ContextException, SQLException, IOException {
-        LOGGER.debug("\n---------------------\n" + scenario.getLongDescription() + "\n----------------------\n");
-
-        Config.getInstance().init(getClass().getResourceAsStream(db.getConfigFile()));
-
         db.init();
 
         db.dropTablesOnServer(tableNames);
@@ -85,6 +83,8 @@ public class SynchronizationIT {
 
         db.executeQueriesOnServer(createQueries);
         db.executeQueriesOnClient(createQueries);
+
+        LOGGER.debug("\n---------------------\n" + scenario.getLongDescription() + "\n----------------------\n");
     }
 
     @Test
@@ -102,7 +102,7 @@ public class SynchronizationIT {
         scenario.saveCurrentState();
 
         try {
-            scenario.synchronize(tableNames);
+            scenario.synchronize(tableNames, getServerConflictResolver());
 
             if (scenario.shouldThrowAnException()) {
                 fail("Expected exception (" + scenario.getExpectedException() + ") wasn't thrown.");
@@ -119,6 +119,24 @@ public class SynchronizationIT {
         }
     }
 
+    public IConflictListener getServerConflictResolver() {
+        return new IConflictListener() {
+            @Override
+            public Map<String, Object> resolve(Map<String, Object> serverData, Map<String, Object> clientData) {
+                return serverData;
+            }
+        };
+    }
+
+    public IConflictListener getClientConflictResolver() {
+        return new IConflictListener() {
+            @Override
+            public Map<String, Object> resolve(Map<String, Object> serverData, Map<String, Object> clientData) {
+                return clientData;
+            }
+        };
+    }
+
     @After
     public void tearDown() throws SQLException {
         db.clean();
@@ -128,14 +146,14 @@ public class SynchronizationIT {
     public static Collection<Object[]> AllScenarii() {
 
         return Arrays.asList(new Object[][]{
-                // First the scenario's name, then:      direction,     strategy, expected rows on server, expected rows on client
-                // - 'S' codes one row which originates from the server
-                // - 'C' from the client
+                // Creates a scenario  [name]            [direction]   [strategy]
+                {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                    .expectServer("SS") // expected rows on server
+                    .expectClient("CC")}, // expected rows on client
+                // - 'S' codes a row that originates from the server
+                // - 'C' a row from the client
                 // - ' ' a blank space counts as a deleted row:
                 //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
-                {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
-                    .expectServer("SS")
-                    .expectClient("CC")},
                 {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, CLIENT_WINS)
                     .expectServer("SS")
                     .expectClient("CC")},

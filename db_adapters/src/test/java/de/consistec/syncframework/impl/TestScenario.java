@@ -1,10 +1,6 @@
 package de.consistec.syncframework.impl;
 
-import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
-import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.IConflictListener;
@@ -206,7 +202,8 @@ public class TestScenario {
         clientStmt.close();
     }
 
-    public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
+    public void synchronize(String[] tableNames, IConflictListener conflictListener) throws SyncException,
+        ContextException, SQLException {
         TableSyncStrategies strategies = new TableSyncStrategies();
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
@@ -217,12 +214,7 @@ public class TestScenario {
         final SyncContext.LocalContext localCtx = SyncContext.local(serverDs, clientDs, strategies);
 
         if (strategy == FIRE_EVENT) {
-            localCtx.setConflictListener(new IConflictListener() {
-                @Override
-                public Map<String, Object> resolve(Map<String, Object> serverData, Map<String, Object> clientData) {
-                    return serverData;
-                }
-            });
+            localCtx.setConflictListener(conflictListener);
         }
 
         localCtx.synchronize();
