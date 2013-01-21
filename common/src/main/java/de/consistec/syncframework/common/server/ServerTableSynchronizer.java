@@ -6,11 +6,12 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
+import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.i18n.Infos;
+import de.consistec.syncframework.common.util.DBMapperUtil;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.common.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -40,7 +41,6 @@ public class ServerTableSynchronizer {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerTableSynchronizer.class.getCanonicalName());
     private static final transient Config CONF = Config.getInstance();
-    private static final String MDV_COLUMN_NAME = "mdv";
     private IDatabaseAdapter adapter;
 
     /**
@@ -64,19 +64,46 @@ public class ServerTableSynchronizer {
 
         LOGGER.debug("synchronizeServerTables called");
 
-        final int rev = adapter.getNextRevision();
-        LOGGER.debug("next revision number is {}", rev);
-        LOGGER.debug("searching for changed rows");
+        final int revision = adapter.getNextRevision();
+        LOGGER.debug("next revision number is {}", revision);
+        if (CONF.isSqlTriggerActivated()) {
 
-        for (final String table : CONF.getSyncTables()) {
+            LOGGER.debug("Triggers are activated. Incrementing revision for changed rows.");
+            updateRevisionOnChangedRows(revision);
 
-            LOGGER.debug("Processing table {}", table);
-            searchAndProcessChangedRows(rev, table);
-            searchAndProcessDeletedRows(rev, table);
+        } else {
+
+            LOGGER.debug("Triggers are deactivated: will search for modifications and update the metadata accordingly");
+
+            for (final String table : CONF.getSyncTables()) {
+
+                LOGGER.debug("Processing table {}", table);
+                searchAndProcessChangedRows(revision, table);
+                searchAndProcessDeletedRows(revision, table);
+            }
 
         }
 
         LOGGER.debug("synchronizeServerTables finished");
+    }
+
+    private void updateRevisionOnChangedRows(final int revision) throws DatabaseAdapterException {
+        for (final String tableName : CONF.getSyncTables()) {
+
+            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+                @Override
+                public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
+                    try {
+                        while (allChangedRows.next()) {
+                            MDEntry mdEntry = DBMapperUtil.getMetadata(allChangedRows, tableName);
+                            adapter.updateRevision(revision, tableName, mdEntry.getPrimaryKey());
+                        }
+                    } catch (SQLException ex) {
+                        throw new DatabaseAdapterException(ex);
+                    }
+                }
+            });
+        }
     }
 
     private void searchAndProcessChangedRows(final int rev, final String table) throws DatabaseAdapterException {
@@ -94,7 +121,7 @@ public class ServerTableSynchronizer {
                         }
                         final Object primaryKey = allRows.getObject(adapter.getPrimaryKeyColumn(table).getName());
 
-                        LOGGER.debug("calculate hash value from folling row data: <{}>", rowData);
+                        LOGGER.debug("calculate hash value from following row data: <{}>", rowData);
                         final String hash = new HashCalculator().getHash(rowData);
 
                         adapter.getRowForPrimaryKey(primaryKey, mdTable, new DatabaseAdapterCallback<ResultSet>() {
@@ -103,9 +130,7 @@ public class ServerTableSynchronizer {
 
                                 try {
                                     if (result.next()) {
-                                        // compare hashes
-                                        String mdTableHash = result.getString(MDV_COLUMN_NAME);
-                                        if (mdTableHash == null || !mdTableHash.equalsIgnoreCase(hash)) {
+                                        if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_SERVER_HASH_ENTRY);
                                             adapter.updateMdRow(rev, SERVER_FLAG, primaryKey, hash, table);
                                         }
@@ -140,8 +165,7 @@ public class ServerTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        if (StringUtil.isNullOrEmpty(deletedRows.getString(MDV_COLUMN_NAME))) {
-                            // this row has already been deleted
+                        if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
                             continue;
                         }
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_SERVER);
