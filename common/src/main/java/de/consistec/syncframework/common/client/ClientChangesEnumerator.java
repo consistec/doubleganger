@@ -5,6 +5,7 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -60,8 +61,8 @@ public class ClientChangesEnumerator {
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
     /**
-     * The method {@code getChanges()} creates the list of {@code Change}
-     * objects for all inserted, modified or deleted data rows in the client tables to sync.
+     * Creates the list of {@code Change} objects for all inserted, modified or deleted
+     * data rows in the client tables to sync.
      *
      * @return The changes
      * @throws DatabaseAdapterException if database operations fail
@@ -82,15 +83,15 @@ public class ClientChangesEnumerator {
                     try {
                         while (resultSet.next()) {
 
-                            MDEntry tmpEntry = DBMapperUtil.getMetadata(resultSet, tableName);
+                            MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
 
                             Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
 
-                            SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
-                                tableName).getDirection();
+                            TableSyncStrategy syncStrategy = tableSyncStrategies.getSyncStrategyForTable(tableName);
+                            SyncDirection syncDirection = syncStrategy.getDirection();
 
                             if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
-                                Change change = new Change(tmpEntry, rowData);
+                                Change change = new Change(mdEntry, rowData);
                                 allChanges.add(change);
                                 LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, change);
                             }

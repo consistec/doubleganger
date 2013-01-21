@@ -79,6 +79,8 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
     private static final String SYNC_USER = "syncuser";
+    private static final String CREATE_LANGUAGE_FILE_PATH = "/sql/postgres_create_language.sql";
+    private static final String CREATE_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
     private Integer port;
     private String host;
@@ -131,7 +133,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             stmt.executeBatch();
 
             // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            String createLanguageQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_language.sql"))
+            String createLanguageQuery = new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH))
                 .useDelimiter("\\A").next();
             LOGGER.debug("creating plpgsql language {}", createLanguageQuery);
             stmt.execute(createLanguageQuery);
@@ -163,7 +165,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         List<String> triggers = new LinkedList<String>();
 
         // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-        String triggerRawQuery = new Scanner(getClass().getResourceAsStream("/sql/postgres_create_triggers.sql"))
+        String triggerRawQuery = new Scanner(getClass().getResourceAsStream(CREATE_TRIGGERS_FILE_PATH))
             .useDelimiter("\\A").next();
 
         for (Table table : schema.getTables()) {

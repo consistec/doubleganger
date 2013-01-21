@@ -1,7 +1,6 @@
 package de.consistec.syncframework.common.server;
 
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
-import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
@@ -13,11 +12,10 @@ import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.i18n.Infos;
+import de.consistec.syncframework.common.util.DBMapperUtil;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.common.util.StringUtil;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +41,6 @@ public class ServerChangesEnumerator {
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerChangesEnumerator.class.getCanonicalName());
     private static final transient Config CONF = Config.getInstance();
-    private static final int METADATA_COLUMN_COUNT = 4;
     private IDatabaseAdapter adapter = null;
     private TableSyncStrategies tableSyncStrategies;
     //</editor-fold>
@@ -91,10 +88,10 @@ public class ServerChangesEnumerator {
 
                             Change tmpChange = new Change();
 
-                            MDEntry tmpEntry = getMetadata(resultSet);
+                            MDEntry tmpEntry = DBMapperUtil.getMetadata(resultSet, syncTable);
                             tmpChange.setMdEntry(tmpEntry);
 
-                            Map<String, Object> rowData = getRowData(resultSet);
+                            Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
                             tmpChange.setRowData(rowData);
 
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
@@ -112,48 +109,6 @@ public class ServerChangesEnumerator {
                     } catch (SQLException e) {
                         throw new DatabaseAdapterException(e);
                     }
-                }
-
-                private MDEntry getMetadata(ResultSet resultSet) throws SQLException {
-                    ResultSetMetaData meta = resultSet.getMetaData();
-
-                    MDEntry tmpEntry = new MDEntry();
-                    tmpEntry.setTableName(syncTable);
-
-                    String columnName;
-
-                    for (int i = 1; i <= METADATA_COLUMN_COUNT; i++) {
-                        columnName = meta.getColumnName(i);
-
-                        if ("rev".equalsIgnoreCase(columnName)) {
-                            tmpEntry.setRevision(resultSet.getInt(i));
-                        } else if ("pk".equalsIgnoreCase(columnName)) {
-                            tmpEntry.setPrimaryKey(resultSet.getObject(i));
-                        } else if ("mdv".equalsIgnoreCase(columnName)) {
-                            String mdv = resultSet.getString(i);
-                            if (StringUtil.isNullOrEmpty(mdv)) {
-                                tmpEntry.setDeleted();
-                            } else {
-                                tmpEntry.setModified();
-                            }
-                        } else if ("f".equalsIgnoreCase(columnName)) {
-                            // do nothing, we don't want to sync the f flag
-                            continue;
-                        }
-                    }
-                    return tmpEntry;
-                }
-
-                private Map<String, Object> getRowData(ResultSet resultSet) throws SQLException {
-                    Map<String, Object> rowData = newHashMap();
-                    ResultSetMetaData meta = resultSet.getMetaData();
-
-                    int columnCount = meta.getColumnCount();
-
-                    for (int i = METADATA_COLUMN_COUNT + 1; i <= columnCount; i++) {
-                        rowData.put(meta.getColumnName(i), resultSet.getObject(i));
-                    }
-                    return rowData;
                 }
             });
         }
