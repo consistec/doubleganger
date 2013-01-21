@@ -119,9 +119,10 @@ public class MDEntry implements Serializable {
     }
 
     /**
-     * Sets the isExists value to false.
+     * Sets the isExists value to false and empties the mdv value.
      */
     public void setDeleted() {
+        mdv = "";
         exists = false;
     }
 
