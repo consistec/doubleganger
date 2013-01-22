@@ -164,7 +164,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             try {
                 adapter = prepareDbAdapter();
 
-                // prepareDbAdapter sets the autocommit to false but here we need it set to true
+                // prepareDbAdapter sets autocommit to false but here we need it set to true
                 adapter.getConnection().setAutoCommit(true);
 
                 String mdTable = clientTable + CONF.getMdTableSuffix();
