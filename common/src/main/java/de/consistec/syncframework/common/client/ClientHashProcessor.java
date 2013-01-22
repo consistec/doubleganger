@@ -4,6 +4,7 @@ import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
@@ -84,9 +85,10 @@ public class ClientHashProcessor {
      *
      * @param serverChanges the server changes
      * @param clientChanges the client changes
+     * @return syncData client data to apply on server (without conflicts)
      * @throws SyncException the sync exception
      */
-    public void applyChangesFromServerOnClient(List<Change> serverChanges, List<Change> clientChanges)
+    public SyncData applyChangesFromServerOnClient(List<Change> serverChanges, List<Change> clientChanges)
         throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
 
         LOGGER.debug("applyChangesFromServerOnClient called");
@@ -113,6 +115,8 @@ public class ClientHashProcessor {
             }
         }
         LOGGER.debug("applyChangesFromServerOnClient finished");
+
+        return new SyncData(0, clientChanges);
     }
 
     private void applyServerChange(final Change serverChange) throws DatabaseAdapterException,
@@ -234,18 +238,18 @@ public class ClientHashProcessor {
     /**
      * Update client revision.
      *
-     * @param clientChanges Client changes.
-     * @param rev Client revision.
+     * @param clientData data which contains the server revision after sync and the client changes applied on server.
      * @throws DatabaseAdapterException When update fails.
      */
-    public void updateClientRevision(List<Change> clientChanges, int rev)
+    public void updateClientRevision(SyncData clientData)
         throws DatabaseAdapterException {
 
         LOGGER.debug("Updating client revisions on hashtable");
         MDEntry tmpMDEntry;
-        for (Change change : clientChanges) {
+        for (Change change : clientData.getChanges()) {
             tmpMDEntry = change.getMdEntry();
-            int result = adapter.updateRevision(rev, tmpMDEntry.getTableName() + CONF.getMdTableSuffix(),
+            int result = adapter.updateRevision(clientData.getRevision(),
+                tmpMDEntry.getTableName() + CONF.getMdTableSuffix(),
                 tmpMDEntry.getPrimaryKey());
             if (result != 1) {
                 LOGGER.warn(read(Warnings.COMMON_CANT_UPDATE_CLIENT_REV));

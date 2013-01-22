@@ -4,9 +4,9 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -74,13 +74,13 @@ public class ServerChangesEnumerator {
      * @return the changes
      * @throws DatabaseAdapterException the adapter exception
      */
-    public Tuple<Integer, List<Change>> getChanges(int rev) throws DatabaseAdapterException {
+    public SyncData getChanges(int rev) throws DatabaseAdapterException {
 
         LOGGER.debug("getServerChanges called");
 
         final List<Change> list = newArrayList();
         int revision = adapter.getLastRevision();
-        final Tuple<Integer, List<Change>> revisionChangesetTuple = new Tuple<Integer, List<Change>>(revision, list);
+        final SyncData serverChangeSet = new SyncData(revision, list);
 
         for (final String syncTable : CONF.getSyncTables()) {
 
@@ -101,12 +101,12 @@ public class ServerChangesEnumerator {
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
                                 syncTable).getDirection();
                             if (syncDirection != SyncDirection.CLIENT_TO_SERVER) {
-                                revisionChangesetTuple.getValue2().add(tmpChange);
+                                serverChangeSet.getChanges().add(tmpChange);
                             }
 
                             int revision = tmpChange.getMdEntry().getRevision();
-                            if (revisionChangesetTuple.getValue1() < revision) {
-                                revisionChangesetTuple.setValue1(revision);
+                            if (serverChangeSet.getRevision() < revision) {
+                                serverChangeSet.setRevision(revision);
                             }
                             LOGGER.info(Infos.COMMON_ADDED_SERVER_CHANGE_TO_CHANGE_SET, tmpChange.toString());
                         }
@@ -159,7 +159,7 @@ public class ServerChangesEnumerator {
             });
         }
         LOGGER.debug("getServerChanges finished");
-        return revisionChangesetTuple;
+        return serverChangeSet;
     }
     //</editor-fold>
 }

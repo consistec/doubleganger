@@ -8,10 +8,10 @@ import static de.consistec.syncframework.common.util.Preconditions.checkSyncStat
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -214,9 +214,9 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     }
 
     @Override
-    public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+    public int applyChanges(SyncData clientData) throws SyncException {
 
-        checkSyncDirectionOfClientChanges(changes, getStrategies());
+        checkSyncDirectionOfClientChanges(clientData.getChanges(), getStrategies());
 
         int retries = CONF.getRetryNumberOfApplyChangesOnTransactionError();
         IDatabaseAdapter adapter = null;
@@ -226,9 +226,10 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             adapter = prepareDbAdapter();
             ServerTableSynchronizer tableSynchronizer = new ServerTableSynchronizer(adapter);
             ServerHashProcessor hashProcessor = new ServerHashProcessor(adapter);
-            validateChangeList(changes);
+            validateChangeList(clientData.getChanges());
             tableSynchronizer.synchronizeServerTables();
-            int result = hashProcessor.applyChangesFromClientOnServer(changes, clientRevision);
+            int result = hashProcessor.applyChangesFromClientOnServer(clientData.getChanges(),
+                clientData.getRevision());
 //            adapter.getConnection().commit();
             adapter.commit();
             LOGGER.info(Infos.COMMON_SENDING_NEW_REVISION_TO_CLIENT, result);
@@ -254,7 +255,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 if (retries > 0) {
                     retries--;
                     LOGGER.info(Infos.COMMON_REMAINING_NUMBER_OF_APPLY_CLIENT_CHANGES_RETRIES, retries);
-                    result = applyChanges(changes, clientRevision);
+                    result = applyChanges(clientData);
                 }
 
                 return result;
@@ -318,7 +319,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     }
 
     @Override
-    public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+    public SyncData getChanges(int rev) throws SyncException {
 
         int retries = CONF.getRetryNumberOfGetChangesOnTransactionError();
         IDatabaseAdapter adapter = null;
@@ -344,7 +345,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                     throw new SyncException(read(Errors.COMMON_CANT_GET_SERVER_CHANGES_FOR_N_TIME, retries), e);
                 }
 
-                Tuple<Integer, List<Change>> resultChanges = null;
+                SyncData resultChanges = null;
 
                 if (retries > 0) {
                     retries--;

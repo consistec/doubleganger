@@ -3,6 +3,7 @@ package de.consistec.syncframework.impl.adapter.it_postgres;
 import static org.junit.Assert.assertTrue;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
@@ -10,7 +11,6 @@ import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientChangesEnumerator;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
@@ -22,7 +22,6 @@ import de.consistec.syncframework.impl.adapter.TestUtil;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -127,12 +126,12 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         }
     }
 
-    private List<Change> testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws SyncException,
+    private SyncData testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws SyncException,
         ContextException, SQLException, DatabaseAdapterException {
         String resource = "category8_b_insert.xml";
         String resource2 = "category8_a_insert.xml";
         IDatabaseAdapter adapter = null;
-        List<Change> clientChanges = null;
+        SyncData clientChanges = null;
 
         try {
             // init db with data
@@ -161,13 +160,13 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         return clientChanges;
     }
 
-    private List<Change> testGetChangesPerTable(ConflictStrategy strategy, SyncDirection direction) throws
+    private SyncData testGetChangesPerTable(ConflictStrategy strategy, SyncDirection direction) throws
         SyncException,
         ContextException, SQLException, DatabaseAdapterException {
         String resource = "category9_b_insert.xml";
         String resource2 = "category9_a_insert.xml";
         IDatabaseAdapter adapter = null;
-        List<Change> clientChanges = null;
+        SyncData clientChanges = null;
 
         try {
             // init db with data
@@ -198,24 +197,24 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         SQLException
 
     {
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.size() == 0);
+        SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
+        assertTrue(clientChanges.getChanges().size() == 0);
     }
 
     @Test
     public void getChangesClientToServer() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
-        assertTrue(clientChanges.size() == 1);
+        SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
+        assertTrue(clientChanges.getChanges().size() == 1);
     }
 
     @Test
     public void getChangesBidirectional() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
-        assertTrue(clientChanges.size() == 1);
+        SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        assertTrue(clientChanges.getChanges().size() == 1);
     }
 
     @Test
@@ -223,25 +222,25 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         SQLException
 
     {
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
+        SyncData clientChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
             SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.size() == 1);
+        assertTrue(clientChanges.getChanges().size() == 1);
     }
 
     @Test
     public void getChangesClientToServerPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
+        SyncData clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
             SyncDirection.CLIENT_TO_SERVER);
-        assertTrue(clientChanges.size() == 2);
+        assertTrue(clientChanges.getChanges().size() == 2);
     }
 
     @Test
     public void getChangesBidirectionalPerTable() throws SyncException, ContextException, SQLException,
         DatabaseAdapterException {
 
-        List<Change> clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
-        assertTrue(clientChanges.size() == 2);
+        SyncData clientChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
+        assertTrue(clientChanges.getChanges().size() == 2);
     }
 }

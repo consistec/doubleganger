@@ -1,12 +1,9 @@
 package de.consistec.syncframework.common.server;
 
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncSettings;
-import de.consistec.syncframework.common.Tuple;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
-
-import java.util.List;
 
 /**
  * This interface defines behavior which must be implemented by classes which should act as a proxy
@@ -25,12 +22,11 @@ public interface IServerSyncProvider {
     /**
      * Apply changes.
      *
-     * @param changes Client changes.
-     * @param clientRevision Client revision.
+     * @param clientData Client changes data.
      * @return New revision
      * @throws SyncException the sync exception
      */
-    int applyChanges(List<Change> changes, int clientRevision) throws SyncException;
+    int applyChanges(SyncData clientData) throws SyncException;
 
     /**
      * Gets the changes.
@@ -39,7 +35,7 @@ public interface IServerSyncProvider {
      * @return the changes
      * @throws SyncException the sync exception
      */
-    Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException;
+    SyncData getChanges(int rev) throws SyncException;
 
     /**
      * Returns the server schema.

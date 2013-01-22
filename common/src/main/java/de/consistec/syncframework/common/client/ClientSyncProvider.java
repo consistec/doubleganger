@@ -5,8 +5,8 @@ import static de.consistec.syncframework.common.util.Preconditions.checkSyncDire
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.IConflictListener;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.TableSyncStrategies;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -117,10 +117,10 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     }
 
     @Override
-    public int applyChanges(Tuple<Integer, List<Change>> maxRevWithserverChanges, List<Change> clientChanges) throws
+    public SyncData applyChanges(SyncData serverData, SyncData clientData) throws
         SyncException {
 
-        checkSyncDirectionOfServerChanges(maxRevWithserverChanges.getValue2(), getStrategies());
+        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
 
         IDatabaseAdapter adapter = null;
 
@@ -132,8 +132,10 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
 
         ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
 
+        SyncData clientChangesToApply = null;
         try {
-            hashProcessor.applyChangesFromServerOnClient(maxRevWithserverChanges.getValue2(), clientChanges);
+            clientChangesToApply = hashProcessor.applyChangesFromServerOnClient(serverData.getChanges(),
+                clientData.getChanges());
             adapter.getConnection().commit();
         } catch (Throwable ex) {
             /**
@@ -146,16 +148,16 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         }
 
         // return always max revision from server independet from changeset
-        int maxRev = maxRevWithserverChanges.getValue1();
+        int maxRev = serverData.getRevision();
 
         LOGGER.debug("return maxRev {}: ", maxRev);
-
-        return maxRev;
+        clientChangesToApply.setRevision(maxRev);
+        return clientChangesToApply;
 
     }
 
     @Override
-    public List<Change> getChanges() throws SyncException {
+    public SyncData getChanges() throws SyncException {
 
         IDatabaseAdapter adapter = null;
 
@@ -191,14 +193,14 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     }
 
     @Override
-    public void updateClientRevision(List<Change> changes, int rev) throws SyncException {
+    public void updateClientRevision(SyncData clientData) throws SyncException {
 
         IDatabaseAdapter adapter = null;
 
         try {
             adapter = prepareAdapterNoAutoCommit();
             ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
-            hashProcessor.updateClientRevision(changes, rev);
+            hashProcessor.updateClientRevision(clientData);
             adapter.getConnection().commit();
         } catch (Throwable e) {
             rollback(adapter);

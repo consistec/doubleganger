@@ -7,11 +7,10 @@ import static de.consistec.syncframework.common.util.Preconditions.checkNotNull;
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.ISyncProgressListener;
-import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ServerStatusException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.i18n.Warnings;
@@ -156,13 +155,21 @@ public class SyncAgent {
         }
 
         try {
-            doBeforePhaseProcessServerChanges();
-            ClientData clientData = phaseProcessServerChanges();
-            doAfterPhaseProcessServerChanges();
-            doBeforePhaseProcessClientChanges();
-            ApplyClientChangesResult result = phaseProcessClientChanges(clientData);
-            doAfterPhaseClientChanges();
-            updateClientRevision(result);
+            int clientRevision = clientProvider.getLastRevision();
+
+            doBeforeGetServerChanges();
+            SyncData serverData = serverProvider.getChanges(clientRevision);
+            doAfterGetServerChanges();
+
+            SyncData clientData = clientProvider.getChanges();
+            SyncData clientChangesToApply = clientProvider.applyChanges(serverData, clientData);
+
+            doBeforeApplyClientChanges();
+            int serverRevision = serverProvider.applyChanges(clientChangesToApply);
+            clientChangesToApply.setRevision(serverRevision);
+            doAfterApplyClientChanges();
+
+            clientProvider.updateClientRevision(clientChangesToApply);
 
         } catch (ServerStatusException ex) {
             LOGGER.warn(Warnings.COMMON_CLIENT_CAUGHT_SERVER_STATUS_EXCEPTION, ex.getStatus().name(), ex.getMessage());
@@ -180,8 +187,6 @@ public class SyncAgent {
             } else {
                 throw ex;
             }
-        } catch (DatabaseAdapterException e) {
-            throw new SyncException(read(Errors.DATA_PROBLEMS_WITH_TRANSACTION), e);
         } finally {
             if (recursionDepth > 0) {
                 recursionDepth--;
@@ -193,42 +198,17 @@ public class SyncAgent {
     /**
      * @todo write comment
      */
-    protected void doBeforePhaseProcessServerChanges() {
+    protected void doBeforeGetServerChanges() {
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER);
         updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER));
 
         phaseTime = System.currentTimeMillis();
     }
 
-    private ClientData phaseProcessServerChanges() throws SyncException, DatabaseAdapterException {
-
-        int clientRevision = clientProvider.getLastRevision();
-
-        long time = System.currentTimeMillis();
-        Tuple<Integer, List<Change>> serverChanges = serverProvider.getChanges(clientRevision);
-
-        logInfo(clientRevision, serverChanges.getValue2());
-
-        time = System.currentTimeMillis() - time;
-        LOGGER.debug("server.getChanges duration: {}ms, ServerChanges: {}", time, serverChanges);
-
-        // checks and marks client changes
-        List<Change> clientChanges = clientProvider.synchronizeClientTables();
-
-        LOGGER.info(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT);
-        updateProgress(read(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT));
-        time = System.currentTimeMillis();
-        int currentRevision = clientProvider.applyChanges(serverChanges, clientChanges);
-        time = System.currentTimeMillis() - time;
-        LOGGER.debug("client.applyChanges duration: {}ms", time);
-
-        return new ClientData(currentRevision, clientChanges);
-    }
-
     /**
      * @todo write comment.
      */
-    protected void doAfterPhaseProcessServerChanges() {
+    protected void doAfterGetServerChanges() {
         phaseTime = System.currentTimeMillis() - phaseTime;
         LOGGER.debug("phase process -server-changes duration: {}ms", phaseTime);
     }
@@ -236,56 +216,17 @@ public class SyncAgent {
     /**
      * @todo write comment.
      */
-    protected void doBeforePhaseProcessClientChanges() {
+    protected void doBeforeApplyClientChanges() {
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
         phaseTime = System.currentTimeMillis();
-    }
-
-    private ApplyClientChangesResult phaseProcessClientChanges(ClientData clientData
-    ) throws SyncException,
-        DatabaseAdapterException {
-
-        int clientRevision = clientData.getRevision();
-        List<Change> clientChanges = clientData.getChanges();
-
-        updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT));
-        long time = System.currentTimeMillis();
-//        List<Change> changes = clientProvider.getChanges();
-        time = System.currentTimeMillis() - time;
-        LOGGER.debug("client.getChanges duration: {}ms, ClientChanges: {}", time, clientChanges);
-
-        LOGGER.info(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT);
-        updateProgress(read(Infos.COMMON_APPLYING_CHANGES_FROM_SERVER_TO_CLIENT));
-        time = System.currentTimeMillis();
-        int serverRev = serverProvider.applyChanges(clientChanges, clientRevision);
-        time = System.currentTimeMillis() - time;
-        LOGGER.debug("server.applyChanges duration: {}ms", time);
-
-        ApplyClientChangesResult result = new ApplyClientChangesResult(clientChanges, serverRev);
-        return result;
     }
 
     /**
      * @todo write comment.
      */
-    protected void doAfterPhaseClientChanges() {
+    protected void doAfterApplyClientChanges() {
         phaseTime = System.currentTimeMillis() - phaseTime;
         LOGGER.debug("phase process-client-changes duration: {}ms", phaseTime);
-    }
-
-    private void updateClientRevision(ApplyClientChangesResult result) throws DatabaseAdapterException, SyncException {
-
-        LOGGER.info(Infos.COMMON_UPDATING_CLIENT_REVISIONS);
-        updateProgress(read(Infos.COMMON_UPDATING_CLIENT_REVISIONS));
-        long time = System.currentTimeMillis();
-        clientProvider.updateClientRevision(result.getChangeSet(), result.getCurrentRevision());
-        time = System.currentTimeMillis() - time;
-        LOGGER.debug("client.updateClientRevisions duration: {}ms", time);
-        LOGGER.info(Infos.COMMON_CLIENT_REVISION_UPDATED_TO, result.getCurrentRevision());
-
-        LOGGER.info(Infos.COMMON_SYNCHRONIZATION_FINISHED);
-        updateFinished();
-
     }
 
     private void logInfo(int clientRevision, List<Change> serverChanges) {
@@ -335,49 +276,5 @@ public class SyncAgent {
         builder.append(recursionDepth);
         builder.append(" }\n");
         return builder.toString();
-    }
-
-    private class ApplyClientChangesResult {
-
-        private List<Change> changeSet;
-        private int currentRevision;
-
-        public ApplyClientChangesResult(final List<Change> changeSet, final int currentRevision) {
-            this.changeSet = changeSet;
-            this.currentRevision = currentRevision;
-        }
-
-        public List<Change> getChangeSet() {
-            return changeSet;
-        }
-
-        public int getCurrentRevision() {
-            return currentRevision;
-        }
-
-        @Override
-        public String toString() {
-            return ApplyClientChangesResult.class.getSimpleName() + "{ changeSetLength="
-                + (changeSet == null ? "null" : changeSet.size())
-                + ", currentRevision=" + currentRevision + '}';
-        }
-    }
-
-    private class ClientData {
-        private int revision;
-        private List<Change> changes;
-
-        public ClientData(int revision, List<Change> changes) {
-            this.revision = revision;
-            this.changes = changes;
-        }
-
-        public int getRevision() {
-            return revision;
-        }
-
-        public List<Change> getChanges() {
-            return changes;
-        }
     }
 }

@@ -3,11 +3,11 @@ package de.consistec.syncframework.impl.adapter.it_postgres;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.server.ServerStatus.CLIENT_NOT_UPTODATE;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.when;
 
 import de.consistec.syncframework.common.Config;
-import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.client.IClientSyncProvider;
 import de.consistec.syncframework.common.client.SyncAgent;
 import de.consistec.syncframework.common.data.Change;
@@ -21,7 +21,6 @@ import de.consistec.syncframework.impl.TestDatabase;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -90,10 +89,9 @@ public class RepeatSyncTest {
     @Test(expected = ServerStatusException.class)
     public void repeatSyncDueToClientNotUptoDate() throws ContextException, SyncException {
 
-        when(this.serverSyncProviderMock.getChanges(anyInt())).thenReturn(
-            new Tuple<Integer, List<Change>>(1, new ArrayList<Change>()));
+        when(this.serverSyncProviderMock.getChanges(anyInt())).thenReturn(new SyncData(1, new ArrayList<Change>()));
         // throw exception to repeat the sync
-        when(this.serverSyncProviderMock.applyChanges(anyList(), anyInt())).thenThrow(new ServerStatusException(
+        when(this.serverSyncProviderMock.applyChanges((SyncData) anyObject())).thenThrow(new ServerStatusException(
             CLIENT_NOT_UPTODATE, read(Errors.COMMON_UPDATE_NECESSARY)));
 
         SyncAgent agent = new SyncAgent(this.serverSyncProviderMock, this.clientSyncProviderMock);

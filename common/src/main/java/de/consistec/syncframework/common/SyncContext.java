@@ -10,7 +10,6 @@ import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientSyncProvider;
 import de.consistec.syncframework.common.client.IClientSyncProvider;
 import de.consistec.syncframework.common.client.SyncAgent;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
@@ -25,7 +24,6 @@ import de.consistec.syncframework.common.util.LoggingUtil;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.cal10n.LocLogger;
 
@@ -632,13 +630,12 @@ public final class SyncContext {
          * Apply changes from client to server.
          * <p/>
          *
-         * @param changes List of changes.
-         * @param clientRevision Client's data revision.
+         * @param clientData client data which contains the client's revision and the changes to apply.
          * @return New revision created by the server.
          * @throws SyncException
          */
-        public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
-            return serverProvider.applyChanges(changes, clientRevision);
+        public int applyChanges(SyncData clientData) throws SyncException {
+            return serverProvider.applyChanges(clientData);
         }
 
         /**
@@ -649,7 +646,7 @@ public final class SyncContext {
          * @return List of changes from server.
          * @throws SyncException
          */
-        public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+        public SyncData getChanges(int rev) throws SyncException {
             return serverProvider.getChanges(rev);
         }
 
@@ -789,13 +786,12 @@ public final class SyncContext {
          * Apply changes from client to server.
          * <p/>
          *
-         * @param changes List of changes.
-         * @param clientRevision Client's data revision.
+         * @param clientData client data which contains the client's revision and the changes to apply.
          * @return New revision created by the server.
          * @throws SyncException
          */
-        public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
-            return serverProvider.applyChanges(changes, clientRevision);
+        public int applyChanges(SyncData clientData) throws SyncException {
+            return serverProvider.applyChanges(clientData);
         }
 
         /**
@@ -806,7 +802,7 @@ public final class SyncContext {
          * @return List of changes from server.
          * @throws SyncException
          */
-        public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+        public SyncData getChanges(int rev) throws SyncException {
             return serverProvider.getChanges(rev);
         }
 

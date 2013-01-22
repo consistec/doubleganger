@@ -4,12 +4,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import de.consistec.syncframework.common.adapter.DumpDbAdapter;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.server.IServerSyncProvider;
 
-import java.util.List;
 import org.junit.Test;
 import org.powermock.reflect.Whitebox;
 
@@ -69,12 +67,12 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
 
     //<editor-fold defaultstate="collapsed" desc="Methods from IServerSyncProvider interface" >
     @Override
-    public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+    public int applyChanges(SyncData clientData) throws SyncException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+    public SyncData getChanges(int rev) throws SyncException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

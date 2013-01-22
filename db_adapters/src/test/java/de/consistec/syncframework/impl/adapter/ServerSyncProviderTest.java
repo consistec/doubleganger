@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
@@ -123,7 +124,7 @@ public class ServerSyncProviderTest {
         doThrow(TRANSACTION_SQL_EXCEPTION).when(
             connectionMock).commit();
 
-        serverSyncProvider.applyChanges(new ArrayList<Change>(), 0);
+        serverSyncProvider.applyChanges(new SyncData(0, new ArrayList<Change>()));
 
         verify(databaseAdapterMock).commit();
     }
@@ -142,7 +143,7 @@ public class ServerSyncProviderTest {
 
         doThrow(UNIQUE_EXCEPTION).when(databaseAdapterMock).commit();
 
-        serverSyncProvider.applyChanges(new ArrayList<Change>(), 0);
+        serverSyncProvider.applyChanges(new SyncData(0, new ArrayList<Change>()));
     }
 
     @Test

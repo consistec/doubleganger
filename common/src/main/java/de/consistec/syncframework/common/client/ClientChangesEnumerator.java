@@ -3,6 +3,7 @@ package de.consistec.syncframework.common.client;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
@@ -68,7 +69,7 @@ public class ClientChangesEnumerator {
      * @return The changes
      * @throws DatabaseAdapterException if database operations fail
      */
-    public List<Change> getChanges() throws DatabaseAdapterException {
+    public SyncData getChanges() throws DatabaseAdapterException {
 
         LOGGER.debug("getClientChanges called");
 
@@ -106,7 +107,7 @@ public class ClientChangesEnumerator {
             });
         }
         LOGGER.debug("getClientChanges finished");
-        return list;
+        return new SyncData(0, list);
     }
     //</editor-fold>
 }
