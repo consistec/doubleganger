@@ -45,8 +45,8 @@
         <postgres_client_dbname>client</postgres_client_dbname>
         <postgres_sync_user>syncuser</postgres_sync_user>
         <postgres_sync_pwd>syncuser</postgres_sync_pwd>
-        <postgres_extern_user>externuser</postgres_extern_user>
-        <postgres_extern_pwd>externuser</postgres_extern_pwd>
+        <postgres_extern_user>postgres</postgres_extern_user>
+        <postgres_extern_pwd>root</postgres_extern_pwd>
         <postgres_driver>org.postgresql.Driver</postgres_driver>
         <postgres_database_adapter>de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter
         </postgres_database_adapter>
@@ -60,11 +60,11 @@
         <mysql_client_dbname>client</mysql_client_dbname>
         <mysql_sync_user>mysql</mysql_sync_user>
         <mysql_sync_pwd>mysql</mysql_sync_pwd>
-        <mysql_extern_user>externuser</mysql_extern_user>
-        <mysql_extern_pwd>externuser</mysql_extern_pwd>
+        <mysql_extern_user>extern</mysql_extern_user>
+        <mysql_extern_pwd>extern</mysql_extern_pwd>
         <mysql_driver>com.mysql.jdbc.Driver</mysql_driver>
-        <sqlite_extern_user>externuser</sqlite_extern_user>
-        <sqlite_extern_pwd>externuser</sqlite_extern_pwd>
+        <sqlite_extern_user></sqlite_extern_user>
+        <sqlite_extern_pwd></sqlite_extern_pwd>
         <!-- Sonar Properties -->
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
