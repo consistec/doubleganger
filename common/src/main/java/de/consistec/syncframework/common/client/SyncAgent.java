@@ -233,6 +233,9 @@ public class SyncAgent {
         LOGGER.debug("phase process -server-changes duration: {}ms", phaseTime);
     }
 
+    /**
+     * @todo write comment.
+     */
     protected void doBeforePhaseProcessClientChanges() {
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
         phaseTime = System.currentTimeMillis();
