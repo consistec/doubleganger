@@ -6,6 +6,7 @@ import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import de.consistec.syncframework.common.Config;
@@ -89,6 +90,7 @@ public class ServerSyncProviderTest {
 
 
         Config.getInstance().addSyncTable("categories", "items");
+        Config.getInstance().setMdTableSuffix("_md");
 
         TableSyncStrategies serverSyncStrategies = new TableSyncStrategies();
         serverSyncStrategies.addSyncStrategyForTable("categories",
@@ -110,6 +112,7 @@ public class ServerSyncProviderTest {
 
 
         when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
+        when(databaseAdapterMock.existsMDTable(any(String.class))).thenReturn(true);
 
         SyncSettings clientSettings = new SyncSettings(tablesToSync, clientSyncStrategies);
         serverSyncProvider.validate(clientSettings);

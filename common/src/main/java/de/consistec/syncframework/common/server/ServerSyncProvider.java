@@ -180,10 +180,10 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             adapter.getConnection().setAutoCommit(true);
 
             String mdTable = clientTable + CONF.getMdTableSuffix();
-            mdTableExists = adapter.existsMDTable(mdTable);
+//            mdTableExists = adapter.existsMDTable(mdTable);
 
             int retries = 3;
-            while (!mdTableExists) {
+            while (!adapter.existsMDTable(mdTable)) {
                 try {
                     adapter.createMDTable(clientTable);
                 } catch (DatabaseAdapterException ex) {
