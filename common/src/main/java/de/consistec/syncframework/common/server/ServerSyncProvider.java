@@ -151,33 +151,65 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         checkSyncState(serverSettings.getSyncTables().containsAll(clientSettings.getSyncTables()),
             Errors.COMMON_SYNCTABLE_SETTINGS_ERROR);
 
-        for (String clientTable : clientSettings.getSyncTables()) {
-            TableSyncStrategy clientSyncStrategy = clientSettings.getStrategy(clientTable);
-            TableSyncStrategy serverSyncStrategy = serverSettings.getStrategy(clientTable);
-            if (!clientSyncStrategy.equals(serverSyncStrategy)) {
-                throw new SyncException(MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
-                    serverSyncStrategy));
-            }
-
-            IDatabaseAdapter adapter = null;
-            boolean mdTableExists = false;
-            try {
-                adapter = prepareDbAdapter();
-
-                // prepareDbAdapter sets autocommit to false but here we need it set to true
-                adapter.getConnection().setAutoCommit(true);
-
-                String mdTable = clientTable + CONF.getMdTableSuffix();
-                mdTableExists = adapter.existsMDTable(mdTable);
-
-                if (!mdTableExists) {
-                    adapter.createMDTable(clientTable);
+        try {
+            for (String clientTable : clientSettings.getSyncTables()) {
+                TableSyncStrategy clientSyncStrategy = clientSettings.getStrategy(clientTable);
+                TableSyncStrategy serverSyncStrategy = serverSettings.getStrategy(clientTable);
+                if (!clientSyncStrategy.equals(serverSyncStrategy)) {
+                    throw new SyncException(
+                        MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
+                            serverSyncStrategy));
                 }
-            } catch (SQLException e) {
-                throw new SyncException(e);
-            } catch (DatabaseAdapterException e) {
-                throw new SyncException(e);
+
+                createMDTableIfNotExists(clientTable);
             }
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
+        }
+    }
+
+    private void createMDTableIfNotExists(String clientTable) throws SyncException, DatabaseAdapterException {
+
+        IDatabaseAdapter adapter = null;
+        try {
+            boolean mdTableExists = false;
+
+            adapter = prepareDbAdapter();
+
+            // prepareDbAdapter sets autocommit to false but here we need it set to true
+            adapter.getConnection().setAutoCommit(true);
+
+            String mdTable = clientTable + CONF.getMdTableSuffix();
+            mdTableExists = adapter.existsMDTable(mdTable);
+
+            int retries = 3;
+            while (!mdTableExists) {
+                try {
+                    adapter.createMDTable(clientTable);
+                } catch (DatabaseAdapterException ex) {
+
+                    rollback(adapter);
+                    LOGGER.debug("Transaction rolled back!!! \n {}", ex);
+
+                    if (ex instanceof UniqueConstraintException
+                        || ex instanceof TransactionAbortedException) {
+
+                        LOGGER.info(Infos.COMMON_TRYING_TO_REAPPLY_CLIENT_CHANGES);
+
+                        if (retries == 0) {
+                            throw new SyncException(read(Errors.COMMON_CANT_APPLY_CLIENT_CHANGES_FOR_N_TIME, retries),
+                                ex);
+                        } else {
+                            retries--;
+                            LOGGER.info(Infos.COMMON_REMAINING_NUMBER_OF_APPLY_CLIENT_CHANGES_RETRIES, retries);
+                        }
+                    } else {
+                        throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(e);
         }
     }
 
