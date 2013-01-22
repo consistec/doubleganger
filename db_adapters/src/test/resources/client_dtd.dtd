@@ -1,0 +1,36 @@
+<!ELEMENT dataset (
+    categories*,
+    categories_md*,
+    items*,
+    items_md*)>
+
+<!ELEMENT categories EMPTY>
+<!ATTLIST categories
+    categoryid CDATA #REQUIRED
+    categoryname CDATA #IMPLIED
+    description CDATA #IMPLIED
+>
+
+<!ELEMENT categories_md EMPTY>
+<!ATTLIST categories_md
+    pk CDATA #REQUIRED
+    mdv CDATA #IMPLIED
+    rev CDATA #IMPLIED
+    f CDATA #IMPLIED
+>
+
+
+<!ELEMENT items EMPTY>
+<!ATTLIST items
+    itemid CDATA #REQUIRED
+    itemname CDATA #IMPLIED
+    description CDATA #IMPLIED
+>
+
+<!ELEMENT items_md EMPTY>
+<!ATTLIST items_md
+    pk CDATA #REQUIRED
+    mdv CDATA #IMPLIED
+    rev CDATA #IMPLIED
+    f CDATA #IMPLIED
+>
