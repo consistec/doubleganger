@@ -92,19 +92,41 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      * Value: {@value}.
      */
-    public static final String PROPS_USERNAME = "user";
+    public static final String PROPS_SYNC_USERNAME = "user";
     /**
      * This option specify database user password.
      * <p/>
      * Value: {@value}.
      */
-    public static final String PROPS_PASSWORD = "password";
+    public static final String PROPS_SYNC_PASSWORD = "password";
+    /**
+     * This option specifies the database username of an external user (unknown to the syncframework).
+     * <p/>
+     * Value: {@value}.
+     */
+    public static final String PROPS_EXTERN_USERNAME = "extern.user";
+    /**
+     * This option specifies the database password of an external user (unknown to the syncframework).
+     * <p/>
+     * Value: {@value}.
+     */
+    public static final String PROPS_EXTERN_PASSWORD = "extern.password";
     /**
      * This option specify the database schema to connect to.
      * <p/>
      * Value: {@value}.
      */
     public static final String PROPS_SCHEMA = "schema";
+    /**
+     * MySQL database property file.
+     * Value: {@value}
+     */
+    public static final String MYSQL_CONFIG_FILE = "/config_mysql.properties";
+    /**
+     * SQLite database property file.
+     * Value: {@value}
+     */
+    public static final String SQLITE_CONFIG_FILE = "/config_sqlite.properties";
     //</editor-fold>
     /**
      * Part of a description of table columns available in a catalog.
@@ -293,8 +315,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         driverName = readString(adapterConfig, PROPS_DRIVER_NAME, true);
         connectionUrl = readString(adapterConfig, PROPS_URL, true);
-        username = readString(adapterConfig, PROPS_USERNAME, false);
-        password = readString(adapterConfig, PROPS_PASSWORD, false);
+        username = readString(adapterConfig, PROPS_SYNC_USERNAME, false);
+        password = readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
         schemaOfConnection = defaultIfNull(schemaOfConnection, readString(adapterConfig, PROPS_SCHEMA, false));
 
         LOGGER.debug("driverName=\"{}\", connectionUrl=\"{}\", username=\"{}\", password=\"{}\"",

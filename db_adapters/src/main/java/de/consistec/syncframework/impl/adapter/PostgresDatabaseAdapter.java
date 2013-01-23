@@ -56,6 +56,11 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      */
     public static final String DEFAULT_DRIVER = "org.postgresql.Driver";
     /**
+     * Database property file.
+     * Value: {@value}.
+     */
+    public static final String CONFIG_FILE = "/config_postgre.properties";
+    /**
      * Default port on which database server is listening.
      * <p/>
      * Value: {@value}.
@@ -94,6 +99,33 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
+    public void init(Properties adapterConfig) throws DatabaseAdapterInstantiationException {
+
+        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_DRIVER_NAME))) {
+            driverName = DEFAULT_DRIVER;
+        } else {
+            driverName = adapterConfig.getProperty(PROPS_DRIVER_NAME);
+        }
+
+        username = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_USERNAME, false);
+        password = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
+
+        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_URL))) {
+            if (!StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_PORT))) {
+                port = PropertiesUtil.readNumber(adapterConfig, PROPS_PORT, true, Integer.class);
+            }
+
+            host = PropertiesUtil.readString(adapterConfig, PROPS_HOST, true);
+            databaseName = PropertiesUtil.readString(adapterConfig, PROPS_DB_NAME, true);
+            connectionUrl = createUrl(host, port, databaseName);
+
+            LOGGER.debug("PostgreSQL connection URL is {}", connectionUrl);
+        }
+
+        createConnection();
+    }
+
+    @Override
     public void commit() throws DatabaseAdapterException {
         try {
             super.commit();
@@ -117,7 +149,10 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     public void applySchema(Schema schema) throws DatabaseAdapterException {
         Statement stmt = null;
 
-        List<String> triggers = generateSqlTriggersForSchema(schema);
+        List<String> triggers = new LinkedList<String>();
+        if (CONF.isSqlTriggerActivated()) {
+            triggers = generateSqlTriggersForSchema(schema);
+        }
         removeExistentTablesFromSchema(schema);
 
         try {
@@ -138,9 +173,11 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             LOGGER.debug("creating plpgsql language {}", createLanguageQuery);
             stmt.execute(createLanguageQuery);
 
-            LOGGER.debug("adding triggers");
-            for (String trigger : triggers) {
-                stmt.execute(trigger);
+            if (CONF.isSqlTriggerActivated()) {
+                LOGGER.debug("adding triggers");
+                for (String trigger : triggers) {
+                    stmt.execute(trigger);
+                }
             }
 
         } catch (BatchUpdateException e) {
@@ -264,33 +301,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         result = result.replaceAll(DB_NAME_REGEXP, pdbName);
 
         return result;
-    }
-
-    @Override
-    public void init(Properties adapterConfig) throws DatabaseAdapterInstantiationException {
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_DRIVER_NAME))) {
-            driverName = DEFAULT_DRIVER;
-        } else {
-            driverName = adapterConfig.getProperty(PROPS_DRIVER_NAME);
-        }
-
-        username = PropertiesUtil.readString(adapterConfig, PROPS_USERNAME, false);
-        password = PropertiesUtil.readString(adapterConfig, PROPS_PASSWORD, false);
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_URL))) {
-            if (!StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_PORT))) {
-                port = PropertiesUtil.readNumber(adapterConfig, PROPS_PORT, true, Integer.class);
-            }
-
-            host = PropertiesUtil.readString(adapterConfig, PROPS_HOST, true);
-            databaseName = PropertiesUtil.readString(adapterConfig, PROPS_DB_NAME, true);
-            connectionUrl = createUrl(host, port, databaseName);
-
-            LOGGER.debug("PostgreSQL connection URL is {}", connectionUrl);
-        }
-
-        createConnection();
     }
 
     /**

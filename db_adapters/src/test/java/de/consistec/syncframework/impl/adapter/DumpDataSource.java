@@ -36,6 +36,7 @@ public class DumpDataSource implements DataSource {
     private ConnectionType conType;
     private List<Connection> createdConnections;
     private String propertiesPrefix;
+    private Properties properties;
 //</editor-fold>
 
     //<editor-fold defaultstate="expanded" desc=" Class constructors " >
@@ -48,19 +49,22 @@ public class DumpDataSource implements DataSource {
 
                 propertiesPrefix = String.valueOf(
                     Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP").get(
-                        null));
+                    null));
 
             } else {
                 propertiesPrefix = String.valueOf(
                     Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_SERV_DB_ADAP_GROUP").get(
-                        null));
+                    null));
             }
 
             propertiesPrefix += ".";
 
+            readConfig();
         } catch (IllegalArgumentException ex) {
             throw new RuntimeException(ex);
         } catch (IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
     }
@@ -77,18 +81,18 @@ public class DumpDataSource implements DataSource {
 //</editor-fold>
 
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-    private Connection create() throws Exception {
+    private Connection create(String username, String password) throws Exception {
 
         Connection con = null;
         switch (dbType) {
             case MYSQL:
-                con = createMySql();
+                con = createMySql(username, password);
                 break;
             case POSTGRESQL:
-                con = createPostgres();
+                con = createPostgres(username, password);
                 break;
             case SQLITE:
-                con = createSqlLite();
+                con = createSqlLite(username, password);
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported database");
@@ -99,49 +103,39 @@ public class DumpDataSource implements DataSource {
 
     }
 
-    private Connection createPostgres() throws Exception {
-        Properties props = readConfig("/config_postgre.properties");
-
-        String driver = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
+    private Connection createPostgres(String username, String password) throws Exception {
+        String driver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
         if (isNullOrEmpty(driver)) {
             driver = "org.postgresql.Driver";
         }
-        String dbUser = readString(props, propertiesPrefix + PostgresDatabaseAdapter.PROPS_USERNAME, false);
-        String dbPass = readString(props, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PASSWORD, false);
+        String url = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, false);
 
-        String url = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, false);
         if (isNullOrEmpty(url)) {
-
-            String host = readString(props, propertiesPrefix + PostgresDatabaseAdapter.PROPS_HOST, true);
-            String dbName = readString(props, propertiesPrefix + PostgresDatabaseAdapter.PROPS_DB_NAME, true);
-            String tmpPort = readString(props, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PORT, false);
+            String host = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_HOST, true);
+            String dbName = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_DB_NAME, true);
+            String tmpPort = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PORT, false);
 
             url = Whitebox.<String>invokeMethod(PostgresDatabaseAdapter.class, "createUrl", host,
                 StringUtil.isNullOrEmpty(tmpPort) ? null : Integer.valueOf(tmpPort), dbName);
         }
-
-        Class.forName(driver);
-        if (StringUtil.isNullOrEmpty(dbUser) || StringUtil.isNullOrEmpty(dbPass)) {
-            return DriverManager.getConnection(url);
-        } else {
-            return DriverManager.getConnection(url, dbUser, dbPass);
-        }
+        return buildConnection(driver, url, username, password);
     }
 
-    private Connection createMySql() throws IOException, ClassNotFoundException, SQLException {
-        return createGeneric(readConfig("/config_mysql.properties"));
+    private Connection createMySql(String username, String password) throws IOException, ClassNotFoundException,
+        SQLException {
+        return createGeneric(username, password);
     }
 
-    private Connection createSqlLite() throws IOException, ClassNotFoundException, SQLException {
-        return createGeneric(readConfig("/config_sqlite.properties"));
+    private Connection createSqlLite(String username, String password) throws IOException, ClassNotFoundException,
+        SQLException {
+        return createGeneric(username, password);
     }
 
-    private Connection createGeneric(Properties props) throws ClassNotFoundException, SQLException {
-        String dbDriver = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, true);
-        String dbUrl = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, true);
-        String dbUser = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_USERNAME, false);
-        String dbPassword = readString(props, propertiesPrefix + GenericDatabaseAdapter.PROPS_PASSWORD, false);
-        return buildConnection(dbDriver, dbUrl, dbUser, dbPassword);
+    private Connection createGeneric(String username, String password) throws ClassNotFoundException,
+        SQLException {
+        String dbDriver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, true);
+        String dbUrl = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, true);
+        return buildConnection(dbDriver, dbUrl, username, password);
     }
 
     private Connection buildConnection(String driver, String url, String dbUser, String dbPass) throws
@@ -154,21 +148,54 @@ public class DumpDataSource implements DataSource {
         }
     }
 
+    public String getSyncUserName() {
+        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_SYNC_USERNAME, false);
+    }
+
+    public String getSyncUserPassword() {
+        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_SYNC_PASSWORD, false);
+    }
+
+    public String getExternUserName() {
+        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_EXTERN_USERNAME, false);
+    }
+
+    public String getExternUserPassword() {
+        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_EXTERN_PASSWORD, false);
+    }
+
     @Override
     public Connection getConnection() throws SQLException {
+        return getConnection(getSyncUserName(), getSyncUserPassword());
+    }
+
+    @Override
+    public Connection getConnection(String username, String password) throws SQLException {
         try {
-            return create();
+            return create(username, password);
         } catch (Exception ex) {
             throw new SQLException("Can't read connection data", ex);
         }
     }
 
-    private Properties readConfig(String filePath) throws IOException {
-
-        Properties props = new Properties();
+    private void readConfig() throws IOException {
+        String filePath;
+        switch (dbType) {
+            case MYSQL:
+                filePath = GenericDatabaseAdapter.MYSQL_CONFIG_FILE;
+                break;
+            case POSTGRESQL:
+                filePath = PostgresDatabaseAdapter.CONFIG_FILE;
+                break;
+            case SQLITE:
+                filePath = GenericDatabaseAdapter.SQLITE_CONFIG_FILE;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unsupported database");
+        }
         InputStream in = getClass().getResourceAsStream(filePath);
-        props.load(in);
-        return props;
+        properties = new Properties();
+        properties.load(in);
     }
 
     /**
@@ -179,11 +206,6 @@ public class DumpDataSource implements DataSource {
     }
 
     //<editor-fold defaultstate="collapsed" desc=" -------- Not implemented methods -------- " >
-    @Override
-    public Connection getConnection(String username, String password) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     public PrintWriter getLogWriter() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -220,8 +242,6 @@ public class DumpDataSource implements DataSource {
     public enum SupportedDatabases {
 
         POSTGRESQL, MYSQL, SQLITE;
-    }
-
-    ;
+    };
     //</editor-fold>
 }
