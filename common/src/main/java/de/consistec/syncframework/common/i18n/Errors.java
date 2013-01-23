@@ -337,7 +337,11 @@ public enum Errors {
     /**
      * synced changes from server to client with sync direction CLIENT_TO_SERVER are not allowed.
      */
-    COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC;
+    COMMON_NO_SERVERCHANGES_ALLOWED_TO_SYNC,
+    /**
+     * Server Meta Table could not be recreated after x retries.
+     */
+    COMMON_CANT_RECREATE_SERVER_META_TABLE_FOR_N_TIMES;
 
     //</editor-fold>
 }

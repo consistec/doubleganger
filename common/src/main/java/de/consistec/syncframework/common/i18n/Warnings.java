@@ -57,6 +57,14 @@ public enum Warnings {
     /**
      * Informs that an attempt to close the {@link java.sql.Connection connection} failed.
      */
-    DATA_CANT_CLOSE_CONNECTION;
+    DATA_CANT_CLOSE_CONNECTION,
+    /**
+     * Warning, if metadata table (_md) could not be found during sync and is recreated.
+     */
+    COMMON_RECREATING_SERVER_META_TABLES,
+    /**
+     * Warning, if metadata table (_md) could not be recreated.
+     */
+    COMMON_RECREATING_SERVER_META_TABLES_FAILED;
     //</editor-fold>
 }

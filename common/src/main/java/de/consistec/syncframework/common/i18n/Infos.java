@@ -238,6 +238,10 @@ public enum Infos {
     /**
      * Information about validation of settings.
      */
-    COMMON_SETTINGS_VALIDATION;
+    COMMON_SETTINGS_VALIDATION,
+    /**
+     * Information that recreation of server meta is retried.
+     */
+    COMMON_RETRYING_RECREATE_SERVER_META_TABLES;
     //</editor-fold>
 }
