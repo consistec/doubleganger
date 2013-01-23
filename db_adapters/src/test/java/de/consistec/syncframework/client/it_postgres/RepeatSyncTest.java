@@ -3,6 +3,7 @@ package de.consistec.syncframework.client.it_postgres;
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.impl.TestDatabase;
 import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
 
@@ -12,6 +13,7 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,10 +88,10 @@ public class RepeatSyncTest {
         db.clean();
     }
 
-//    @Test
-//    public void clientUpdate() throws ContextException, SyncException, DatabaseAdapterException,
-//        SQLException {
-//
+    @Test
+    public void clientUpdate() throws ContextException, SyncException, DatabaseAdapterException,
+        SQLException {
+
 //        TestScenario scenario = new TestScenario("client update", BIDIRECTIONAL, SERVER_WINS)
 //            .addStep(CLIENT, updateRow1)
 //            .expectServer("CS")
@@ -126,13 +128,13 @@ public class RepeatSyncTest {
 //
 //        scenario.assertServerIsInExpectedState();
 //        scenario.assertClientIsInExpectedState();
-//
-//    }
-//
-//    @Test
-//    public void clientInsert() throws ContextException, SyncException, DatabaseAdapterException,
-//        SQLException {
-//
+
+    }
+
+    @Test
+    public void clientInsert() throws ContextException, SyncException, DatabaseAdapterException,
+        SQLException {
+
 //        TestScenario scenario = new TestScenario("client insert", BIDIRECTIONAL, SERVER_WINS)
 //            .addStep(CLIENT, insertRow3)
 //            .expectServer("SSC")
@@ -169,13 +171,13 @@ public class RepeatSyncTest {
 //
 //        scenario.assertServerIsInExpectedState();
 //        scenario.assertClientIsInExpectedState();
-//
-//    }
-//
-//    @Test
-//    public void clientDelete() throws ContextException, SyncException, DatabaseAdapterException,
-//        SQLException {
-//
+
+    }
+
+    @Test
+    public void clientDelete() throws ContextException, SyncException, DatabaseAdapterException,
+        SQLException {
+
 //        TestScenario scenario = new TestScenario("client delete", BIDIRECTIONAL, SERVER_WINS)
 //            .addStep(CLIENT, deleteRow1)
 //            .expectServer("C")
@@ -212,5 +214,5 @@ public class RepeatSyncTest {
 //
 //        scenario.assertServerIsInExpectedState();
 //        scenario.assertClientIsInExpectedState();
-//    }
+    }
 }

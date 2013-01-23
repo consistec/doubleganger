@@ -2,6 +2,7 @@ package de.consistec.syncframework.impl.commands;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
@@ -62,8 +63,8 @@ public class ApplyChangesCommand implements RequestCommand {
                     paramValues.getClientChanges());
                 LOGGER.debug("deserialized Changes:");
                 LOGGER.debug("<{}>", deserializedChanges);
-                int nextServerRevisionSendToClient = paramValues.getCtx().applyChanges(deserializedChanges,
-                    clientRevision);
+                SyncData syncData = new SyncData(clientRevision, deserializedChanges);
+                int nextServerRevisionSendToClient = paramValues.getCtx().applyChanges(syncData);
                 LOGGER.info(Infos.NEW_SERVER_REVISION, nextServerRevisionSendToClient);
 
                 return String.valueOf(nextServerRevisionSendToClient);

@@ -2,6 +2,7 @@ package de.consistec.syncframework.common.client;
 
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncData;
+import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
@@ -19,20 +20,29 @@ import java.util.List;
 public interface IClientSyncProvider {
 
     /**
-     * Apply changes.
+     * Resolves conflicts between client and server changes.
+     *
+     * @param serverData detected changes from server
+     * @param clientData detected changes from client
+     * @return holder object whicht contains cleaned (without conflicts) client and server sync data
+     * @throws SyncException
+     */
+    SyncDataHolder resolveConflicts(SyncData serverData, SyncData clientData) throws SyncException;
+
+    /**
+     * Applies the cleaned (without conflicts) server changes on the client.
      *
      * @param serverData an object which contains the max revision and the changeset from server provider.See
      * {@link de.consistec.syncframework.common.server.IServerSyncProvider#getChanges(int) }.
-     * @param clientData the changes data from client side.
      * @return new client revision.
      * @throws SyncException
      */
-    SyncData applyChanges(SyncData serverData, SyncData clientData) throws
+    int applyChanges(SyncData serverData) throws
         SyncException;
 
     /**
      * Gets the client changes.
-     * See {@link de.consistec.syncframework.common.server.IServerSyncProvider#applyChanges(java.util.List, int) }.
+     * See {@link de.consistec.syncframework.common.server.IServerSyncProvider#applyChanges(SyncData) }.
      *
      * @return the changes
      * @throws SyncException the sync exception

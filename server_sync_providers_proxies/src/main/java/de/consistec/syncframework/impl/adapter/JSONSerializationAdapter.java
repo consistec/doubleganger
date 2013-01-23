@@ -28,11 +28,11 @@ import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayLis
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashSet;
 
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
@@ -78,7 +78,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
     }
 
     @Override
-    public Tuple<Integer, List<Change>> deserializeMaxRevisionAndChangeList(final String serializedObject) throws
+    public SyncData deserializeMaxRevisionAndChangeList(final String serializedObject) throws
         SerializationException {
 
         List<Change> changeList = deserializeChangeList(serializedObject, 1);
@@ -88,7 +88,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
             final JSONArray array = new JSONArray(serializedObject);
             Integer maxRevision = Integer.valueOf(array.getInt(0));
 
-            return new Tuple<Integer, List<Change>>(maxRevision, changeList);
+            return new SyncData(maxRevision, changeList);
         } catch (JSONException e) {
             throw new SerializationException(read(Errors.CANT_CONVERT_FROM_JSON_TO_CHANGE_LIST), e);
         }
@@ -150,7 +150,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
     }
 
     @Override
-    public String serializeChangeList(final Tuple<Integer, List<Change>> changeListTuple) throws
+    public String serializeChangeList(final SyncData syncData) throws
         SerializationException {
 
         try {
@@ -162,9 +162,9 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
             JSONObject jsonRowData;
             JSONArray array = new JSONArray();
 
-            array.put(changeListTuple.getValue1().intValue());
+            array.put(syncData.getRevision());
 
-            for (Change c : changeListTuple.getValue2()) {
+            for (Change c : syncData.getChanges()) {
 
                 entry = c.getMdEntry();
                 mdEntryObject = new JSONObject();

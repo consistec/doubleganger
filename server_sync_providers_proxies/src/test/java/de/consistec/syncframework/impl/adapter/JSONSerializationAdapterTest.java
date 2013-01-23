@@ -30,13 +30,13 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.TestBase;
 import de.consistec.syncframework.common.TestUtil;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
@@ -106,7 +106,7 @@ public class JSONSerializationAdapterTest extends TestBase {
     }
 
     @Test
-    public void testTupleSerialization() throws SerializationException {
+    public void testSyncDataSerialization() throws SerializationException {
 
         final List<Change> changeList = newArrayList();
         MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
@@ -129,37 +129,38 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME6, null);
         changeList.add(new Change(entry, rowData));
 
-        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+        SyncData data = new SyncData(0, changeList);
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
 //        final String jsonChangeList = adapter.serializeChangeList(changeList);
-        final String jsonChangeList = adapter.serializeChangeList(tuple);
-        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+        final String jsonChangeList = adapter.serializeChangeList(data);
+        final SyncData deserializedSyncData = adapter.deserializeMaxRevisionAndChangeList(
             jsonChangeList);
 
-        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
-            deserializedTuple.getValue1());
-        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
-            deserializedTuple.getValue2());
+        assertEquals("max revision of serialized and deserialized tuple are different!", data.getRevision(),
+            deserializedSyncData.getRevision());
+        assertEquals("Original and deserialised tuples are different!", data.getChanges(),
+            deserializedSyncData.getChanges());
     }
 
     @Test
-    public void testTupleSerializationEmptyChangeList() throws SerializationException {
+    public void testSyncSerializationEmptyChangeList() throws SerializationException {
 
         final List<Change> changeList = newArrayList();
 
-        Tuple<Integer, List<Change>> tuple = new Tuple<Integer, List<Change>>(0, changeList);
+        SyncData data = new SyncData(0, changeList);
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
 //        final String jsonChangeList = adapter.serializeChangeList(changeList);
-        final String jsonChangeList = adapter.serializeChangeList(tuple);
-        final Tuple<Integer, List<Change>> deserializedTuple = adapter.deserializeMaxRevisionAndChangeList(
+        final String jsonChangeList = adapter.serializeChangeList(data);
+        final SyncData deserializedSyncData = adapter.deserializeMaxRevisionAndChangeList(
             jsonChangeList);
 
-        assertEquals("max revision of serialized and deserialized tuple are different!", tuple.getValue1(),
-            deserializedTuple.getValue1());
-        assertEquals("Original and deserialised tuples are different!", tuple.getValue2(),
-            deserializedTuple.getValue2());
+        assertEquals("max revision of serialized and deserialized tuple are different!",
+            data.getRevision(),
+            deserializedSyncData.getRevision());
+        assertEquals("Original and deserialised tuples are different!", data.getChanges(),
+            deserializedSyncData.getChanges());
     }
 
 

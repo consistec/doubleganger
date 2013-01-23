@@ -2,8 +2,7 @@ package de.consistec.syncframework.impl.commands;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
-import de.consistec.syncframework.common.Tuple;
-import de.consistec.syncframework.common.data.Change;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.LoggingUtil;
@@ -11,7 +10,6 @@ import de.consistec.syncframework.common.util.StringUtil;
 import de.consistec.syncframework.impl.i18n.Errors;
 import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues;
 
-import java.util.List;
 import org.slf4j.cal10n.LocLogger;
 
 /**
@@ -54,12 +52,12 @@ public class GetChangesCommand implements RequestCommand {
         SerializationException {
 
         try {
-            Tuple<Integer, List<Change>> changesTuple;
+            SyncData serverData;
 
             if (!StringUtil.isNullOrEmpty(paramValues.getClientRevision())) {
 
                 try {
-                    changesTuple = paramValues.getCtx().getChanges(Integer.parseInt(paramValues.getClientRevision()));
+                    serverData = paramValues.getCtx().getChanges(Integer.parseInt(paramValues.getClientRevision()));
                 } catch (NumberFormatException ex) {
                     LOGGER.error(read(Errors.CANT_PARSE_CLIENT_REVISION), ex);
                     throw new SyncException(ex.getLocalizedMessage(), ex);
@@ -69,7 +67,7 @@ public class GetChangesCommand implements RequestCommand {
                 throw new SyncException(read(Errors.CANT_GETCHANGES_NO_CLIENT_REVISION));
             }
 
-            return paramValues.getSerializationAdapter().serializeChangeList(changesTuple).toString();
+            return paramValues.getSerializationAdapter().serializeChangeList(serverData).toString();
 
         } catch (SyncException e) {
             LOGGER.error(read(Errors.CANT_GET_SERVER_CHANGES), e);

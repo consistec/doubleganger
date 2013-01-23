@@ -6,6 +6,7 @@ import static de.consistec.syncframework.common.util.Preconditions.checkSyncDire
 import de.consistec.syncframework.common.AbstractSyncProvider;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncData;
+import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
@@ -116,8 +117,52 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         return adapter;
     }
 
+    /**
+     * Resolves the conflicts between client and server changes.
+     *
+     * @param serverData detected changes from server
+     * @param clientData detected changes from client
+     * @return a sync data holder container which contains the cleaned (without conflicts) client and server datas.
+     * @throws SyncException
+     */
     @Override
-    public SyncData applyChanges(SyncData serverData, SyncData clientData) throws
+    public SyncDataHolder resolveConflicts(SyncData serverData, SyncData clientData) throws
+        SyncException {
+
+        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
+
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = prepareAdapterNoAutoCommit();
+        } catch (DatabaseAdapterInstantiationException ex) {
+            throw new SyncException(ex);
+        }
+
+        try {
+            ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
+            return hashProcessor.resolveConflicts(clientData, serverData);
+        } catch (Throwable ex) {
+            /**
+             * no matter what happened, we have to rollback
+             */
+            rollback(adapter);
+            throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
+        } finally {
+            closeConnection(adapter);
+        }
+    }
+
+    /**
+     * Applies the cleaned (without conflicts) server changes on the client.
+     *
+     * @param serverData an object which contains the max revision and the changeset from server provider.See
+     * {@link de.consistec.syncframework.common.server.IServerSyncProvider#getChanges(int) }.
+     * @return int max revision from server changes
+     * @throws SyncException
+     */
+    @Override
+    public int applyChanges(SyncData serverData) throws
         SyncException {
 
         checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
@@ -132,10 +177,8 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
 
         ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
 
-        SyncData clientChangesToApply = null;
         try {
-            clientChangesToApply = hashProcessor.applyChangesFromServerOnClient(serverData.getChanges(),
-                clientData.getChanges());
+            hashProcessor.applyChangesFromServerOnClient(serverData.getChanges());
             adapter.getConnection().commit();
         } catch (Throwable ex) {
             /**
@@ -151,8 +194,8 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         int maxRev = serverData.getRevision();
 
         LOGGER.debug("return maxRev {}: ", maxRev);
-        clientChangesToApply.setRevision(maxRev);
-        return clientChangesToApply;
+
+        return maxRev;
 
     }
 

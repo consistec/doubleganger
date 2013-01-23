@@ -9,10 +9,11 @@ import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttp
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.CHANGES;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.REVISION;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyObject;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.TestUtil;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.data.schema.Schema;
@@ -109,7 +110,7 @@ public class ServletProcessorTest {
         HttpServletResponse responseMock = Mockito.mock(HttpServletResponse.class);
         IServerSyncProvider providerMock = Mockito.mock(IServerSyncProvider.class);
         List<Change> expectedChangeList = newArrayList();
-        Tuple<Integer, List<Change>> expectedChangeListTuple = new Tuple<Integer, List<Change>>(0, expectedChangeList);
+        SyncData expectedSyncData = new SyncData(0, expectedChangeList);
 
         MDEntry entryOne = new MDEntry(1, true, 0, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowDataOne = newHashMap();
@@ -121,7 +122,7 @@ public class ServletProcessorTest {
         Mockito.when(requestMock.getParameter(REVISION.name())).thenReturn("1");
         Mockito.when(requestMock.getContentLength()).thenReturn(MOCK_LENGTH);
 
-        Mockito.when(providerMock.getChanges(1)).thenReturn(expectedChangeListTuple);
+        Mockito.when(providerMock.getChanges(1)).thenReturn(expectedSyncData);
 
         StringWriter writer = new StringWriter();
         Mockito.when(responseMock.getWriter()).thenReturn(new PrintWriter(writer));
@@ -133,9 +134,9 @@ public class ServletProcessorTest {
 
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         String decodedResponse = URLDecoder.decode(writer.toString(), "UTF-8");
-        Tuple<Integer, List<Change>> s = adapter.deserializeMaxRevisionAndChangeList(decodedResponse);
-        assertEquals(expectedChangeList, s.getValue2());
-        assertEquals(0, s.getValue1().intValue());
+        SyncData syndData = adapter.deserializeMaxRevisionAndChangeList(decodedResponse);
+        assertEquals(expectedChangeList, syndData.getChanges());
+        assertEquals(0, syndData.getRevision());
     }
 
     @Test
@@ -153,12 +154,13 @@ public class ServletProcessorTest {
         rowDataOne.put(TEST_COLUMN2, new Date(System.currentTimeMillis()));
         changeList.add(new Change(entryOne, rowDataOne));
 
+        SyncData syncData = new SyncData(1, changeList);
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
 
         Mockito.when(requestMock.getParameter(ACTION.name())).thenReturn(APPLY_CHANGES.getStringName());
         Mockito.when(requestMock.getParameter(CHANGES.name())).thenReturn(adapter.serializeChangeList(changeList));
         Mockito.when(requestMock.getParameter(REVISION.name())).thenReturn("1");
-        Mockito.when(providerMock.applyChanges(changeList, 1)).thenReturn(1);
+        Mockito.when(providerMock.applyChanges((SyncData) anyObject())).thenReturn(1);
         Mockito.when(requestMock.getContentLength()).thenReturn(MOCK_LENGTH);
         StringWriter writer = new StringWriter();
         Mockito.when(responseMock.getWriter()).thenReturn(new PrintWriter(writer));

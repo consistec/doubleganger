@@ -1,7 +1,7 @@
 package de.consistec.syncframework.impl.adapter;
 
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncSettings;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SerializationException;
@@ -43,17 +43,17 @@ public interface ISerializationAdapter<T> {
      * @return The change list
      * @throws SerializationException
      */
-    Tuple<Integer, List<Change>> deserializeMaxRevisionAndChangeList(T serializedObject) throws SerializationException;
+    SyncData deserializeMaxRevisionAndChangeList(T serializedObject) throws SerializationException;
 
     /**
      * serialize List{@code <Change>} to Object{@code <T>}.
      * <p/>
      *
-     * @param changeList The change list to serialize
+     * @param syncData the sync datas to serialize
      * @return The serialized object
      * @throws SerializationException
      */
-    T serializeChangeList(Tuple<Integer, List<Change>> changeList) throws SerializationException;
+    T serializeChangeList(SyncData syncData) throws SerializationException;
 
     /**
      * serialize List{@code <Change>} to Object{@code <T>}.

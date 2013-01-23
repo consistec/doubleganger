@@ -8,6 +8,7 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.ISyncProgressListener;
 import de.consistec.syncframework.common.SyncData;
+import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ServerStatusException;
 import de.consistec.syncframework.common.exception.SyncException;
@@ -157,13 +158,21 @@ public class SyncAgent {
         try {
             int clientRevision = clientProvider.getLastRevision();
 
+            // transaction phase 1
             doBeforeGetServerChanges();
             SyncData serverData = serverProvider.getChanges(clientRevision);
             doAfterGetServerChanges();
 
+            if (!isTriggerSupported()) {
+                clientProvider.synchronizeClientTables();
+            }
             SyncData clientData = clientProvider.getChanges();
-            SyncData clientChangesToApply = clientProvider.applyChanges(serverData, clientData);
+            SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
+            SyncData clientChangesToApply = dataHolder.getClientSyncData();
+            int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
+            clientChangesToApply.setRevision(currentRevision);
 
+            // transaction phase 2
             doBeforeApplyClientChanges();
             int serverRevision = serverProvider.applyChanges(clientChangesToApply);
             clientChangesToApply.setRevision(serverRevision);
@@ -193,6 +202,10 @@ public class SyncAgent {
                 LOGGER.info(Infos.COMMON_SYNC_RETRY_RECOGNIZED);
             }
         }
+    }
+
+    private boolean isTriggerSupported() {
+        return false;
     }
 
     /**

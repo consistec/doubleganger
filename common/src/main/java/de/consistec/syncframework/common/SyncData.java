@@ -28,6 +28,16 @@ public class SyncData {
     }
 
     /**
+     * Constructor of the container.
+     *
+     * @param syncData revision and change set from client or server
+     */
+    public SyncData(SyncData syncData) {
+        this.revision = syncData.getRevision();
+        this.changes = syncData.getChanges();
+    }
+
+    /**
      * returns the revision of the container.
      *
      * @return revision
@@ -52,5 +62,14 @@ public class SyncData {
      */
     public void setRevision(final int revision) {
         this.revision = revision;
+    }
+
+    /**
+     * sets the containers change set.
+     *
+     * @param changes from client or server
+     */
+    public void setChanges(final List<Change> changes) {
+        this.changes = changes;
     }
 }

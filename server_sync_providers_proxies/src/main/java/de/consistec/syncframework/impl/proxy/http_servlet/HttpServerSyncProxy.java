@@ -9,9 +9,8 @@ import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttp
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncSettings;
-import de.consistec.syncframework.common.Tuple;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.ServerStatusException;
@@ -135,7 +134,7 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     }
 
     @Override
-    public int applyChanges(List<Change> changes, int clientRevision) throws SyncException {
+    public int applyChanges(SyncData clientData) throws SyncException {
 
 //        threadId = Thread.currentThread().getId();
         threadId = ManagementFactory.getRuntimeMXBean().getName();
@@ -145,8 +144,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
             data.add(new BasicNameValuePair(THREAD_ID.name(), threadId));
             data.add(new BasicNameValuePair(ACTION.name(), SyncAction.APPLY_CHANGES.getStringName()));
             data.add(new BasicNameValuePair(CHANGES.name(),
-                serializationAdapter.serializeChangeList(changes).toString()));
-            data.add(new BasicNameValuePair(REVISION.name(), String.valueOf(clientRevision)));
+                serializationAdapter.serializeChangeList(clientData.getChanges()).toString()));
+            data.add(new BasicNameValuePair(REVISION.name(), String.valueOf(clientData.getRevision())));
             return Integer.parseInt(request(data));
         } catch (SerializationException e) {
             throw new SyncException(read(Errors.CANT_APPLY_CHANGES_SERIALIZATION_FAILURE), e);
@@ -154,7 +153,7 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     }
 
     @Override
-    public Tuple<Integer, List<Change>> getChanges(int rev) throws SyncException {
+    public SyncData getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
 
 //        threadId = Thread.currentThread().getId();

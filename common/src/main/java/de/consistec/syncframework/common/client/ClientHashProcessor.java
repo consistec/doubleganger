@@ -1,10 +1,12 @@
 package de.consistec.syncframework.common.client;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
+import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncData;
+import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
@@ -69,54 +71,95 @@ public class ClientHashProcessor {
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
                                IConflictListener conflictListener
     ) {
-
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
         LOGGER.debug("HashProcessor Constructor finished");
-
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
+     * Resolves the conflicts between the client changes and the server changes.
+     *
+     * @param clientData detected client changes to free from conflicts
+     * @param serverData detected server changes to free from conflicts
+     * @return a sync data holder container which contains cleaned client and server changes.
+     * @throws SyncException
+     */
+    public SyncDataHolder resolveConflicts(SyncData clientData, SyncData serverData) throws
+        SyncException {
+        LOGGER.debug("applyChangesFromServerOnClient called");
+
+
+        Collections.sort(serverData.getChanges(), Change.getPrimaryKeyComparator());
+        Collections.sort(clientData.getChanges(), Change.getPrimaryKeyComparator());
+
+        SyncData copiedClientSyncData = new SyncData(clientData);
+        SyncData copiedServerSyncData = new SyncData(serverData);
+
+        // we have to copy the lists to remove items from it.
+//        List<Change> copiedList = CollectionsUtil.deepCopyList(clientData.getChanges());
+        List<Change> newClientList = newArrayList(clientData.getChanges());
+//        Collections.copy(newClientList, clientData.getChanges());
+
+        List<Change> newServerList = newArrayList(serverData.getChanges());
+//        Collections.copy(newServerList, serverData.getChanges());
+
+        copiedClientSyncData.setChanges(newClientList);
+//        copiedList = CollectionsUtil.deepCopyList(serverData.getChanges());
+        copiedServerSyncData.setChanges(newServerList);
+
+//        Collections.copy(copiedClientSyncData.getChanges(), clientData.getChanges());
+//        Collections.copy(copiedServerSyncData.getChanges(), serverData.getChanges());
+
+        SyncDataHolder dataHolder = new SyncDataHolder(copiedClientSyncData, copiedServerSyncData);
+        try {
+            for (final Change remoteChange : serverData.getChanges()) {
+
+                int foundIndex = Collections.binarySearch(clientData.getChanges(), remoteChange,
+                    Change.getPrimaryKeyComparator());
+
+                final MDEntry remoteEntry = remoteChange.getMdEntry();
+                LOGGER.debug("processing: {}", remoteEntry.toString());
+
+                if (isConflict(foundIndex)) {
+                    Change clientChange = clientData.getChanges().get(foundIndex);
+                    resolveConflict(remoteChange, clientChange, dataHolder);
+                }
+            }
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new SyncException(e);
+        } catch (SQLException e) {
+            throw new SyncException(e);
+        }
+        LOGGER.debug("applyChangesFromServerOnClient finished");
+
+        return dataHolder;
+    }
+
+    /**
      * Apply changes from server on client.
      *
      * @param serverChanges the server changes
-     * @param clientChanges the client changes
-     * @return syncData client data to apply on server (without conflicts)
      * @throws SyncException the sync exception
      */
-    public SyncData applyChangesFromServerOnClient(List<Change> serverChanges, List<Change> clientChanges)
+    public void applyChangesFromServerOnClient(List<Change> serverChanges)
         throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
 
         LOGGER.debug("applyChangesFromServerOnClient called");
 
-        Collections.sort(serverChanges, Change.getPrimaryKeyComparator());
-        Collections.sort(clientChanges, Change.getPrimaryKeyComparator());
-
         for (final Change remoteChange : serverChanges) {
-
-            int foundIndex = Collections.binarySearch(clientChanges, remoteChange, Change.getPrimaryKeyComparator());
 
             final MDEntry remoteEntry = remoteChange.getMdEntry();
             LOGGER.debug("processing: {}", remoteEntry.toString());
 
-            if (isConflict(foundIndex)) {
-                Change clientChange = clientChanges.get(foundIndex);
-                try {
-                    resolveConflict(remoteChange, clientChange, clientChanges);
-                } catch (SQLException e) {
-                    throw new DatabaseAdapterException(e);
-                }
-            } else {
-                applyServerChange(remoteChange);
-            }
+            applyServerChange(remoteChange);
         }
         LOGGER.debug("applyChangesFromServerOnClient finished");
-
-        return new SyncData(0, clientChanges);
     }
 
     private void applyServerChange(final Change serverChange) throws DatabaseAdapterException,
@@ -176,7 +219,7 @@ public class ClientHashProcessor {
     }
 
     private void resolveConflict(final Change serverChange, final Change clientChange,
-                                 final List<Change> clientChangeList
+                                 SyncDataHolder dataHolder
     )
         throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
 
@@ -193,21 +236,25 @@ public class ClientHashProcessor {
         SyncDirection syncDirection = tableSyncStrategy.getDirection();
         LOGGER.info("Sync Direction: {}", syncDirection.name());
 
+        SyncData clientChangesToApply = null;
+        SyncData serverChangesToApply = null;
         IConflictStrategy conflictHandlingStrategy = ConflictStrategyFactory.newInstance(syncDirection);
 
         switch (conflictStrategy) {
             case CLIENT_WINS:
                 conflictHandlingStrategy.resolveByClientWinsStrategy(adapter, data);
+                removeChange(dataHolder.getServerSyncData().getChanges(), serverChange, ConflictStrategy.SERVER_WINS);
                 break;
             case SERVER_WINS:
                 conflictHandlingStrategy.resolveByServerWinsStrategy(adapter, data);
                 // remove client change from change list if syncdirection is server_to_client
-                removeClientChange(clientChangeList, clientChange);
+                removeChange(dataHolder.getClientSyncData().getChanges(), clientChange, ConflictStrategy.CLIENT_WINS);
                 break;
             case FIRE_EVENT:
                 resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 // remove client change from change list if syncdirection is server_to_client
-                removeClientChange(clientChangeList, clientChange);
+                removeChange(dataHolder.getClientSyncData().getChanges(), clientChange, ConflictStrategy.CLIENT_WINS);
+//                removeChange(dataHolder.getServerSyncData().getChanges(), serverChange, ConflictStrategy.SERVER_WINS);
                 break;
             default:
                 throw new IllegalStateException(
@@ -215,12 +262,12 @@ public class ClientHashProcessor {
         }
     }
 
-    private void removeClientChange(List<Change> clientChangeList, Change clientChange) {
+    private void removeChange(List<Change> changeList, Change change, ConflictStrategy conflictStrategy) {
         // remove client change from change list if syncdirection is server_to_client
         TableSyncStrategy tableStrategy = strategies.getSyncStrategyForTable(
-            clientChange.getMdEntry().getTableName());
-        if (tableStrategy.getConflictStrategy() != ConflictStrategy.CLIENT_WINS) {
-            clientChangeList.remove(clientChange);
+            change.getMdEntry().getTableName());
+        if (tableStrategy.getConflictStrategy() != conflictStrategy) {
+            changeList.remove(change);
         }
     }
 
