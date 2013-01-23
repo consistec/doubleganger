@@ -4,14 +4,11 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
-import de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter;
-import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 /**
  * @company Consistec Engineering and Consulting GmbH

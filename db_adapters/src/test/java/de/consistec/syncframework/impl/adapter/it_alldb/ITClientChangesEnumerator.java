@@ -1,4 +1,4 @@
-package de.consistec.syncframework.impl;
+package de.consistec.syncframework.impl.adapter.it_alldb;
 
 import static org.junit.Assert.assertTrue;
 
@@ -9,6 +9,7 @@ import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.impl.TestDatabase;
 import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
 
 import java.sql.SQLException;

@@ -1,4 +1,4 @@
-package de.consistec.syncframework.impl.adapter.it_postgres;
+package de.consistec.syncframework.impl.adapter.it_alldb;
 
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
@@ -7,6 +7,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
