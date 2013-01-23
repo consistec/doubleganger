@@ -204,6 +204,10 @@ public class SyncAgent {
         }
     }
 
+    /**
+     * @return
+     * @todo implement configuration of trigger support
+     */
     private boolean isTriggerSupported() {
         return false;
     }
