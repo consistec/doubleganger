@@ -15,12 +15,12 @@ import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.util.DBMapperUtil;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.common.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
@@ -43,7 +43,6 @@ import org.slf4j.cal10n.LocLogger;
 public class ClientTableSynchronizer {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientTableSynchronizer.class.getCanonicalName());
-    private static final String MDV_COLUMN_NAME = "mdv";
     private static final Config CONF = Config.getInstance();
     private IDatabaseAdapter adapter;
 
@@ -66,19 +65,49 @@ public class ClientTableSynchronizer {
      */
     public List<Change> synchronizeClientTables() throws DatabaseAdapterException {
 
-        LOGGER.debug("SynchronizeClientTables called. Searching for changed rows ...");
+        LOGGER.debug("synchronizeClientTables called");
 
-        List<Change> changes = newArrayList();
+        final List<Change> changeList = newArrayList();
 
-        for (final String table : CONF.getSyncTables()) {
-            LOGGER.debug(String.format("processing table %s", table));
-            changes.addAll(searchAndProcessChangedRows(table));
-            changes.addAll(searchAndProcessDeletedRows(table));
+        if (CONF.isSqlTriggerActivated()) {
+            LOGGER.debug("Triggers are activated. Looking for changes by flag.");
+            changeList.addAll(getChangedRowsByTriggerFlag());
+        } else {
+            LOGGER.debug("Triggers are deactivated: will search for modifications and update the metadata accordingly");
+
+            for (final String table : CONF.getSyncTables()) {
+                LOGGER.debug("Processing table {}", table);
+                changeList.addAll(searchAndProcessChangedRows(table));
+                changeList.addAll(searchAndProcessDeletedRows(table));
+            }
         }
 
         LOGGER.debug("synchronizeClientTables finished");
 
-        return changes;
+        return changeList;
+    }
+
+    private List<Change> getChangedRowsByTriggerFlag() throws DatabaseAdapterException {
+        final List<Change> changeList = new LinkedList<Change>();
+        for (final String tableName : CONF.getSyncTables()) {
+
+            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+                @Override
+                public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
+                    try {
+                        while (allChangedRows.next()) {
+                            MDEntry mdEntry = DBMapperUtil.getMetadata(allChangedRows, tableName);
+                            Map<String, Object> rowData = DBMapperUtil.getRowData(allChangedRows);
+                            Change change = new Change(mdEntry, rowData);
+                            changeList.add(change);
+                        }
+                    } catch (SQLException ex) {
+                        throw new DatabaseAdapterException(ex);
+                    }
+                }
+            });
+        }
+        return changeList;
     }
 
     private List<Change> searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
@@ -111,9 +140,7 @@ public class ClientTableSynchronizer {
                                 Change change = new Change();
                                 try {
                                     if (result.next()) {
-                                        // compare hashes
-                                        String mdTableHash = result.getString(MDV_COLUMN_NAME);
-                                        if (mdTableHash == null || !mdTableHash.equalsIgnoreCase(hash)) {
+                                        if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
                                             adapter.updateMdRow(result.getInt("rev"), CLIENT_FLAG, primaryKey, hash,
                                                 table);
@@ -172,9 +199,7 @@ public class ClientTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        String mdvValue = deletedRows.getString(MDV_COLUMN_NAME);
-                        if (StringUtil.isNullOrEmpty(mdvValue)) {
-                            // this row has already been deleted
+                        if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
                             continue;
                         }
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
@@ -182,11 +207,9 @@ public class ClientTableSynchronizer {
                             table);
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
-                        mdEntry.setMdv("");
                         mdEntry.setDeleted();
                         Change change = new Change();
                         change.setMdEntry(mdEntry);
-//                        change.setRowData(rowData);
                         changeList.add(change);
                     }
                 } catch (SQLException e) {
