@@ -69,9 +69,9 @@ public abstract class AbstractSyncTest {
     public static Collection<Object[]> AllDatabases() {
 
         return Arrays.asList(new Object[][]{
-                {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
-                {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)},
-                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)}
+                {new TestDatabase(GenericDatabaseAdapter.MYSQL_CONFIG_FILE, DumpDataSource.SupportedDatabases.MYSQL)},
+                {new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL)},
+                {new TestDatabase(GenericDatabaseAdapter.SQLITE_CONFIG_FILE, DumpDataSource.SupportedDatabases.SQLITE)}
             });
     }
     /**
@@ -117,7 +117,7 @@ public abstract class AbstractSyncTest {
      */
     @After
     public void tearDown() throws SQLException {
-        db.clean();
+        db.closeConnections();
     }
 
     /**

@@ -130,7 +130,7 @@ public class TestScenario {
         this.clientDs = clientDs;
     }
 
-    void setConnections(Connection serverConnection, Connection clientConnection) {
+    public void setConnections(Connection serverConnection, Connection clientConnection) {
         this.serverConnection = serverConnection;
         this.clientConnection = clientConnection;
     }

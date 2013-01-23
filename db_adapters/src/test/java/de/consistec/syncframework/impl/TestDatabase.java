@@ -4,11 +4,14 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
+import de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter;
+import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 /**
  * @company Consistec Engineering and Consulting GmbH
@@ -28,17 +31,36 @@ public class TestDatabase {
         this.supportedDb = supportedDb;
     }
 
+    /**
+     * Loads the properties, creates the datasources and connects as the syncuser by default.
+     * Call {@link connectWithExternalUser()} if you activate the triggers.
+     */
     public void init() throws SQLException, IOException {
         Config.getInstance().init(getClass().getResourceAsStream(configFile));
 
         serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
-        serverConnection = serverDs.getConnection();
-
         clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
-        clientConnection = clientDs.getConnection();
+
+        connectWithSyncUser();
     }
 
-    public void clean() throws SQLException {
+    public void connectWithSyncUser() throws SQLException {
+        closeConnections();
+        String dbUsername = serverDs.getSyncUserName();
+        String dbPassword = serverDs.getSyncUserPassword();
+        serverConnection = serverDs.getConnection(dbUsername, dbPassword);
+        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
+    }
+
+    public void connectWithExternalUser() throws SQLException {
+        closeConnections();
+        String dbUsername = serverDs.getExternUserName();
+        String dbPassword = serverDs.getExternUserPassword();
+        serverConnection = serverDs.getConnection(dbUsername, dbPassword);
+        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
+    }
+
+    public void closeConnections() throws SQLException {
         for (Connection connection : serverDs.getCreatedConnections()) {
             connection.close();
         }
@@ -47,11 +69,11 @@ public class TestDatabase {
         }
     }
 
-    public Connection getServerConnection() {
+    public Connection getServerConnection() throws SQLException {
         return serverConnection;
     }
 
-    public Connection getClientConnection() {
+    public Connection getClientConnection() throws SQLException {
         return clientConnection;
     }
 
