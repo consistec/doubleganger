@@ -84,12 +84,17 @@ public class SynchronizationIT {
         db.executeQueriesOnServer(createQueries);
         db.executeQueriesOnClient(createQueries);
 
+        if (CONF.isSqlTriggerActivated()) {
+            db.connectWithExternalUser();
+        }
+
         LOGGER.debug("\n---------------------\n" + scenario.getLongDescription() + "\n----------------------\n");
     }
 
     @Test
     public void test() throws SQLException, ContextException, SyncException {
         scenario.setDataSources(db.getServerDs(), db.getClientDs());
+
         scenario.setConnections(db.getServerConnection(), db.getClientConnection());
 
         scenario.setSelectQueries(new String[]{
@@ -139,7 +144,7 @@ public class SynchronizationIT {
 
     @After
     public void tearDown() throws SQLException {
-        db.clean();
+        db.closeConnections();
     }
 
     @Parameters(name = "{index}: {0}")
@@ -148,12 +153,13 @@ public class SynchronizationIT {
         return Arrays.asList(new Object[][]{
                 // Creates a scenario  [name]            [direction]   [strategy]
                 {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                    // and sets the expected state after a sync:
+                    // - 'S' codes a row that originates from the server
+                    // - 'C' a row from the client
+                    // - ' ' a blank space counts as a deleted row:
+                    //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
                     .expectServer("SS") // expected rows on server
                     .expectClient("CC")}, // expected rows on client
-                // - 'S' codes a row that originates from the server
-                // - 'C' a row from the client
-                // - ' ' a blank space counts as a deleted row:
-                //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
                 {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, CLIENT_WINS)
                     .expectServer("SS")
                     .expectClient("CC")},
