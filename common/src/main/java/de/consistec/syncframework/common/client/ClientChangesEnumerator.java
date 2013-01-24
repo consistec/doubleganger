@@ -83,16 +83,16 @@ public class ClientChangesEnumerator {
                     try {
                         while (resultSet.next()) {
 
-                            MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
-
-                            Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
-
                             TableSyncStrategy syncStrategy = tableSyncStrategies.getSyncStrategyForTable(tableName);
                             SyncDirection syncDirection = syncStrategy.getDirection();
 
                             if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
+                                MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
+                                Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
+
                                 Change change = new Change(mdEntry, rowData);
                                 allChanges.add(change);
+
                                 LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, change);
                             }
                         }

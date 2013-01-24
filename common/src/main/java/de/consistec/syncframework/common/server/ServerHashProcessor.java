@@ -1,6 +1,6 @@
 package de.consistec.syncframework.common.server;
 
-import static de.consistec.syncframework.common.MdTableDefaultValues.SERVER_FLAG;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
@@ -69,7 +69,6 @@ public class ServerHashProcessor {
     private IDatabaseAdapter adapter;
 
     //</editor-fold>
-
     /**
      * Instantiates a new server hash processor.
      *
@@ -141,37 +140,18 @@ public class ServerHashProcessor {
     }
 
     private void processResultSets(ResultSet hashRst, ResultSet data, int nextRev, Change remoteChange,
-                                   MDEntry remoteEntry,
-                                   Map<String, Object> remoteRowData
-    ) throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException {
+        MDEntry remoteEntry,
+        Map<String, Object> remoteRowData) throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException {
 
         LOGGER.debug("processResultSets called");
-        if (hashRst.next()) {
-//            int localRev = hashRst.getInt("rev");
 
-            // normally the add add conflict cannot happen because the client refreshes his revision through server change set.
-            // also normally the out of date conflict cannot happen because the client revision is checked before
-            // server wants to apply the client changeset.
-//            if (remoteEntry.getRevision() == 0) {
-//
-//                // ADD-ADD Conflict
-//                LOGGER.error(Errors.COMMON_ADD_ADD_CONFLICT_SHOULDNT_OCCUR);
-//                throw new IllegalStateException(read(Errors.COMMON_ADD_ADD_CONFLICT_SHOULDNT_OCCUR));
-//
-//            } else if (remoteEntry.getRevision() != localRev) {
-//
-//                // OUT OF DATE
-//                LOGGER.error(Errors.COMMON_OUT_OF_DATE_SHOULDNT_OCCUR);
-//                throw new IllegalStateException(read(Errors.COMMON_OUT_OF_DATE_SHOULDNT_OCCUR));
-//
-//            }
+        if (hashRst.next()) {
             if (!remoteEntry.isExists()) {
 
                 // CLIENT DEL
                 LOGGER.info(Infos.COMMON_CLIENT_DELETED_CASE_DETECTED);
                 adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                adapter.updateMdRow(nextRev, SERVER_FLAG, remoteEntry.getPrimaryKey(), null,
-                    remoteEntry.getTableName());
+                adapter.updateMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), null, remoteEntry.getTableName());
 
             } else {
 
@@ -183,8 +163,7 @@ public class ServerHashProcessor {
                 } else {
                     adapter.updateDataRow(remoteRowData, remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
                 }
-
-                adapter.updateMdRow(nextRev, SERVER_FLAG, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
+                adapter.updateMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
                     remoteEntry.getTableName());
             }
         } else {
@@ -193,7 +172,7 @@ public class ServerHashProcessor {
             LOGGER.info(Infos.COMMON_CLIENT_ADDED_CASE_DETECTED);
             LOGGER.debug("insert md row with rev: {} and client pk: {}", nextRev, remoteEntry.getPrimaryKey());
             // insert hash
-            adapter.insertMdRow(nextRev, SERVER_FLAG, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
+            adapter.insertMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
                 remoteEntry.getTableName());
             // insert data
             adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
