@@ -222,7 +222,6 @@ public class SyncAgent {
 
         updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT));
         long time = System.currentTimeMillis();
-//        List<Change> changes = clientProvider.getChanges();
         time = System.currentTimeMillis() - time;
         LOGGER.debug("client.getChanges duration: {}ms, ClientChanges: {}", time, clientChanges);
 
