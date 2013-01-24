@@ -1,9 +1,14 @@
 package de.consistec.syncframework.impl.adapter;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
+import de.consistec.syncframework.common.data.schema.Column;
+import de.consistec.syncframework.common.data.schema.Constraint;
+import de.consistec.syncframework.common.data.schema.ConstraintType;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
@@ -19,8 +24,7 @@ import java.sql.BatchUpdateException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
-import java.util.List;
+import java.sql.Types;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
@@ -146,13 +150,82 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+        if (!existsMDTable(tableName)) {
+            String mdTableName = tableName + CONF.getMdTableSuffix();
+
+            LOGGER.debug("creating new table: {}", mdTableName);
+
+            Table mdTable = new Table(mdTableName);
+            Column pkColumn = getPrimaryKeyColumn(tableName);
+            mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+            mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+            mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
+            mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
+            mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+
+            try {
+                String sqlTableStatement = getTableConverter().toSQL(mdTable);
+                executeSqlQuery(sqlTableStatement);
+            } catch (SchemaConverterException e) {
+                throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+            }
+
+            if (CONF.isSqlTriggerActivated()) {
+                getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
+                    @Override
+                    public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
+                        while (result.next()) {
+                            final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
+                            insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
+                        }
+                    }
+                });
+
+                String createLanguageQuery = generatePlpgsqlLanguageQuery();
+                executeSqlQuery(createLanguageQuery);
+
+                String triggerQuery = generateSqlTriggersForTable(tableName);
+                executeSqlQuery(triggerQuery);
+            }
+        }
+    }
+
+    private String generatePlpgsqlLanguageQuery() {
+        // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+        return new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH)).useDelimiter("\\A").next();
+    }
+
+    /**
+     * Creates a trigger to update the F flag in the metadata oon every change in the data table ON THE SERVER.
+     * <p/>
+     * @param tableName the table's name
+     * @return sql query for the triggers
+     */
+    private String generateSqlTriggersForTable(String tableName) throws DatabaseAdapterException {
+        String triggerQuery = "";
+
+        // we don't want any trigger on the metadata tables
+        if (!tableName.endsWith(CONF.getMdTableSuffix())) {
+
+            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(CREATE_TRIGGERS_FILE_PATH))
+                .useDelimiter("\\A").next();
+
+            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
+            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
+            triggerQuery = triggerQuery.replaceAll("%pk%", getPrimaryKeyColumn(tableName).getName());
+            triggerQuery = triggerQuery.replaceAll("%_md%", CONF.getMdTableSuffix());
+
+            LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
+        }
+        return triggerQuery;
+    }
+
+    @Override
     public void applySchema(Schema schema) throws DatabaseAdapterException {
         Statement stmt = null;
 
-        List<String> triggers = new LinkedList<String>();
-        if (CONF.isSqlTriggerActivated()) {
-            triggers = generateSqlTriggersForSchema(schema);
-        }
         removeExistentTablesFromSchema(schema);
 
         try {
@@ -167,19 +240,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             LOGGER.debug("applying schema: {}", sqlSchema);
             stmt.executeBatch();
 
-            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            String createLanguageQuery = new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH))
-                .useDelimiter("\\A").next();
-            LOGGER.debug("creating plpgsql language {}", createLanguageQuery);
-            stmt.execute(createLanguageQuery);
-
-            if (CONF.isSqlTriggerActivated()) {
-                LOGGER.debug("adding triggers");
-                for (String trigger : triggers) {
-                    stmt.execute(trigger);
-                }
-            }
-
         } catch (BatchUpdateException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e.getNextException());
         } catch (SQLException e) {
@@ -189,38 +249,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         } finally {
             closeStatements(stmt);
         }
-    }
-
-    /**
-     * Creates a list of triggers to update the F flag in the metadata table
-     * for every change in the corresponding data table.
-     * <p/>
-     * @param schema
-     * @return list of sql queries for the triggers
-     */
-    private List<String> generateSqlTriggersForSchema(Schema schema) {
-        List<String> triggers = new LinkedList<String>();
-
-        // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-        String triggerRawQuery = new Scanner(getClass().getResourceAsStream(CREATE_TRIGGERS_FILE_PATH))
-            .useDelimiter("\\A").next();
-
-        for (Table table : schema.getTables()) {
-            String tableName = table.getName();
-
-            // we don't want any trigger on the metadata tables
-            if (!tableName.endsWith(CONF.getMdTableSuffix())) {
-                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
-                triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-                triggerQuery = triggerQuery.replaceAll("%pk%", table.getPkColumnName());
-                triggerQuery = triggerQuery.replaceAll("%_md%", CONF.getMdTableSuffix());
-
-                LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
-
-                triggers.add(triggerQuery);
-            }
-        }
-        return triggers;
     }
 
     @Override

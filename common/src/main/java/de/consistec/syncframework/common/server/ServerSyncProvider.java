@@ -67,14 +67,11 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     //<editor-fold defaultstate="expanded" desc=" Class fields" >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerSyncProvider.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
-
     // database adapter only for test classes
     private IDatabaseAdapter dbAdapter;
 
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
-
     /**
      * Creates provider with its own database connection.
      *
@@ -112,7 +109,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
-
     /**
      * Creates database adapter object (no autocommit).
      *
@@ -159,20 +155,14 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                     serverSyncStrategy));
             }
 
-            IDatabaseAdapter adapter = null;
-            boolean mdTableExists = false;
             try {
-                adapter = prepareDbAdapter();
+                IDatabaseAdapter adapter = prepareDbAdapter();
 
                 // prepareDbAdapter sets the autocommit to false but here we need it set to true
                 adapter.getConnection().setAutoCommit(true);
 
-                String mdTable = clientTable + CONF.getMdTableSuffix();
-                mdTableExists = adapter.existsMDTable(mdTable);
-
-                if (!mdTableExists) {
-                    adapter.createMDTable(clientTable);
-                }
+                // creates the MD table if it doesn't exist already
+                adapter.createMDTable(clientTable);
             } catch (SQLException e) {
                 throw new SyncException(e);
             } catch (DatabaseAdapterException e) {
@@ -197,7 +187,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             validateChangeList(changes);
             tableSynchronizer.synchronizeServerTables();
             int result = hashProcessor.applyChangesFromClientOnServer(changes, clientRevision);
-//            adapter.getConnection().commit();
             adapter.commit();
             LOGGER.info(Infos.COMMON_SENDING_NEW_REVISION_TO_CLIENT, result);
 
@@ -267,7 +256,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 }
                 try {
                     if (!tableColumnMappingPositive.containsKey(tableName)) {
-                        tableColumnMappingPositive.put(tableName, newHashSet(adapter.getColumns(tableName)));
+                        tableColumnMappingPositive.put(tableName, newHashSet(adapter.getColumnNamesFromTable(tableName)));
                     }
                 } catch (DatabaseAdapterException e) {
                     throw new SyncException(read(Errors.DATA_CANT_LOAD_COLUMNS_FOR_TABLE, tableName), e);
@@ -341,6 +330,5 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             closeConnection(adapter);
         }
     }
-
     //</editor-fold>
 }

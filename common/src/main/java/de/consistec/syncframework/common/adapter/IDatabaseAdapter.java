@@ -250,7 +250,7 @@ public interface IDatabaseAdapter {
      * @return The column names
      * @throws DatabaseAdapterException
      */
-    List<String> getColumns(String tableName) throws DatabaseAdapterException;
+    List<String> getColumnNamesFromTable(String tableName) throws DatabaseAdapterException;
 
     /**
      * Apply the given schema to the database.
