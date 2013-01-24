@@ -189,9 +189,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                     adapter.createMDTable(clientTable);
                 } catch (DatabaseAdapterException ex) {
 
-                    rollback(adapter);
-                    LOGGER.debug("Transaction rolled back!!! \n {}", ex);
-
                     if (ex instanceof UniqueConstraintException
                         || ex instanceof TransactionAbortedException) {
 
