@@ -1,5 +1,7 @@
 package de.consistec.syncframework.common.data;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
+
 import java.io.Serializable;
 
 /**
@@ -43,7 +45,6 @@ public class MDEntry implements Serializable {
      * @serial
      */
     private String tableName;
-
     /**
      * The hash value of the change.
      */
@@ -51,7 +52,6 @@ public class MDEntry implements Serializable {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Instantiates a new Md entry with default values.
      */
@@ -77,7 +77,6 @@ public class MDEntry implements Serializable {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Accessors " >
-
     /**
      * Gets the primary key.
      *
@@ -98,9 +97,8 @@ public class MDEntry implements Serializable {
 
     /**
      * Is the data row deleted or not.
-     * A row is in the meta data table marked as deleted, if the mdv value is not present any more.
      *
-     * @return true if the mdv value in the meta data table is not null, otherwise false
+     * @return true if the entry still exists in the data table.
      */
     public boolean isExists() {
         return exists;
@@ -122,7 +120,7 @@ public class MDEntry implements Serializable {
      * Sets the isExists value to false and empties the mdv value.
      */
     public void setDeleted() {
-        mdv = "";
+        mdv = MDV_DELETED_VALUE;
         exists = false;
     }
 
@@ -196,7 +194,6 @@ public class MDEntry implements Serializable {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Description of object state.
      * Something like {@code MDEntry{pk=PkObjectToString, isExists=true, rev=2, tableName=name}}.

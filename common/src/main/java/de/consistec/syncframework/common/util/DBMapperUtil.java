@@ -1,5 +1,10 @@
 package de.consistec.syncframework.common.util;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_COLUMN_NAME;
+import static de.consistec.syncframework.common.MdTableDefaultValues.METADATA_COLUMN_COUNT;
+import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
+import static de.consistec.syncframework.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.data.MDEntry;
@@ -24,9 +29,6 @@ public final class DBMapperUtil {
 //</editor-fold>
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
 //</editor-fold>
-    private static final int METADATA_COLUMN_COUNT = 4;
-    private static final String MDV_COLUMN_NAME = "mdv";
-
     private DBMapperUtil() {
     }
 
@@ -49,11 +51,11 @@ public final class DBMapperUtil {
         for (int i = 1; i <= METADATA_COLUMN_COUNT; i++) {
             columnName = meta.getColumnName(i);
 
-            if ("rev".equalsIgnoreCase(columnName)) {
+            if (REV_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 tmpEntry.setRevision(resultSet.getInt(i));
-            } else if ("pk".equalsIgnoreCase(columnName)) {
+            } else if (PK_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 tmpEntry.setPrimaryKey(resultSet.getObject(i));
-            } else if ("mdv".equalsIgnoreCase(columnName)) {
+            } else if (MDV_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 String mdv = resultSet.getString(i);
                 if (StringUtil.isNullOrEmpty(mdv)) {
                     tmpEntry.setDeleted();
@@ -61,7 +63,7 @@ public final class DBMapperUtil {
                     tmpEntry.setModified();
                 }
                 tmpEntry.setMdv(mdv);
-            } else if ("f".equalsIgnoreCase(columnName)) {
+            } else if (FLAG_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 // do nothing, we don't want to sync the f flag
                 continue;
             }
@@ -90,6 +92,7 @@ public final class DBMapperUtil {
 
     /**
      * Checks if the current row is already marked as deleted, i.e the hash value in the metadata is null or empty.
+     * <p/>
      * @param deletedRows result set positioned on the current row
      * @return true if the row is already deleted
      * @throws SQLException
