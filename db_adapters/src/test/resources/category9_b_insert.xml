@@ -11,6 +11,7 @@
             <column name="rev" valueNumeric="3"/>
             <column name="mdv" value="B4F135B634EDA2324234325F401E90"/>
             <column name="pk" valueNumeric="8"/>
+            <column name="f" valueNumeric="1"/>
         </insert>
         <insert tableName="items">
             <column name="itemname" value="Item buhhaaahuuuhuaaa 9b"/>
@@ -21,6 +22,7 @@
             <column name="rev" valueNumeric="3"/>
             <column name="mdv" value="B4F135B634EDA2894254E5205F401E90"/>
             <column name="pk" valueNumeric="9"/>
+            <column name="f" valueNumeric="1"/>
         </insert>
     </changeSet>
 </databaseChangeLog>
