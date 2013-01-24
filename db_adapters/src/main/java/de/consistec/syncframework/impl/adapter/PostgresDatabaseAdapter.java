@@ -66,6 +66,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * PostgreSQL code for UNIQUE VIOLATION.
      */
     private static final String UNIQUE_CONSTRAINT_EXCEPTION = "23505";
+    private static final String RELATION_ALREADY_EXIST = "42P07";
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDatabaseAdapter.class.getCanonicalName());
     private static final String HOST_REGEXP = "H_O_S_T";
     private static final String PORT_REGEXP = "P_O_R_T";
@@ -147,7 +148,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
 
-            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState())) {
+            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState()) || RELATION_ALREADY_EXIST.equals(sqlEx.getSQLState())) {
                 throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
                     sqlEx); //NOSONAR
             } else {
