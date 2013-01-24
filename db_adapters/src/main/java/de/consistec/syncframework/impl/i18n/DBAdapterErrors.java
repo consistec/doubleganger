@@ -174,6 +174,13 @@ public enum DBAdapterErrors {
      */
     HOSTNAME_IS_EMPTY,
     /**
+     * When can't create md-table.
+     * <p>
+     * <b>Parameter</b>: table name.
+     * </p>
+     */
+    CANT_CREATE_MD_TABLE,
+    /**
      * When database transaction was aborted due to serialization failures.
      * <p/>
      * @see <a href="http://www.postgresql.org/docs/9.1/static/transaction-iso.html"> PostgreSQL transactions docs</a>

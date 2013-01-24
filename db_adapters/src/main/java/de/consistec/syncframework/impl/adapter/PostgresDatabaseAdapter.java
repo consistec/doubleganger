@@ -141,6 +141,22 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+        try {
+            super.createMDTable(tableName);
+        } catch (DatabaseAdapterException ex) {
+            SQLException sqlEx = (SQLException) ex.getCause();
+
+            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState())) {
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
+                    sqlEx); //NOSONAR
+            } else {
+                handleTransactionAborted(ex);
+            }
+        }
+    }
+
+    @Override
     public void insertDataRow(Map<String, Object> data, String tableName) throws DatabaseAdapterException {
         try {
             super.insertDataRow(data, tableName);
