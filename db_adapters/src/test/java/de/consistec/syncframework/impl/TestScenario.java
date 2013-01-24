@@ -46,7 +46,7 @@ public class TestScenario {
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
     private String expectedErrorMsg;
-    private Class expectedException;
+    private Class expectedExceptionClass;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
@@ -70,8 +70,8 @@ public class TestScenario {
         return expectedErrorMsg;
     }
 
-    public Class getExpectedException() {
-        return expectedException;
+    public Class getExpectedExceptionClass() {
+        return expectedExceptionClass;
     }
 
     /**
@@ -116,13 +116,15 @@ public class TestScenario {
      * @return this test scenario
      */
     public TestScenario expectException(Class clazz, Errors errorMsg) {
-        this.expectedException = clazz;
+        this.expectedExceptionClass = clazz;
         this.expectedErrorMsg = read(errorMsg).split("\\{")[0];
         return this;
     }
 
-    public boolean shouldThrowAnException() {
-        return expectedException != null;
+    public void assertNoExceptionExpected() {
+        if (expectedExceptionClass != null) {
+            Assert.fail("Expected exception (" + expectedExceptionClass + ") wasn't thrown.");
+        }
     }
 
     public void setDataSources(DumpDataSource serverDs, DumpDataSource clientDs) {
@@ -170,8 +172,8 @@ public class TestScenario {
         clientStmt.close();
     }
 
-    public void saveCurrentState() throws SQLException {
-        if (this.expectedException != null) {
+    public void saveCurrentState() {
+        if (this.expectedExceptionClass != null) {
             // An exception will be thrown, no need to save the state
             return;
         }
@@ -179,34 +181,42 @@ public class TestScenario {
         expectedFlatClientResultSets = new String[selectTableQueries.length];
         expectedFlatServerResultSets = new String[selectTableQueries.length];
 
-        Statement serverStmt = serverConnection.createStatement();
-        Statement clientStmt = clientConnection.createStatement();
+        try {
+            Statement serverStmt = serverConnection.createStatement();
+            Statement clientStmt = clientConnection.createStatement();
 
-        ResultSet serverRs, clientRs;
+            ResultSet serverRs, clientRs;
+            for (int i = 0; i < selectTableQueries.length; i += 2) {
+                String query = selectTableQueries[i];
 
-        for (int i = 0; i < selectTableQueries.length; i += 2) {
-            String query = selectTableQueries[i];
+                serverRs = serverStmt.executeQuery(query);
+                clientRs = clientStmt.executeQuery(query);
+                expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                    expectedServerState);
 
-            serverRs = serverStmt.executeQuery(query);
-            clientRs = clientStmt.executeQuery(query);
-            expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
-                expectedServerState);
+                serverRs = serverStmt.executeQuery(query);
+                clientRs = clientStmt.executeQuery(query);
+                expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                    expectedClientState);
+            }
+            serverStmt.close();
+            clientStmt.close();
 
-            serverRs = serverStmt.executeQuery(query);
-            clientRs = clientStmt.executeQuery(query);
-            expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
-                expectedClientState);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error: please ensure the client and the server both have data.", ex);
         }
-
-        serverStmt.close();
-        clientStmt.close();
     }
 
     public void synchronize(String[] tableNames, IConflictListener conflictListener) throws SyncException,
         ContextException, SQLException {
+        synchronize(tableNames, conflictListener, direction);
+    }
+
+    public void synchronize(String[] tableNames, IConflictListener conflictListener, SyncDirection dir) throws
+        SyncException, ContextException, SQLException {
         TableSyncStrategies strategies = new TableSyncStrategies();
 
-        TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
+        TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(dir, strategy);
         for (int i = 0; i < tableNames.length; i += 2) {
             strategies.addSyncStrategyForTable(tableNames[i], tableSyncStrategy);
         }

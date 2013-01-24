@@ -10,9 +10,6 @@ import static de.consistec.syncframework.common.i18n.Errors.COMMON_NO_CLIENTCHAN
 import static de.consistec.syncframework.common.i18n.Errors.NOT_SUPPORTED_CONFLICT_STRATEGY;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
@@ -26,6 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,22 +45,19 @@ public class SynchronizationIT {
     protected static final Config CONF = Config.getInstance();
     protected TestDatabase db;
     protected TestScenario scenario;
+    protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
+    protected static String[] createQueries = new String[]{
+        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
+        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));"};
+    protected static String[] insertQueries = new String[]{
+        "INSERT INTO categories (id, name, description) VALUES (1, 'Beverages', 'Soft drinks')",
+        "INSERT INTO categories (id, name, description) VALUES (2, 'Condiments', 'Sweet and ')"};
     protected static String deleteRow2 = "DELETE FROM categories WHERE id = 2";
     protected static String updateRow2b = "UPDATE categories SET name = 'Cat2b', description = '2b' WHERE id = 2";
     protected static String updateRow2c = "UPDATE categories SET name = 'Cat2c', description = '2c' WHERE id = 2";
     protected static String insertRow3a = "INSERT INTO categories (id, name, description) VALUES (3, 'Cat3a', '3a')";
     protected static String updateRow3b = "UPDATE categories SET name = 'Cat3b', description = '3b' WHERE id = 3";
     protected static String deleteRow3 = "DELETE FROM categories WHERE id = 3";
-    protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
-    protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "INSERT INTO categories (id, name, description) VALUES (1, 'Beverages', 'Soft drinks')",
-        "INSERT INTO categories (id, name, description) VALUES (2, 'Condiments', 'Sweet and ')",
-        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8B7132AE51A73532FBD29CCA15B2CB38', 1, 0)",
-        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, 'FB5EF33FE008589C86C0007AC0597E00', 2, 0)",};
 
     public SynchronizationIT(TestScenario scenario) {
         this.scenario = scenario;
@@ -82,46 +77,59 @@ public class SynchronizationIT {
         db.dropTablesOnClient(tableNames);
 
         db.executeQueriesOnServer(createQueries);
-        db.executeQueriesOnClient(createQueries);
+        db.executeQueriesOnServer(insertQueries);
 
-        if (CONF.isSqlTriggerActivated()) {
-            db.connectWithExternalUser();
-        }
-
-        LOGGER.debug("\n---------------------\n" + scenario.getLongDescription() + "\n----------------------\n");
+        LOGGER.debug(scenario.getLongDescription());
     }
 
     @Test
-    public void test() throws SQLException, ContextException, SyncException {
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
-
-        scenario.setSelectQueries(new String[]{
-                "select * from categories order by id asc",
-                "select * from categories_md order by pk asc"
-            });
-
-        scenario.executeSteps();
-
-        scenario.saveCurrentState();
+    public void testWithDataBeforeFirstSync() throws SQLException, ContextException, SyncException {
 
         try {
-            scenario.synchronize(tableNames, getServerConflictResolver());
+            // there has to be a sync here, to prepare the MD tables and the triggers (if needed)
+            scenario.synchronize(tableNames, getServerConflictResolver(), BIDIRECTIONAL);
 
-            if (scenario.shouldThrowAnException()) {
-                fail("Expected exception (" + scenario.getExpectedException() + ") wasn't thrown.");
+            if (CONF.isSqlTriggerActivated()) {
+                db.connectWithExternalUser();
             }
 
-            scenario.assertServerIsInExpectedState();
+            scenario.setDataSources(db.getServerDs(), db.getClientDs());
+            scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+            scenario.setSelectQueries(new String[]{
+                    "select * from categories order by id asc",
+                    "select * from categories_md order by pk asc"
+                });
 
+            scenario.executeSteps();
+
+            scenario.saveCurrentState();
+
+            scenario.synchronize(tableNames, getServerConflictResolver());
+
+            scenario.assertNoExceptionExpected();
+            scenario.assertServerIsInExpectedState();
             scenario.assertClientIsInExpectedState();
 
-        } catch (Exception ex) {
-            assertEquals(scenario.getExpectedException(), ex.getClass());
-
-            assertTrue(ex.getLocalizedMessage().startsWith(scenario.getExpectedErrorMsg()));
+        } catch (SyncException ex) {
+            if (!isExpectedException(ex)) {
+                // we let this unwanted exception bubble up...
+                throw ex;
+            }
+        } catch (IllegalStateException ex) {
+            Assert.assertEquals("Unexpected exception: " + ex.getLocalizedMessage(), ex.getClass(),
+                scenario.getExpectedExceptionClass());
+            Assert.assertTrue(ex.getLocalizedMessage().startsWith(scenario.getExpectedErrorMsg()));
         }
+    }
+
+    private boolean isExpectedException(Exception ex) {
+        boolean correctClass = ex.getClass().equals(scenario.getExpectedExceptionClass());
+        boolean correctMessage = false;
+        if (scenario.getExpectedErrorMsg() != null) {
+            correctMessage = ex.getLocalizedMessage().startsWith(scenario.getExpectedErrorMsg());
+        }
+
+        return correctClass && correctMessage;
     }
 
     public IConflictListener getServerConflictResolver() {
@@ -202,6 +210,7 @@ public class SynchronizationIT {
                 {new TestScenario("* ServerUc ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
                     .addStep(CLIENT, insertRow3a)
                     .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+                //
                 {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, SERVER_WINS)
                     .addStep(CLIENT, updateRow2b)
                     .expectServer("SC")
@@ -216,6 +225,8 @@ public class SynchronizationIT {
                     .expectClient("CC")},
                 {new TestScenario("ServerUc ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(CLIENT, updateRow2b)
+                    .expectServer("SS")
+                    .expectClient("CC")
                     .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
                 {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(CLIENT, updateRow2b)
@@ -242,6 +253,8 @@ public class SynchronizationIT {
                     .expectClient("C")},
                 {new TestScenario("ServerUc ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(CLIENT, deleteRow2)
+                    .expectServer("SS")
+                    .expectClient("C")
                     .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
                 {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(CLIENT, deleteRow2)
@@ -333,6 +346,8 @@ public class SynchronizationIT {
                 {new TestScenario("ServerAdd ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(SERVER, insertRow3a)
                     .addStep(CLIENT, updateRow2b)
+                    .expectServer("SSS")
+                    .expectClient("CCS")
                     .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
                 {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(SERVER, insertRow3a)
@@ -366,6 +381,8 @@ public class SynchronizationIT {
                 {new TestScenario("ServerAdd ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
                     .addStep(SERVER, insertRow3a)
                     .addStep(CLIENT, deleteRow2)
+                    .expectServer("SSS")
+                    .expectClient("C S")
                     .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
                 {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, FIRE_EVENT)
                     .addStep(SERVER, insertRow3a)
