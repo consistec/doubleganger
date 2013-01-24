@@ -1,12 +1,11 @@
 package de.consistec.syncframework.common.server;
 
-import static de.consistec.syncframework.common.MdTableDefaultValues.SERVER_FLAG;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
-import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.util.DBMapperUtil;
@@ -56,7 +55,7 @@ public class ServerTableSynchronizer {
     /**
      * Synchronize server tables.
      * <p/>
-     * Iterates through monitored tables and process/delete rows.
+     * Iterates through monitored tables and updates the metadata entry for each rows.
      *
      * @throws DatabaseAdapterException the adapter exception
      */
@@ -95,8 +94,9 @@ public class ServerTableSynchronizer {
                 public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
                     try {
                         while (allChangedRows.next()) {
-                            MDEntry mdEntry = DBMapperUtil.getMetadata(allChangedRows, tableName);
-                            adapter.updateRevision(revision, tableName, mdEntry.getPrimaryKey());
+                            final Object primaryKey = allChangedRows.getObject(
+                                adapter.getPrimaryKeyColumn(tableName).getName());
+                            adapter.updateMdRow(revision, FLAG_PROCESSED, primaryKey, "", tableName);
                         }
                     } catch (SQLException ex) {
                         throw new DatabaseAdapterException(ex);
@@ -107,13 +107,13 @@ public class ServerTableSynchronizer {
     }
 
     private void searchAndProcessChangedRows(final int rev, final String table) throws DatabaseAdapterException {
+        final String mdTable = table + CONF.getMdTableSuffix();
 
-        final List<String> columns = adapter.getColumns(table);
+        final List<String> columns = adapter.getColumnNamesFromTable(table);
         adapter.getAllRowsFromTable(table, new DatabaseAdapterCallback<ResultSet>() {
             @Override
             public void onSuccess(ResultSet allRows) throws DatabaseAdapterException {
                 try {
-                    String mdTable = table + CONF.getMdTableSuffix();
                     Map<String, Object> rowData = newHashMap();
                     while (allRows.next()) {
                         for (String s : columns) {
@@ -132,12 +132,12 @@ public class ServerTableSynchronizer {
                                     if (result.next()) {
                                         if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_SERVER_HASH_ENTRY);
-                                            adapter.updateMdRow(rev, SERVER_FLAG, primaryKey, hash, table);
+                                            adapter.updateMdRow(rev, FLAG_PROCESSED, primaryKey, hash, table);
                                         }
                                     } else {
                                         // create new entry
                                         LOGGER.info(Infos.COMMON_CREATING_NEW_SERVER_HASH_ENTRY);
-                                        adapter.insertMdRow(rev, SERVER_FLAG, primaryKey, hash, table);
+                                        adapter.insertMdRow(rev, FLAG_PROCESSED, primaryKey, hash, table);
                                     }
                                 } catch (SQLException e) {
                                     throw new DatabaseAdapterException(e);
@@ -169,7 +169,7 @@ public class ServerTableSynchronizer {
                             continue;
                         }
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_SERVER);
-                        adapter.updateMdRow(rev, SERVER_FLAG, deletedRows.getObject("pk"), "", table);
+                        adapter.updateMdRow(rev, FLAG_PROCESSED, deletedRows.getObject("pk"), "", table);
                     }
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);

@@ -20,7 +20,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
@@ -69,17 +68,12 @@ public class ClientTableSynchronizer {
 
         final List<Change> changeList = newArrayList();
 
-        if (CONF.isSqlTriggerActivated()) {
-            LOGGER.debug("Triggers are activated. Looking for changes by flag.");
-            changeList.addAll(getChangedRowsByTriggerFlag());
-        } else {
-            LOGGER.debug("Triggers are deactivated: will search for modifications and update the metadata accordingly");
+        LOGGER.debug("Searching for modifications and updating metadata accordingly.");
 
-            for (final String table : CONF.getSyncTables()) {
-                LOGGER.debug("Processing table {}", table);
-                changeList.addAll(searchAndProcessChangedRows(table));
-                changeList.addAll(searchAndProcessDeletedRows(table));
-            }
+        for (final String table : CONF.getSyncTables()) {
+            LOGGER.debug("Processing table {}", table);
+            changeList.addAll(searchAndProcessChangedRows(table));
+            changeList.addAll(searchAndProcessDeletedRows(table));
         }
 
         LOGGER.debug("synchronizeClientTables finished");
@@ -87,33 +81,10 @@ public class ClientTableSynchronizer {
         return changeList;
     }
 
-    private List<Change> getChangedRowsByTriggerFlag() throws DatabaseAdapterException {
-        final List<Change> changeList = new LinkedList<Change>();
-        for (final String tableName : CONF.getSyncTables()) {
-
-            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
-                @Override
-                public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
-                    try {
-                        while (allChangedRows.next()) {
-                            MDEntry mdEntry = DBMapperUtil.getMetadata(allChangedRows, tableName);
-                            Map<String, Object> rowData = DBMapperUtil.getRowData(allChangedRows);
-                            Change change = new Change(mdEntry, rowData);
-                            changeList.add(change);
-                        }
-                    } catch (SQLException ex) {
-                        throw new DatabaseAdapterException(ex);
-                    }
-                }
-            });
-        }
-        return changeList;
-    }
-
     private List<Change> searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
 
         final List<Change> changeList = newArrayList();
-        final List<String> columns = adapter.getColumns(table);
+        final List<String> columns = adapter.getColumnNamesFromTable(table);
         Collections.sort(columns);
 
         adapter.getAllRowsFromTable(table, new DatabaseAdapterCallback<ResultSet>() {

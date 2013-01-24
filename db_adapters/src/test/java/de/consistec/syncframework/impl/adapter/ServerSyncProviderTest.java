@@ -49,32 +49,13 @@ import org.mockito.stubbing.Answer;
 //@PrepareForTest(PostgresDatabaseAdapter.class)
 public class ServerSyncProviderTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final SQLException TRANSACTION_SQL_EXCEPTION = new SQLException(
         "test transaction aborted exception",
         "400001");
-
     private static final TransactionAbortedException TRANSACTION_EXCEPTION = new TransactionAbortedException(
         "test transaction aborted exception");
-
     private static final UniqueConstraintException UNIQUE_EXCEPTION = new UniqueConstraintException(
         read(DBAdapterErrors.CANT_INSERT_DATA_ROW, "categories"));
-
     @Mock
     private DataSource dataSourceMock;
     //    @Mock
@@ -85,10 +66,8 @@ public class ServerSyncProviderTest {
     private PreparedStatement statementMock;
     @Mock
     private PostgresDatabaseAdapter databaseAdapterMock;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
-
 
     @Before
     public void setUp() throws IOException {
@@ -156,12 +135,17 @@ public class ServerSyncProviderTest {
             databaseAdapterMock).init(connectionMock);
         when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
         when(databaseAdapterMock.getLastRevision()).thenReturn(0);
-        doAnswer(new Answer() {
+
+        Answer throwTransactionException = new Answer() {
             @Override
             public Object answer(final InvocationOnMock invocationOnMock) throws Throwable {
                 throw TRANSACTION_EXCEPTION;
             }
-        }).when(databaseAdapterMock).getAllRowsFromTable(anyString(), any(DatabaseAdapterCallback.class));
+        };
+        doAnswer(throwTransactionException)
+            .when(databaseAdapterMock).getAllRowsFromTable(anyString(), any(DatabaseAdapterCallback.class));
+        doAnswer(throwTransactionException)
+            .when(databaseAdapterMock).getChangesByFlag(anyString(), any(DatabaseAdapterCallback.class));
 
         serverSyncProvider.getChanges(0);
     }
