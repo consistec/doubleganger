@@ -163,9 +163,6 @@ public class SyncAgent {
             SyncData serverData = serverProvider.getChanges(clientRevision);
             doAfterGetServerChanges();
 
-            if (!isTriggerSupported()) {
-                clientProvider.synchronizeClientTables();
-            }
             SyncData clientData = clientProvider.getChanges();
             SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
             SyncData clientChangesToApply = dataHolder.getClientSyncData();
@@ -202,14 +199,6 @@ public class SyncAgent {
                 LOGGER.info(Infos.COMMON_SYNC_RETRY_RECOGNIZED);
             }
         }
-    }
-
-    /**
-     * @return
-     * @todo implement configuration of trigger support
-     */
-    private boolean isTriggerSupported() {
-        return false;
     }
 
     /**
