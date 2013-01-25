@@ -92,29 +92,81 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         return prepareAdapter(true);
     }
 
-    /**
-     * To improve readability, call {@link prepareAdapterWithAutoCommit()} or {@link prepareAdapterNoAutoCommit()}.
-     *
-     * @param autocommit Id autocommit mode should be turned off or on in underlying connection.
-     * @return Database adapter instance.
-     * @throws DatabaseAdapterInstantiationException
-     */
-    private IDatabaseAdapter prepareAdapter(boolean autocommit) throws DatabaseAdapterInstantiationException {
+    @Override
+    public boolean hasSchema() throws SyncException {
 
         IDatabaseAdapter adapter = null;
+
         try {
-            if (getDs() == null) {
-                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-            } else {
-                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
-                    getDs().getConnection());
-            }
-            adapter.getConnection().setAutoCommit(autocommit);
-        } catch (SQLException ex) {
-            throw new DatabaseAdapterInstantiationException(ex);
+            adapter = prepareAdapterNoAutoCommit();
+            return adapter.hasSchema();
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
+        } finally {
+            closeConnection(adapter);
         }
 
-        return adapter;
+    }
+
+    @Override
+    public void applySchema(Schema schema) throws SyncException {
+
+        IDatabaseAdapter adapter = null;
+
+        try {
+            // For some databases (e.g. SQLite) DDL statements have to be committed, thats why here autocommit mode=true.
+            adapter = prepareAdapterWithAutoCommit();
+            adapter.applySchema(schema);
+            adapter.createMDSchema();
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
+        } finally {
+            // For DDL statements calling rollback is not necessary (and not always supported),
+            // so here we only need to close the connection.
+            closeConnection(adapter);
+        }
+    }
+
+    @Override
+    public int getLastRevision() throws SyncException {
+
+        int rev = 0;
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = prepareAdapterNoAutoCommit();
+            rev = adapter.getLastRevision();
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
+        } finally {
+            // Same as in getChanges - only SELECT queries so no rollback needed.
+            closeConnection(adapter);
+        }
+
+        return rev;
+    }
+
+    @Override
+    public SyncData getChanges() throws SyncException {
+
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = prepareAdapterNoAutoCommit();
+
+            if (!isTriggerSupported()) {
+                List<Change> detectedChanges = synchronizeClientTables();
+                return new SyncData(0, detectedChanges);
+            }
+
+            ClientChangesEnumerator changesEnumerator = new ClientChangesEnumerator(adapter, getStrategies());
+            return changesEnumerator.getChanges();
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(read(Errors.COMMON_CANT_GET_CLIENT_CHANGES), e);
+        } finally {
+            // changesEnumerator.getChanges() performs only SELECT queries so here we do not need to rollback.
+            closeConnection(adapter);
+        }
     }
 
     /**
@@ -200,42 +252,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     }
 
     @Override
-    public SyncData getChanges() throws SyncException {
-
-        IDatabaseAdapter adapter = null;
-
-        try {
-            adapter = prepareAdapterNoAutoCommit();
-            ClientChangesEnumerator changesEnumerator = new ClientChangesEnumerator(adapter, getStrategies());
-            return changesEnumerator.getChanges();
-        } catch (DatabaseAdapterException e) {
-            throw new SyncException(read(Errors.COMMON_CANT_GET_CLIENT_CHANGES), e);
-        } finally {
-            // changesEnumerator.getChanges() performs only SELECT queries so here we do not need to rollback.
-            closeConnection(adapter);
-        }
-    }
-
-    @Override
-    public int getLastRevision() throws SyncException {
-
-        int rev = 0;
-        IDatabaseAdapter adapter = null;
-
-        try {
-            adapter = prepareAdapterNoAutoCommit();
-            rev = adapter.getLastRevision();
-        } catch (DatabaseAdapterException e) {
-            throw new SyncException(e);
-        } finally {
-            // Same as in getChanges - only SELECT queries so no rollback needed.
-            closeConnection(adapter);
-        }
-
-        return rev;
-    }
-
-    @Override
     public void updateClientRevision(SyncData clientData) throws SyncException {
 
         IDatabaseAdapter adapter = null;
@@ -255,41 +271,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     }
 
     @Override
-    public boolean hasSchema() throws SyncException {
-
-        IDatabaseAdapter adapter = null;
-
-        try {
-            adapter = prepareAdapterNoAutoCommit();
-            return adapter.hasSchema();
-        } catch (DatabaseAdapterException e) {
-            throw new SyncException(e);
-        } finally {
-            closeConnection(adapter);
-        }
-
-    }
-
-    @Override
-    public void applySchema(Schema schema) throws SyncException {
-
-        IDatabaseAdapter adapter = null;
-
-        try {
-            // For some databases (e.g. SQLite) DDL statements have to be committed, thats why here autocommit mode=true.
-            adapter = prepareAdapterWithAutoCommit();
-            adapter.applySchema(schema);
-            adapter.createMDSchema();
-        } catch (DatabaseAdapterException e) {
-            throw new SyncException(e);
-        } finally {
-            // For DDL statements calling rollback is not necessary (and not always supported),
-            // so here we only need to close the connection.
-            closeConnection(adapter);
-        }
-    }
-
-    @Override
     public void setConflictListener(IConflictListener listener) {
         this.conflictListener = listener;
     }
@@ -299,8 +280,23 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         return this.conflictListener;
     }
 
-    @Override
-    public List<Change> synchronizeClientTables() throws SyncException {
+    /**
+     * @return
+     * @todo implement configuration of trigger support
+     */
+    private boolean isTriggerSupported() {
+        return false;
+    }
+
+    /**
+     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
+     * and deleted rows in all client data tables.
+     *
+     * @return List<Change> the list of client changes.
+     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
+     * and therefore throws an more specific exception.
+     */
+    private List<Change> synchronizeClientTables() throws SyncException {
 
         IDatabaseAdapter adapter = null;
 
@@ -324,6 +320,31 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         } finally {
             closeConnection(adapter);
         }
+    }
+
+    /**
+     * To improve readability, call {@link prepareAdapterWithAutoCommit()} or {@link prepareAdapterNoAutoCommit()}.
+     *
+     * @param autocommit Id autocommit mode should be turned off or on in underlying connection.
+     * @return Database adapter instance.
+     * @throws DatabaseAdapterInstantiationException
+     */
+    private IDatabaseAdapter prepareAdapter(boolean autocommit) throws DatabaseAdapterInstantiationException {
+
+        IDatabaseAdapter adapter = null;
+        try {
+            if (getDs() == null) {
+                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
+            } else {
+                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
+                    getDs().getConnection());
+            }
+            adapter.getConnection().setAutoCommit(autocommit);
+        } catch (SQLException ex) {
+            throw new DatabaseAdapterInstantiationException(ex);
+        }
+
+        return adapter;
     }
     //</editor-fold>
 }

@@ -3,11 +3,8 @@ package de.consistec.syncframework.common.client;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDataHolder;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
-
-import java.util.List;
 
 /**
  * This interface defines the behavior of the synchronization provider on the client's side.
@@ -97,13 +94,13 @@ public interface IClientSyncProvider {
      */
     IConflictListener getConflictListener();
 
-    /**
-     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
-     * and deleted rows in all client data tables.
-     *
-     * @return List<Change> the list of client changes.
-     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
-     * and therefore throws an more specific exception.
-     */
-    List<Change> synchronizeClientTables() throws SyncException;
+//    /**
+//     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
+//     * and deleted rows in all client data tables.
+//     *
+//     * @return List<Change> the list of client changes.
+//     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
+//     * and therefore throws an more specific exception.
+//     */
+//    List<Change> synchronizeClientTables() throws SyncException;
 }
