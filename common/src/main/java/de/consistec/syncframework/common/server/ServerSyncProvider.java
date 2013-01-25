@@ -25,6 +25,7 @@ import de.consistec.syncframework.common.exception.database_adapter.UniqueConstr
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.i18n.MessageReader;
+import de.consistec.syncframework.common.i18n.Warnings;
 import de.consistec.syncframework.common.util.LoggingUtil;
 
 import java.sql.SQLException;
@@ -180,28 +181,25 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             adapter.getConnection().setAutoCommit(true);
 
             String mdTable = clientTable + CONF.getMdTableSuffix();
-//            mdTableExists = adapter.existsMDTable(mdTable);
 
             int retries = 3;
             while (!adapter.existsMDTable(mdTable)) {
                 try {
+                    LOGGER.warn(Warnings.COMMON_RECREATING_SERVER_META_TABLES, mdTable);
                     adapter.createMDTable(clientTable);
                 } catch (DatabaseAdapterException ex) {
-
-                    rollback(adapter);
-                    LOGGER.debug("Transaction rolled back!!! \n {}", ex);
 
                     if (ex instanceof UniqueConstraintException
                         || ex instanceof TransactionAbortedException) {
 
-                        LOGGER.info(Infos.COMMON_TRYING_TO_REAPPLY_CLIENT_CHANGES);
+                        LOGGER.warn(Warnings.COMMON_RECREATING_SERVER_META_TABLES_FAILED, mdTable, ex.getMessage());
 
                         if (retries == 0) {
-                            throw new SyncException(read(Errors.COMMON_CANT_APPLY_CLIENT_CHANGES_FOR_N_TIME, retries),
-                                ex);
+                            throw new SyncException(
+                                read(Errors.COMMON_CANT_RECREATE_SERVER_META_TABLE_FOR_N_TIMES, mdTable, retries), ex);
                         } else {
                             retries--;
-                            LOGGER.info(Infos.COMMON_REMAINING_NUMBER_OF_APPLY_CLIENT_CHANGES_RETRIES, retries);
+                            LOGGER.info(Infos.COMMON_RETRYING_RECREATE_SERVER_META_TABLES, mdTable, retries);
                         }
                     } else {
                         throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
