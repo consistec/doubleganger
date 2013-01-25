@@ -21,14 +21,6 @@ import java.util.Map;
  */
 public final class DBMapperUtil {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-//</editor-fold>
     private DBMapperUtil() {
     }
 
@@ -58,9 +50,9 @@ public final class DBMapperUtil {
             } else if (MDV_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 String mdv = resultSet.getString(i);
                 if (StringUtil.isNullOrEmpty(mdv)) {
-                    tmpEntry.setDeleted();
+                    tmpEntry.setDataRowDeleted();
                 } else {
-                    tmpEntry.setModified();
+                    tmpEntry.setDataRowExists(true);
                 }
                 tmpEntry.setMdv(mdv);
             } else if (FLAG_COLUMN_NAME.equalsIgnoreCase(columnName)) {

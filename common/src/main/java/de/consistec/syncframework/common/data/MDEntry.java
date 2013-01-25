@@ -1,7 +1,5 @@
 package de.consistec.syncframework.common.data;
 
-import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
-
 import java.io.Serializable;
 
 /**
@@ -25,12 +23,12 @@ public class MDEntry implements Serializable {
      */
     private Object primaryKey;
     /**
-     * Does the change still exist?
+     * Does the row data still exist?
      * <p/>
      *
      * @serial
      */
-    private boolean exists;
+    private boolean dataRowExists;
     /**
      * The revision of the change.
      * <p/>
@@ -62,14 +60,14 @@ public class MDEntry implements Serializable {
      * Instantiates a new message digest entry with provided values.
      *
      * @param primaryKey Primary key
-     * @param exists Exists flag
+     * @param rowDataExists true if the row data still exists
      * @param revision Row revision
      * @param tableName Table name
      * @param mdv hash value
      */
-    public MDEntry(Object primaryKey, boolean exists, int revision, String tableName, String mdv) {
+    public MDEntry(Object primaryKey, boolean rowDataExists, int revision, String tableName, String mdv) {
         this.primaryKey = primaryKey;
-        this.exists = exists;
+        this.dataRowExists = rowDataExists;
         this.revision = revision;
         this.mdv = mdv;
         this.tableName = tableName;
@@ -96,46 +94,27 @@ public class MDEntry implements Serializable {
     }
 
     /**
-     * Is the data row deleted or not.
+     * Sets if the data entry still exists.
      *
-     * @return true if the entry still exists in the data table.
+     * @param dataRowExists true if it still exists
+     */
+    public void setDataRowExists(boolean dataRowExists) {
+        this.dataRowExists = dataRowExists;
+    }
+
+    /**
+     * Returns true if the data row still exists.
+     * @return true if data row still exists
      */
     public boolean isExists() {
-        return exists;
+        return dataRowExists;
     }
 
     /**
-     * Sets true if the mdv value in the meta data table is not null,
-     * otherwise false. if a row in the meta data table of a specific
-     * primarey key exists and the mdv value is null, then the data row
-     * was deleted.
-     *
-     * @param exists true if entry exist ???
+     * THe MDEntry now considers its data row has been deleted.
      */
-    public void setExists(boolean exists) {
-        this.exists = exists;
-    }
-
-    /**
-     * Sets the isExists value to false and empties the mdv value.
-     */
-    public void setDeleted() {
-        mdv = MDV_DELETED_VALUE;
-        exists = false;
-    }
-
-    /**
-     * Sets the isExists value to true.
-     */
-    public void setAdded() {
-        exists = true;
-    }
-
-    /**
-     * Sets the isExists value to true.
-     */
-    public void setModified() {
-        exists = true;
+    public void setDataRowDeleted() {
+        this.dataRowExists = false;
     }
 
     /**
@@ -204,8 +183,8 @@ public class MDEntry implements Serializable {
      */
     @Override
     public String toString() {
-        return String.format("%s{pk=%s, exists=%b, rev=%d, tableName=%s}", getClass().getSimpleName(),
-            primaryKey == null ? "null" : primaryKey, exists,
+        return String.format("%s{pk=%s, rowDataExists=%b, rev=%d, tableName=%s}", getClass().getSimpleName(),
+            primaryKey == null ? "null" : primaryKey, dataRowExists,
             revision, tableName == null ? "null" : tableName);
     }
 
@@ -220,7 +199,7 @@ public class MDEntry implements Serializable {
 
         MDEntry mdEntry = (MDEntry) o;
 
-        if (exists != mdEntry.exists) {
+        if (dataRowExists != mdEntry.dataRowExists) {
             return false;
         }
         if (revision != mdEntry.revision) {
@@ -241,10 +220,11 @@ public class MDEntry implements Serializable {
     public int hashCode() {
         final int hashcodePrime = 31;
         int result = primaryKey != null ? primaryKey.hashCode() : 0;
-        result = hashcodePrime * result + (exists ? 1 : 0);
+        result = hashcodePrime * result + (dataRowExists ? 1 : 0);
         result = hashcodePrime * result + revision;
         result = hashcodePrime * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
     //</editr-fold>
+
 }
