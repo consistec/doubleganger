@@ -91,7 +91,7 @@ public class ServletProcessorTest {
         StringWriter writer = new StringWriter();
         Mockito.when(responseMock.getWriter()).thenReturn(new PrintWriter(writer));
 
-        HttpServletProcessor processor = new HttpServletProcessor();
+        HttpServletProcessor processor = new HttpServletProcessor(true);
         Field contextField = Whitebox.getField(HttpServletProcessor.class, "serverContext");
         Whitebox.setInternalState(contextField.get(processor), IServerSyncProvider.class, providerMock);
         processor.execute(requestMock, responseMock);
@@ -127,7 +127,7 @@ public class ServletProcessorTest {
         StringWriter writer = new StringWriter();
         Mockito.when(responseMock.getWriter()).thenReturn(new PrintWriter(writer));
 
-        HttpServletProcessor processor = new HttpServletProcessor();
+        HttpServletProcessor processor = new HttpServletProcessor(true);
         Field contextField = Whitebox.getField(HttpServletProcessor.class, "serverContext");
         Whitebox.setInternalState(contextField.get(processor), IServerSyncProvider.class, providerMock);
         processor.execute(requestMock, responseMock);
@@ -165,7 +165,7 @@ public class ServletProcessorTest {
         StringWriter writer = new StringWriter();
         Mockito.when(responseMock.getWriter()).thenReturn(new PrintWriter(writer));
 
-        HttpServletProcessor processor = new HttpServletProcessor();
+        HttpServletProcessor processor = new HttpServletProcessor(true);
         Field contextField = Whitebox.getField(HttpServletProcessor.class, "serverContext");
         Whitebox.setInternalState(contextField.get(processor), IServerSyncProvider.class, providerMock);
         processor.execute(requestMock, responseMock);

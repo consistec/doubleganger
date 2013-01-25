@@ -82,5 +82,9 @@ public enum Errors {
     /**
      * When the server servlet can not write to servlet output stream.
      */
-    CANT_WRITE_TO_OUTPUTSTREAM;
+    CANT_WRITE_TO_OUTPUTSTREAM,
+    /**
+     * When the server command could not executed.
+     */
+    CANT_EXECUTE_SERVER_COMMAND;
 }

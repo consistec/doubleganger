@@ -9,6 +9,7 @@ import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttp
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncRequestHttpParams.THREAD_ID;
 
 import de.consistec.syncframework.common.SyncContext;
+import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.exception.ServerStatusException;
@@ -40,8 +41,10 @@ import org.slf4j.cal10n.LocLogger;
 /**
  * Servlet processor takes received http servlet request and pass the control farther to server sync provider.
  * <p/>
- * In it {@link #execute() } method, the requests parameters are read, parsed and then appropriate method of
- * ServerContext is invoked. The result is parsed JSON String, append to servlet response object and returned to client.
+ * In it {@link #execute(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)}
+ * method, the requests parameters are read, parsed and then appropriate method of
+ * ServerContext is invoked. The result is parsed JSON String, append to
+ * servlet response object and returned to client.
  *
  * @author Markus Backes
  * @company Consistec Engineering and Consulting GmbH
@@ -52,10 +55,16 @@ public class HttpServletProcessor {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(HttpServletProcessor.class.getCanonicalName());
+
+    /**
+     * Map that contains command objects to execute when requested.
+     */
+    protected Map<String, RequestCommand> actionCommands = newSyncMap();
+
     private ISerializationAdapter serializationAdapter;
     private final SyncContext.ServerContext serverContext;
+    protected boolean isDebugEnabled = false;
 
-    private Map<String, RequestCommand> actionCommands = newSyncMap();
 
     //</editor-fold>
 
@@ -68,11 +77,13 @@ public class HttpServletProcessor {
      * {@link de.consistec.syncframework.common.SyncContext.ServerContext synchronization context}
      * with it's internal database connection.
      *
+     * @param isDebugEnabled is process in debugging mode
      * @throws ContextException
      */
-    public HttpServletProcessor() throws ContextException {
+    public HttpServletProcessor(boolean isDebugEnabled) throws ContextException {
         serverContext = SyncContext.server();
         serializationAdapter = new JSONSerializationAdapter();
+        this.isDebugEnabled = isDebugEnabled;
         initializeActionCommands();
     }
 
@@ -84,24 +95,50 @@ public class HttpServletProcessor {
      * with provided database connection (e.g. from server pool).
      *
      * @param ds External sql data source.
+     * @param isDebugEnabled is process in debugging mode
      * @throws IOException
      * @throws ContextException
      */
-    public HttpServletProcessor(DataSource ds) throws ContextException {
+    public HttpServletProcessor(DataSource ds, boolean isDebugEnabled) throws ContextException {
         serverContext = SyncContext.server(ds);
         serializationAdapter = new JSONSerializationAdapter();
+        this.isDebugEnabled = isDebugEnabled;
+        initializeActionCommands();
+    }
+
+    /**
+     * Creates new instance of servlet processor.
+     * <p/>
+     * This instance will be using
+     * {@link de.consistec.syncframework.common.SyncContext.ServerContext synchronization context}
+     * with provided database connection (e.g. from server pool).
+     *
+     * @param tableSyncStrategies syncstrategies for configured tables
+     * @param isDebugEnabled is process in debugging mode
+     * @throws IOException
+     * @throws ContextException
+     */
+    public HttpServletProcessor(TableSyncStrategies tableSyncStrategies, boolean isDebugEnabled) throws
+        ContextException {
+        serverContext = SyncContext.server(tableSyncStrategies);
+        serializationAdapter = new JSONSerializationAdapter();
+        this.isDebugEnabled = isDebugEnabled;
         initializeActionCommands();
     }
 
     /**
      * Puts the supported action commands into actionCommands hashMap.
      */
-
     private void initializeActionCommands() {
         actionCommands.put(SyncAction.GET_SCHEMA.getStringName(), new GetSchemaCommand());
         actionCommands.put(SyncAction.GET_CHANGES.getStringName(), new GetChangesCommand());
         actionCommands.put(SyncAction.APPLY_CHANGES.getStringName(), new ApplyChangesCommand());
         actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
+    }
+
+    public void setTableSyncStrategies(TableSyncStrategies tableSyncStrategies)
+    {
+        serverContext.setTableSyncStrategies(tableSyncStrategies);
     }
 
     //</editor-fold>
@@ -154,11 +191,25 @@ public class HttpServletProcessor {
                             LOGGER.warn(read(Errors.CANT_APPLY_CHANGES), e);
                         }
                     }
-                    writeExceptionToHttpOutputStream(resp, e);
+                    writeExceptionOut(resp, e);
                 } catch (SerializationException e) {
-                    writeExceptionToHttpOutputStream(resp, e);
+                    writeExceptionOut(resp, e);
                 }
             }
+        }
+    }
+
+    private void writeExceptionOut(HttpServletResponse resp, Throwable th) throws IOException {
+        if (isDebugEnabled) {
+            writeExceptionToHttpOutputStream(resp, th);
+        } else {
+            String msg = th.getLocalizedMessage();
+            Throwable cause = th.getCause();
+            if (cause != null) {
+                msg = cause.getLocalizedMessage();
+            }
+            LOGGER.error(Errors.CANT_EXECUTE_SERVER_COMMAND, msg);
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
         }
     }
 
@@ -183,6 +234,21 @@ public class HttpServletProcessor {
 
             }
         }
+    }
+
+    /**
+     * Puts this object values in a String format.
+     *
+     * @return String representation of this object.
+     */
+    @Override
+    public String toString() {
+        return "HttpServletProcessor{"
+            + "serializationAdapter=" + serializationAdapter
+            + ", serverContext=" + serverContext
+            + ", isDebugEnabled=" + isDebugEnabled
+            + ", actionCommands=" + actionCommands
+            + '}';
     }
     //</editor-fold>
 }

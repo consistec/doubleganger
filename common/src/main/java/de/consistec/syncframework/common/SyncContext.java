@@ -568,6 +568,7 @@ public final class SyncContext {
     public final class ServerContext {
 
         private IServerSyncProvider serverProvider;
+        private TableSyncStrategies strategies;
 
         /**
          * Instance creation only allowed through static factory methods of outer class.
@@ -669,6 +670,11 @@ public final class SyncContext {
          */
         public void validate(SyncSettings syncSettings) throws SyncException {
             serverProvider.validate(syncSettings);
+        }
+
+        public void setTableSyncStrategies(final TableSyncStrategies tableSyncStrategies) {
+            AbstractSyncProvider abstractSyncProvider = (AbstractSyncProvider) serverProvider;
+            abstractSyncProvider.getStrategies().addAll(tableSyncStrategies);
         }
     }
 

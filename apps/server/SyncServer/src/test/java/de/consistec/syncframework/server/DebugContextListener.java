@@ -1,36 +1,31 @@
 package de.consistec.syncframework.server;
 
+import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
+
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.exception.ConfigException;
 import de.consistec.syncframework.common.util.PropertiesUtil;
-import de.consistec.syncframework.impl.proxy.http_servlet.HttpServletProcessor;
+import de.consistec.syncframework.impl.commands.RequestCommand;
+import de.consistec.syncframework.impl.proxy.http_servlet.SyncAction;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
-import javax.naming.InitialContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-//import javax.servlet.annotation.WebListener;
 
 /**
- * Web application lifecycle listener.
- * <ul>
- * <li><b>Company:</b> consistec Engineering and Consulting GmbH</li>
- * </ul>
- * <p/>
- *
- * @author Piotr Wieczorek
- * @since 0.0.1-SNAPSHOT
+ * @author marcel
+ * @company Consistec Engineering and Consulting GmbH
+ * @date 25.01.13 09:56
  */
-//@WebListener("Listener initializes syncframework")
-public class ContextListener implements ServletContextListener {
+public class DebugContextListener implements ServletContextListener {
 
     public static final String SERVER_OPTION_POOLING = "pooling";
     public static final String SERVER_OPTION_DEBUG = "debug";
@@ -44,12 +39,14 @@ public class ContextListener implements ServletContextListener {
     private boolean isPooling;
     private boolean isDebugEnabled;
     private final String configFileName;
+    private Map<SyncAction, RequestCommand> mockedRequests = newHashMap();
+    private TestableHttpServletProcessor processor;
 
-    public ContextListener(String configFileName) {
+    public DebugContextListener(String configFileName) {
         this.configFileName = configFileName;
     }
 
-    public ContextListener() {
+    public DebugContextListener() {
         this.configFileName = "/WEB-INF/" + DEFAULT_FRAMEWORK_CONFIG_FILE;
     }
 
@@ -82,28 +79,14 @@ public class ContextListener implements ServletContextListener {
 
     }
 
+    public void addRequest(SyncAction action, RequestCommand request) {
+        mockedRequests.put(action, request);
+        processor.exchangeCommand(action, request);
+    }
+
     private void prepareHttpProcessor() throws Exception {
 
-        HttpServletProcessor processor;
-
-        if (isPooling) {
-
-            InitialContext initCxt = new InitialContext();
-            if (initCxt == null) {
-                throw new Exception("Uh oh -- no context!");
-            }
-            DataSource ds = (DataSource) initCxt.lookup("java:/comp/env/jdbc/sync");
-            if (ds == null) {
-                throw new ServletException("Data source not found!");
-            } else {
-                LOGGER.debug("Datasource found");
-            }
-
-            processor = new HttpServletProcessor(ds, isDebugEnabled);
-        } else {
-            processor = new HttpServletProcessor(isDebugEnabled);
-        }
-
+        processor = new TestableHttpServletProcessor(isDebugEnabled);
         ctx.setAttribute(HTTP_PROCESSOR_CTX_ATTR, processor);
     }
 
@@ -170,5 +153,13 @@ public class ContextListener implements ServletContextListener {
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
         LOGGER.info("ContextListener finished ...");
+    }
+
+    public void setDebugEnabled(final boolean debugEnabled) {
+        processor.setDebugEnabled(debugEnabled);
+    }
+
+    public void setTableSyncStrategies(final TableSyncStrategies tableSyncStrategies) {
+        processor.setTableSyncStrategies(tableSyncStrategies);
     }
 }

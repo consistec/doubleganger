@@ -27,6 +27,7 @@
         <!-- Option specific for PostgreSQL adapter from Consistec GmbH -->
         <db.host>localhost</db.host>
         <!--<db.pooling>false</db.pooling>-->
+        <debug>false</debug>
         <java.version>1.6</java.version>
         <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
         <deploy.name>SyncServer</deploy.name>
@@ -200,6 +201,13 @@
             <version>1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-servlet-tester</artifactId>
+            <version>6.1.6</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <profiles>
@@ -213,6 +221,12 @@
             <id>without-pooling</id>
             <properties>
                 <db.pooling>false</db.pooling>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <properties>
+                <debug>true</debug>
             </properties>
         </profile>
         <profile>

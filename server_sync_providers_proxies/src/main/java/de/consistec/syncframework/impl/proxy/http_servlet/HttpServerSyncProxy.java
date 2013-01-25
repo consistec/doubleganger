@@ -112,6 +112,36 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
         }
     }
 
+    /**
+     * Instantiates a new server sync provider proxy.
+     * <p/>
+     * Do not instantiate this class directly! Framework will make it!.
+     * <br/> Instead specify canonical name of this class in framework configuration as server proxy class.
+     *
+     * @param uri the requested uri
+     * @throws java.net.URISyntaxException the uRI syntax exception
+     */
+    public HttpServerSyncProxy(URI uri) throws URISyntaxException {
+        LOGGER.warn("---------------------------------------  HttpProxy constructor ");
+
+        host = uri;
+        if (host == null) {
+            Properties syncServerProperties = Config.getInstance().getServerProxyProviderProperties();
+            host = new URI(syncServerProperties.getProperty(PROPS_SERVER_URL));
+        }
+
+        initializeDefaultSerializationAdapter();
+
+        Properties syncServerProperties = Config.getInstance().getServerProxyProviderProperties();
+
+        String username = syncServerProperties.getProperty(PROPS_USERNAME);
+        String password = syncServerProperties.getProperty(PROPS_PASSWORD);
+
+        if (!StringUtil.isNullOrEmpty(username)) {
+            credentials = new UsernamePasswordCredentials(username, password);
+        }
+    }
+
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private void initializeDefaultSerializationAdapter() {
@@ -233,6 +263,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
                 Header headerException = response.getFirstHeader(HEADER_NAME_SERVER_EXCEPTION);
 
                 if (headerException == null) {
+
+
                     throw new SyncException(read(Errors.SERVER_EXCEPTION_RECEIVED,
                         response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase()));
                 } else {
