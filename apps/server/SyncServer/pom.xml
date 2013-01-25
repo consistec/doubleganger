@@ -30,6 +30,7 @@
         <java.version>1.6</java.version>
         <netbeans.hint.deploy.server>Tomcat</netbeans.hint.deploy.server>
         <deploy.name>SyncServer</deploy.name>
+        <display_build>${maven.build.timestamp}</display_build>
     </properties>
 
     <build>
@@ -48,6 +49,7 @@
                             <filtering>true</filtering>
                             <includes>
                                 <include>META-INF/context.xml</include>
+                                <include>WEB-INF/web.xml</include>
                                 <include>WEB-INF/syncframework.properties</include>
                                 <include>WEB-INF/server.properties</include>
                             </includes>
