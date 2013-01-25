@@ -2,6 +2,7 @@ package de.consistec.syncframework.common.client;
 
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_FLAG;
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
@@ -113,13 +114,13 @@ public class ClientTableSynchronizer {
                                     if (result.next()) {
                                         if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
-                                            adapter.updateMdRow(result.getInt("rev"), CLIENT_FLAG, primaryKey, hash,
+                                            adapter.updateMdRow(result.getInt("rev"), FLAG_MODIFIED, primaryKey, hash,
                                                 table);
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);
-                                        } else if (result.getInt("f") == CLIENT_FLAG) {
+                                        } else if (result.getInt("f") == FLAG_MODIFIED) {
                                             // if synchronization is repeated then previous changes or inserts are
                                             // marked with teh CLIENT_FLAG
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
@@ -178,7 +179,7 @@ public class ClientTableSynchronizer {
                             table);
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
-                        mdEntry.setDeleted();
+                        mdEntry.setDataRowDeleted();
                         Change change = new Change();
                         change.setMdEntry(mdEntry);
                         changeList.add(change);
