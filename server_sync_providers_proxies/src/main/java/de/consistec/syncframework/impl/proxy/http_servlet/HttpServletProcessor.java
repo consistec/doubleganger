@@ -60,10 +60,13 @@ public class HttpServletProcessor {
      * Map that contains command objects to execute when requested.
      */
     protected Map<String, RequestCommand> actionCommands = newSyncMap();
+    /**
+     * Flag to represent the process running status.
+     */
+    protected boolean isDebugEnabled = false;
 
     private ISerializationAdapter serializationAdapter;
     private final SyncContext.ServerContext serverContext;
-    protected boolean isDebugEnabled = false;
 
 
     //</editor-fold>
@@ -136,8 +139,12 @@ public class HttpServletProcessor {
         actionCommands.put(SyncAction.VALIDATE_SETTINGS.getStringName(), new ValidateSettingsCommand());
     }
 
-    public void setTableSyncStrategies(TableSyncStrategies tableSyncStrategies)
-    {
+    /**
+     * Sets the optional sync strategies for configured server tables.
+     *
+     * @param tableSyncStrategies optional sync strategies for tables
+     */
+    public void setTableSyncStrategies(TableSyncStrategies tableSyncStrategies) {
         serverContext.setTableSyncStrategies(tableSyncStrategies);
     }
 

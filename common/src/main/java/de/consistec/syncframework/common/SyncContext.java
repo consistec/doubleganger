@@ -672,6 +672,11 @@ public final class SyncContext {
             serverProvider.validate(syncSettings);
         }
 
+        /**
+         * Sets the optional sync strategies for each table to the server.
+         *
+         * @param tableSyncStrategies optional sync strategies for configured table
+         */
         public void setTableSyncStrategies(final TableSyncStrategies tableSyncStrategies) {
             AbstractSyncProvider abstractSyncProvider = (AbstractSyncProvider) serverProvider;
             abstractSyncProvider.getStrategies().addAll(tableSyncStrategies);
