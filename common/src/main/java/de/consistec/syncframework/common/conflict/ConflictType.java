@@ -40,114 +40,62 @@ public enum ConflictType {
      * Data was added on client and on server.
      */
     CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return data.getLocalEntry().getRevision() == 0
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return data.getLocalEntry().getRevision() == 0
                 && data.getRemoteEntry().isExists();
-        }
-    }),
-//    /**
-//     * Data was added on client and on server.
-//     */
-//    CLIENT_ADD_SERVER_MOD(new Resolver() {
-//        @Override
-//        public boolean isTheCase(ConflictHandlingData data) {
-//            return data.getLocalEntry().getRevision() == 0
-//                && data.getRemoteEntry().isExists();
-//        }
-//    }),
+    }
+}),
     /**
      * Data was added on client and on server.
      */
     CLIENT_ADD_SERVER_DEL(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return data.getLocalEntry().getRevision() == 0
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return data.getLocalEntry().getRevision() == 0
                 && !data.getRemoteEntry().isExists();
-        }
-    }),
+    }
+}),
     /**
      * Data was modified on client and on server.
      */
     CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
                 && data.getRemoteEntry().isExists();
-        }
-    }),
-//    /**
-//     * Data was modified on client and on server.
-//     */
-//    CLIENT_MOD_SERVER_MOD(new Resolver() {
-//        @Override
-//        public boolean isTheCase(ConflictHandlingData data) {
-//            return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
-//                && data.getRemoteEntry().isExists();
-//        }
-//    }),
+    }
+}),
     /**
      * Data was modified on client and on server.
      */
     CLIENT_MOD_SERVER_DEL(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
                 && !data.getRemoteEntry().isExists();
-        }
-    }),
+    }
+}),
     /**
      * Data was deleted on client and modified on server.
      */
     CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
                 && data.getRemoteEntry().isExists();
-        }
-    }),
-//    /**
-//     * Data was deleted on client and modified on server.
-//     */
-//    CLIENT_DEL_SERVER_MOD(new Resolver() {
-//        @Override
-//        public boolean isTheCase(ConflictHandlingData data) {
-//            return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
-//                && data.getRemoteEntry().isExists();
-//        }
-//    }),
+    }
+}),
     /**
      * Data was deleted on client and on server.
      */
     CLIENT_DEL_SERVER_DEL(new Resolver() {
-        @Override
-        public boolean isTheCase(ConflictHandlingData data) {
-            return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
+    @Override
+    public boolean isTheCase(ConflictHandlingData data) {
+        return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
                 && !data.getRemoteEntry().isExists();
-        }
-    });
-//    /**
-//     * ??
-//     */
-//    SERVER_DEL(new Resolver() {
-//        @Override
-//        public boolean isTheCase(ConflictHandlingData data) {
-//            return !data.getRemoteEntry().isExists();
-//        }
-//    }),
-
-//    /**
-//     * ???
-//     *
-//     * @todo document this conflict type
-//     */
-//    OUT_OF_DATE(new Resolver() {
-//        @Override
-//        public boolean isTheCase(ConflictHandlingData data) {
-//
-//            return localFlag == 1;
-//        }
-//    });
+    }
+});
 
     private Resolver resolver;
 
