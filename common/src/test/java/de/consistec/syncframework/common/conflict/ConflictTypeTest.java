@@ -66,7 +66,7 @@ public class ConflictTypeTest extends TestBase {
                 rowData.put(TEST_COLUMN5, 4.5);
                 break;
             case DEL:
-                entry = new MDEntry(1, isClient, 1, TEST_TABLE_NAME, null);
+                entry = new MDEntry(1, false, 1, TEST_TABLE_NAME, null);
                 // no rowData, they were deleted
                 break;
             default:
