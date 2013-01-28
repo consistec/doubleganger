@@ -158,23 +158,26 @@ public class SyncAgent {
         try {
             int clientRevision = clientProvider.getLastRevision();
 
-            // transaction phase 1
+            // transaction phase 1 server
             doBeforeGetServerChanges();
             SyncData serverData = serverProvider.getChanges(clientRevision);
             doAfterGetServerChanges();
 
+            // transaction phase 1 client
             SyncData clientData = clientProvider.getChanges();
             SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
             SyncData clientChangesToApply = dataHolder.getClientSyncData();
             int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
             clientChangesToApply.setRevision(currentRevision);
 
-            // transaction phase 2
+            // transaction phase 2 server
             doBeforeApplyClientChanges();
             int serverRevision = serverProvider.applyChanges(clientChangesToApply);
-            clientChangesToApply.setRevision(serverRevision);
             doAfterApplyClientChanges();
 
+            clientChangesToApply.setRevision(serverRevision);
+
+            // transaction phase 2 client
             clientProvider.updateClientRevision(clientChangesToApply);
 
         } catch (ServerStatusException ex) {
@@ -198,6 +201,8 @@ public class SyncAgent {
                 recursionDepth--;
                 LOGGER.info(Infos.COMMON_SYNC_RETRY_RECOGNIZED);
             }
+
+            serverProvider.close();
         }
     }
 
