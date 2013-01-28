@@ -541,7 +541,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                     Column newColumn = new Column(primaryKeyColumnName, columns.getInt(DATA_TYPE),
                         columns.getInt(COLUMN_SIZE),
                         columns.getInt(DECIMAL_DIGITS), columns.getBoolean(NULLABLE));
-                    LOGGER.debug("created primary key column: {}", newColumn);
+                    LOGGER.debug("primary key column is {}", newColumn);
                     return newColumn;
                 }
             }

@@ -1,6 +1,7 @@
 package de.consistec.syncframework.common.server;
 
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
@@ -60,50 +61,41 @@ public class ServerTableSynchronizer {
      * @throws DatabaseAdapterException the adapter exception
      */
     public void synchronizeServerTables() throws DatabaseAdapterException {
-
         LOGGER.debug("synchronizeServerTables called");
 
         final int revision = adapter.getNextRevision();
-        LOGGER.debug("next revision number is {}", revision);
-        if (CONF.isSqlTriggerActivated()) {
 
-            LOGGER.debug("Triggers are activated. Incrementing revision for changed rows.");
-            updateRevisionOnChangedRows(revision);
-
-        } else {
-
-            LOGGER.debug("Triggers are deactivated: will search for modifications and update the metadata accordingly");
-
-            for (final String table : CONF.getSyncTables()) {
-
-                LOGGER.debug("Processing table {}", table);
-                searchAndProcessChangedRows(revision, table);
-                searchAndProcessDeletedRows(revision, table);
+        for (final String tableName : CONF.getSyncTables()) {
+            if (CONF.isSqlTriggerActivated()) {
+                LOGGER.debug("Triggers are activated. Incrementing revision for changed rows in {}", tableName);
+                updateRevisionOnChangedRows(revision, tableName);
+            } else {
+                LOGGER.debug("Triggers are deactivated. Searching for changes & updating the metadata in {}", tableName);
+                searchAndProcessChangedRows(revision, tableName);
             }
-
+            searchAndProcessDeletedRows(revision, tableName);
         }
 
         LOGGER.debug("synchronizeServerTables finished");
     }
 
-    private void updateRevisionOnChangedRows(final int revision) throws DatabaseAdapterException {
-        for (final String tableName : CONF.getSyncTables()) {
-
-            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
-                @Override
-                public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
-                    try {
-                        while (allChangedRows.next()) {
-                            final Object primaryKey = allChangedRows.getObject(
-                                adapter.getPrimaryKeyColumn(tableName).getName());
-                            adapter.updateMdRow(revision, FLAG_PROCESSED, primaryKey, "", tableName);
+    private void updateRevisionOnChangedRows(final int revision, final String tableName) throws DatabaseAdapterException {
+        adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+            @Override
+            public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
+                try {
+                    while (allChangedRows.next()) {
+                        String pkName = adapter.getPrimaryKeyColumn(tableName).getName();
+                        final Object primaryKey = allChangedRows.getObject(pkName);
+                        if (primaryKey != null) {
+                            adapter.updateMdRow(revision, FLAG_PROCESSED, primaryKey, MDV_MODIFIED_VALUE, tableName);
                         }
-                    } catch (SQLException ex) {
-                        throw new DatabaseAdapterException(ex);
                     }
+                } catch (SQLException ex) {
+                    throw new DatabaseAdapterException(ex);
                 }
-            });
-        }
+            }
+        });
     }
 
     private void searchAndProcessChangedRows(final int rev, final String table) throws DatabaseAdapterException {
