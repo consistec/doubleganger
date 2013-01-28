@@ -201,8 +201,6 @@ public class SyncAgent {
                 recursionDepth--;
                 LOGGER.info(Infos.COMMON_SYNC_RETRY_RECOGNIZED);
             }
-
-            serverProvider.close();
         }
     }
 
