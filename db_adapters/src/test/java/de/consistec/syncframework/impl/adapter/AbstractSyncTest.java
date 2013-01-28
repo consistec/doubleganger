@@ -14,12 +14,10 @@ import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
-import de.consistec.syncframework.common.Tuple;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientChangesEnumerator;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
@@ -32,7 +30,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.After;
@@ -71,8 +68,8 @@ public abstract class AbstractSyncTest {
 
         return Arrays.asList(new Object[][]{
                 {new TestDatabase(GenericDatabaseAdapter.MYSQL_CONFIG_FILE, DumpDataSource.SupportedDatabases.MYSQL)},
-                {new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL)},
-                {new TestDatabase(GenericDatabaseAdapter.SQLITE_CONFIG_FILE, DumpDataSource.SupportedDatabases.SQLITE)}
+                {new TestDatabase(GenericDatabaseAdapter.SQLITE_CONFIG_FILE, DumpDataSource.SupportedDatabases.SQLITE)},
+                {new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL)}
             });
     }
     /**

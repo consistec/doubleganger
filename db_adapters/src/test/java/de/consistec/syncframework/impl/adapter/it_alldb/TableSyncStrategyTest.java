@@ -23,7 +23,8 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.impl.TestDatabase;
-import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
+import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -56,6 +57,7 @@ public class TableSyncStrategyTest {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
+    private TestDatabase db = new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL);
     @Mock
     private ResultSet localDataResultSet;
     @Mock
@@ -66,6 +68,7 @@ public class TableSyncStrategyTest {
     @Before
     public void before() throws IOException, SyncException, SQLException, ContextException {
         MockitoAnnotations.initMocks(this);
+        db.init();
     }
 
     @Test
@@ -213,7 +216,6 @@ public class TableSyncStrategyTest {
         // mode.fail() sollte gar nicht aufgerufen worden sein
 //        verify(model, never()).fail();
     }
-
 
     @Test
     public void resolveConflictsWithNullableSyncStrategy() throws Exception {

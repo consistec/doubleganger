@@ -181,7 +181,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             // the schema is not created multiple times
             int retries = NUMBER_OF_SYNC_RETRIES;
 
-            while (!adapter.existsMDTable(mdTable)) {
+            while (!adapter.existsMDTable(clientTable)) {
                 try {
                     LOGGER.warn(Warnings.COMMON_RECREATING_SERVER_META_TABLES, mdTable);
                     adapter.createMDTable(clientTable);
