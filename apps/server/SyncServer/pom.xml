@@ -37,6 +37,20 @@
     <build>
         <finalName>SyncServer</finalName>
 
+        <testResources>
+            <testResource>
+                <targetPath>server-tests/</targetPath>
+                <directory>src/test/resources/</directory>
+                <!-- Copy and configure files required for jmeter-tests in jmeter-tests-dir -->
+                <includes>
+                    <include>log4j.xml</include>
+                    <include>test_syncframework.properties</include>
+                    <include>server.properties</include>
+                </includes>
+                <!--<filtering>true</filtering>-->
+            </testResource>
+        </testResources>
+
         <plugins>
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
