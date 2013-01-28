@@ -498,7 +498,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     @Override
     public Column getPrimaryKeyColumn(String table) throws DatabaseAdapterException {
-        LOGGER.debug("searching primary key column for table {}", table);
         ResultSet primaryKeys = null; //NOSONAR
 
         try {
@@ -534,8 +533,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         try {
             String primaryKeyColumnName = primaryKeys.getString(COLUMN_NAME);
-            LOGGER.debug("found primary key column: {}", primaryKeyColumnName);
-
             columns = connection.getMetaData().getColumns(connection.getCatalog(), getSchemaOfConnection(), table,
                 null);
 
@@ -544,7 +541,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                     Column newColumn = new Column(primaryKeyColumnName, columns.getInt(DATA_TYPE),
                         columns.getInt(COLUMN_SIZE),
                         columns.getInt(DECIMAL_DIGITS), columns.getBoolean(NULLABLE));
-                    LOGGER.debug("return column {}", newColumn);
+                    LOGGER.debug("created primary key column: {}", newColumn);
                     return newColumn;
                 }
             }
@@ -875,11 +872,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
 
             stmt = connection.prepareStatement(statement);
-            LOGGER.debug("got statement from {}", statement);
             stmt.setObject(1, primaryKey);
-            LOGGER.debug("set primary key {}", primaryKey);
+            LOGGER.debug("Executing with pk={}: {}", new Object[]{primaryKey, statement});
             rst = stmt.executeQuery();
-            LOGGER.debug("query successful executed!");
             callback.onSuccess(rst);
 
         } catch (SQLException e) {
@@ -1008,7 +1003,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
             try {
                 String sqlTableStatement = getTableConverter().toSQL(mdTable);
-                executeSqlQueries(new String[]{sqlTableStatement});
+                executeSqlQuery(sqlTableStatement);
             } catch (SchemaConverterException e) {
                 throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
             }
