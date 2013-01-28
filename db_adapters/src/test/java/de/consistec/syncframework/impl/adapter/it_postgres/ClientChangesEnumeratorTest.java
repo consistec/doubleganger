@@ -14,21 +14,12 @@ import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
-import de.consistec.syncframework.impl.adapter.AbstractSyncTest;
-import de.consistec.syncframework.impl.adapter.ConnectionType;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
-import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This class tests the correct handling of getChanges for client side.
@@ -38,117 +29,37 @@ import org.slf4j.LoggerFactory;
  * @date 13.12.12 12:16
  */
 @Ignore
-public class ClientChangesEnumeratorTest extends AbstractSyncTest {
+public class ClientChangesEnumeratorTest extends EnumeratorTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientChangesEnumeratorTest.class.getCanonicalName());
-
-    public static final String CONFIG_FILE = "/config_postgre.properties";
-
-    protected static final DumpDataSource clientDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
-        ConnectionType.CLIENT);
-    protected static final DumpDataSource serverDs = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL,
-        ConnectionType.SERVER);
-
-    /**
-     * Jdbc connection for client database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection clientConnection;
-    /**
-     * Jdbc connection for server database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection serverConnection;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        clientConnection = clientDs.getConnection();
-        serverConnection = serverDs.getConnection();
-    }
+    private static String[] serverInsertQueries = new String[]{
+        "INSERT INTO categories (categoryid, categoryname, description) VALUES (1, 'Beverages', 'Soft drinks')",
+        "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
+        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 1)",
+        "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (2, '75901F57520C09EB990837C7AA93F717', 2, 1)",};
 
     @Before
-    public void setUp() throws IOException {
-        TestUtil.initConfig(getClass(), CONFIG_FILE);
-    }
-
     @Override
-    public Connection getServerConnection() {
-        return serverConnection;
-    }
+    public void setUp() throws IOException, SQLException {
+        super.setUp();
 
-    @Override
-    public Connection getClientConnection() {
-        return clientConnection;
-    }
-
-    /**
-     * Closes server and client connection.
-     *
-     * @throws java.sql.SQLException
-     */
-    @AfterClass
-    public static void tearDownClass() throws SQLException {
-
-        if (clientConnection != null) {
-            try {
-                clientConnection.close();
-                clientConnection = null;
-            } catch (SQLException e) {
-                LOGGER.error("could not close client connection!", e);
-                throw e;
-            }
-        }
-
-        if (serverConnection != null) {
-            try {
-                serverConnection.close();
-                serverConnection = null;
-            } catch (SQLException e) {
-                LOGGER.warn("could not close server connection!", e);
-                throw e;
-            }
-        }
+        postgresDB.executeQueriesOnClient(serverInsertQueries);
     }
 
     private SyncData testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws SyncException,
         ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category8_b_insert.xml";
-        String resource2 = "category8_a_insert.xml";
         IDatabaseAdapter adapter = null;
-        SyncData clientChanges = null;
 
         try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
-
             adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-
-//            TableSyncStrategies strategies = new TableSyncStrategies();
-//            strategies.addSyncStrategyForTable();
 
             Config configInstance = Config.getInstance();
             configInstance.setGlobalConflictStrategy(strategy);
             configInstance.setGlobalSyncDirection(direction);
+
             ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter,
                 new TableSyncStrategies());
 
-            clientChanges = clientChangesEnumerator.getChanges();
+            return clientChangesEnumerator.getChanges();
 
         } finally {
             if (adapter != null) {
@@ -157,20 +68,14 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
                 }
             }
         }
-        return clientChanges;
     }
 
     private SyncData testGetChangesPerTable(ConflictStrategy strategy, SyncDirection direction) throws
         SyncException,
         ContextException, SQLException, DatabaseAdapterException {
-        String resource = "category9_b_insert.xml";
-        String resource2 = "category9_a_insert.xml";
         IDatabaseAdapter adapter = null;
-        SyncData clientChanges = null;
 
         try {
-            // init db with data
-            initClientAndServerWithoutSync(resource, resource2);
 
             adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
 
@@ -180,7 +85,7 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
 
             ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter, strategies);
 
-            clientChanges = clientChangesEnumerator.getChanges();
+            return clientChangesEnumerator.getChanges();
 
         } finally {
             if (adapter != null) {
@@ -189,7 +94,6 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
                 }
             }
         }
-        return clientChanges;
     }
 
     @Test
@@ -206,7 +110,7 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         DatabaseAdapterException {
 
         SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.CLIENT_TO_SERVER);
-        assertTrue(clientChanges.getChanges().size() == 1);
+        assertTrue(clientChanges.getChanges().size() == 2);
     }
 
     @Test
@@ -214,7 +118,7 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
         DatabaseAdapterException {
 
         SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS, SyncDirection.BIDIRECTIONAL);
-        assertTrue(clientChanges.getChanges().size() == 1);
+        assertTrue(clientChanges.getChanges().size() == 2);
     }
 
     @Test
@@ -224,7 +128,7 @@ public class ClientChangesEnumeratorTest extends AbstractSyncTest {
     {
         SyncData clientChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
             SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.getChanges().size() == 1);
+        assertTrue(clientChanges.getChanges().size() == 0);
     }
 
     @Test
