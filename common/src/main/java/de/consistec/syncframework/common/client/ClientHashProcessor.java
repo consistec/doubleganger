@@ -122,7 +122,7 @@ public class ClientHashProcessor {
         final Map<String, Object> remoteRowData = serverChange.getRowData();
 
         // SERVER ADD, MOD OR DEL
-        if (serverChange.getMdEntry().isExists()) {
+        if (serverChange.getMdEntry().dataRowExists()) {
             adapter.getRowForPrimaryKey(serverChange.getMdEntry().getPrimaryKey(), remoteEntry.getTableName(),
                 new DatabaseAdapterCallback<ResultSet>() {
                     @Override

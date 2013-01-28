@@ -106,7 +106,7 @@ public class MDEntry implements Serializable {
      * Returns true if the data row still exists.
      * @return true if data row still exists
      */
-    public boolean isExists() {
+    public boolean dataRowExists() {
         return dataRowExists;
     }
 
@@ -175,7 +175,7 @@ public class MDEntry implements Serializable {
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
     /**
      * Description of object state.
-     * Something like {@code MDEntry{pk=PkObjectToString, isExists=true, rev=2, tableName=name}}.
+     * Something like {@code MDEntry{pk=PkObjectToString, dataRowExists=true, rev=2, tableName=name}}.
      * Do <b>not</b> parse! Result could change in feature releases.
      *
      * @return Object's representation.

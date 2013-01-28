@@ -39,67 +39,67 @@ public enum ConflictType {
     /**
      * Data was added on client and on server.
      */
-    CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
+    CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
         return data.getLocalEntry().getRevision() == 0
-                && data.getRemoteEntry().isExists();
+                && data.getRemoteEntry().dataRowExists();
     }
 }),
     /**
      * Data was added on client and on server.
      */
-    CLIENT_ADD_SERVER_DEL(new Resolver() {
+    CLIENT_ADD_SERVER_DEL(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
         return data.getLocalEntry().getRevision() == 0
-                && !data.getRemoteEntry().isExists();
+                && !data.getRemoteEntry().dataRowExists();
     }
 }),
     /**
      * Data was modified on client and on server.
      */
-    CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
+    CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
-        return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
-                && data.getRemoteEntry().isExists();
+        return data.getLocalEntry().dataRowExists()
+                && data.getRemoteEntry().dataRowExists();
     }
 }),
     /**
      * Data was modified on client and on server.
      */
-    CLIENT_MOD_SERVER_DEL(new Resolver() {
+    CLIENT_MOD_SERVER_DEL(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
-        return (data.getLocalEntry().getMdv() != null && !data.getLocalEntry().getMdv().isEmpty())
-                && !data.getRemoteEntry().isExists();
+        return data.getLocalEntry().dataRowExists()
+                && !data.getRemoteEntry().dataRowExists();
     }
 }),
     /**
      * Data was deleted on client and modified on server.
      */
-    CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD(new Resolver() {
+    CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
-        return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
-                && data.getRemoteEntry().isExists();
+        return !data.getLocalEntry().dataRowExists()
+                && data.getRemoteEntry().dataRowExists();
     }
 }),
     /**
      * Data was deleted on client and on server.
      */
-    CLIENT_DEL_SERVER_DEL(new Resolver() {
+    CLIENT_DEL_SERVER_DEL(new ConflictType.Resolver() {
     @Override
     public boolean isTheCase(ConflictHandlingData data) {
-        return (data.getLocalEntry().getMdv() == null || data.getLocalEntry().getMdv().isEmpty())
-                && !data.getRemoteEntry().isExists();
+        return !data.getLocalEntry().dataRowExists()
+                && !data.getRemoteEntry().dataRowExists();
     }
 });
 
-    private Resolver resolver;
+    private ConflictType.Resolver resolver;
 
-    private ConflictType(Resolver resolver) {
+    private ConflictType(ConflictType.Resolver resolver) {
         this.resolver = resolver;
     }
 

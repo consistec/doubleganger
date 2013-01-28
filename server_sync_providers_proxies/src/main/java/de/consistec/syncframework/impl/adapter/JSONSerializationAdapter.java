@@ -169,7 +169,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 entry = c.getMdEntry();
                 mdEntryObject = new JSONObject();
 
-                mdEntryObject.put(FIELD_NAME_EXISTS, entry.isExists());
+                mdEntryObject.put(FIELD_NAME_EXISTS, entry.dataRowExists());
 
                 mdEntryObject.put(FIELD_NAME_PRIMARYKEY, entry.getPrimaryKey());
                 mdEntryObject.put(FIELD_NAME_REVISION, entry.getRevision());
@@ -216,7 +216,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 entry = c.getMdEntry();
                 mdEntryObject = new JSONObject();
 
-                mdEntryObject.put(FIELD_NAME_EXISTS, entry.isExists());
+                mdEntryObject.put(FIELD_NAME_EXISTS, entry.dataRowExists());
 
                 mdEntryObject.put(FIELD_NAME_PRIMARYKEY, entry.getPrimaryKey());
                 mdEntryObject.put(FIELD_NAME_REVISION, entry.getRevision());

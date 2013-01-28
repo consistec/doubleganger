@@ -146,7 +146,7 @@ public class ServerHashProcessor {
         LOGGER.debug("processResultSets called");
 
         if (hashRst.next()) {
-            if (!remoteEntry.isExists()) {
+            if (!remoteEntry.dataRowExists()) {
 
                 // CLIENT DEL
                 LOGGER.info(Infos.COMMON_CLIENT_DELETED_CASE_DETECTED);
