@@ -53,10 +53,13 @@ public class SyncServiceServlet extends HttpServlet {
             throw new ServletException(ex);
         } catch (SerializationException ex) {
             throw new ServletException(ex);
+        } finally {
+            req.getSession().invalidate();
         }
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods.">
+
     /**
      * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
      */
