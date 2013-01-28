@@ -1,9 +1,9 @@
 package de.consistec.syncframework.impl.adapter;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.PropertiesUtil.defaultIfNull;
 import static de.consistec.syncframework.common.util.PropertiesUtil.readString;
-import static de.consistec.syncframework.common.util.StringUtil.isNullOrEmpty;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
@@ -19,6 +19,7 @@ import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.util.CollectionsUtil;
 import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.common.util.StringUtil;
@@ -92,19 +93,41 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      * Value: {@value}.
      */
-    public static final String PROPS_USERNAME = "user";
+    public static final String PROPS_SYNC_USERNAME = "user";
     /**
      * This option specify database user password.
      * <p/>
      * Value: {@value}.
      */
-    public static final String PROPS_PASSWORD = "password";
+    public static final String PROPS_SYNC_PASSWORD = "password";
+    /**
+     * This option specifies the database username of an external user (unknown to the syncframework).
+     * <p/>
+     * Value: {@value}.
+     */
+    public static final String PROPS_EXTERN_USERNAME = "extern.user";
+    /**
+     * This option specifies the database password of an external user (unknown to the syncframework).
+     * <p/>
+     * Value: {@value}.
+     */
+    public static final String PROPS_EXTERN_PASSWORD = "extern.password";
     /**
      * This option specify the database schema to connect to.
      * <p/>
      * Value: {@value}.
      */
     public static final String PROPS_SCHEMA = "schema";
+    /**
+     * MySQL database property file.
+     * Value: {@value}
+     */
+    public static final String MYSQL_CONFIG_FILE = "/config_mysql.properties";
+    /**
+     * SQLite database property file.
+     * Value: {@value}
+     */
+    public static final String SQLITE_CONFIG_FILE = "/config_sqlite.properties";
     //</editor-fold>
     /**
      * Part of a description of table columns available in a catalog.
@@ -116,8 +139,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_NAME = "COLUMN_NAME";
     /**
@@ -132,8 +155,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_SIZE = "COLUMN_SIZE";
     /**
@@ -151,8 +174,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String NULLABLE = "NULLABLE";
     /**
@@ -163,8 +186,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DATA_TYPE = "DATA_TYPE";
     /**
@@ -175,8 +198,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
     /**
@@ -187,8 +210,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}.
      * <p/>
      *
-     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String TABLE_NAME = "TABLE_NAME";
     /**
@@ -200,7 +223,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getPrimaryKeys(String catalog,
-     *      String schema, String table) throws SQLException
+     * String schema, String table) throws SQLException
      */
     protected static final String PK_NAME = "PK_NAME";
     /**
@@ -253,7 +276,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Do not create adapter instances directly!.
      * This constructor has scope {@code protected} only to allow subclasses.
@@ -264,7 +286,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Initialize adapter with external connection.
      *
@@ -295,8 +316,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         driverName = readString(adapterConfig, PROPS_DRIVER_NAME, true);
         connectionUrl = readString(adapterConfig, PROPS_URL, true);
-        username = readString(adapterConfig, PROPS_USERNAME, false);
-        password = readString(adapterConfig, PROPS_PASSWORD, false);
+        username = readString(adapterConfig, PROPS_SYNC_USERNAME, false);
+        password = readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
         schemaOfConnection = defaultIfNull(schemaOfConnection, readString(adapterConfig, PROPS_SCHEMA, false));
 
         LOGGER.debug("driverName=\"{}\", connectionUrl=\"{}\", username=\"{}\", password=\"{}\"",
@@ -355,58 +376,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
-        List<String> tableNames = getTableNamesFromDatabase();
-        return tableNames.contains(tableName);
-    }
-
-    @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
-        Table table;
-
-        String mdTableName = tableName + CONF.getMdTableSuffix();
-
-        LOGGER.debug("creating new table: {}", mdTableName);
-
-        table = new Table(mdTableName);
-        Column pkColumn = getPrimaryKeyColumn(tableName);
-        table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-        table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-        table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-        table.add(new Column("f", Types.INTEGER, 0, 0, true));
-
-        table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
-
-
-        Statement stmt = null; //NOSONAR
-        try {
-            stmt = connection.createStatement();
-            String sqlTableStatement = getTableConverter().toSQL(table);
-
-            LOGGER.debug("applying sql-table creation: {}", sqlTableStatement);
-
-            stmt.execute(sqlTableStatement);
-        } catch (SQLException e) {
-            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
-        } catch (SchemaConverterException e) {
-            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
-        } finally {
-            closeStatements(stmt);
-        }
-    }
-
-    @Override
-    public ISQLConverter getSchemaConverter() {
-        return new CreateSchemaToSQLConverter();
-    }
-
-    @Override
-    public ISQLConverter getTableConverter() {
-        return new CreateTableToSQLConverter();
-    }
-
-    @Override
-    public List<String> getColumns(String tableName) throws DatabaseAdapterException {
+    public List<String> getColumnNamesFromTable(String tableName) throws DatabaseAdapterException {
         LOGGER.debug("Reading columns for table {} ", tableName);
 
         ResultSet columns = null; //NOSONAR
@@ -451,10 +421,25 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         } finally {
             closeStatements(stmt);
         }
-
     }
 
-    private void removeExistentTablesFromSchema(Schema schema) throws DatabaseAdapterException {
+    @Override
+    public ISQLConverter getSchemaConverter() {
+        return new CreateSchemaToSQLConverter();
+    }
+
+    @Override
+    public ISQLConverter getTableConverter() {
+        return new CreateTableToSQLConverter();
+    }
+
+    /**
+     * Removes the tables that already exist in the schema to avoid duplication.
+     *
+     * @param schema schema
+     * @throws DatabaseAdapterException
+     */
+    protected void removeExistentTablesFromSchema(Schema schema) throws DatabaseAdapterException {
         List<String> databaseTables = getTableNamesFromDatabase();
 
         for (Table tab : schema.getTables()) {
@@ -514,7 +499,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     @Override
     public Column getPrimaryKeyColumn(String table) throws DatabaseAdapterException {
-        LOGGER.debug("searching primary key column for table {}", table);
         ResultSet primaryKeys = null; //NOSONAR
 
         try {
@@ -545,13 +529,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     private Column createColumnForPrimaryKey(ResultSet primaryKeys, String table) throws
-        SQLException, DatabaseAdapterException {
-
-        String primaryKeyColumnName = primaryKeys.getString(COLUMN_NAME);
-        LOGGER.debug("found primary key column: {}", primaryKeyColumnName);
-
+        DatabaseAdapterException {
         ResultSet columns = null;
+
         try {
+            String primaryKeyColumnName = primaryKeys.getString(COLUMN_NAME);
             columns = connection.getMetaData().getColumns(connection.getCatalog(), getSchemaOfConnection(), table,
                 null);
 
@@ -560,13 +542,19 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                     Column newColumn = new Column(primaryKeyColumnName, columns.getInt(DATA_TYPE),
                         columns.getInt(COLUMN_SIZE),
                         columns.getInt(DECIMAL_DIGITS), columns.getBoolean(NULLABLE));
-                    LOGGER.debug("return column {}", newColumn);
+                    LOGGER.debug("primary key column is {}", newColumn);
                     return newColumn;
                 }
             }
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
         } finally {
             if (columns != null) {
-                columns.close();
+                try {
+                    columns.close();
+                } catch (SQLException e) {
+                    throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+                }
             }
         }
 
@@ -624,37 +612,22 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             tableName, CONF.getMdTableSuffix());
 
         String statement;
-        int pkIndex;
 
-        if (flag == -1) {
-
-            statement = String.format("update %s%s SET mdv=?, rev=? where pk=?", tableName, CONF.getMdTableSuffix());
-            pkIndex = 3; //NOSONAR
-
-        } else {
-
-            statement = String.format("update %s%s SET mdv=?, rev=?, f=? where pk=?", tableName,
-                CONF.getMdTableSuffix());
-            pkIndex = 4; //NOSONAR
-
-        }
+        statement = String.format("update %s%s SET mdv=?, rev=?, f=? where pk=?", tableName, CONF.getMdTableSuffix());
 
         PreparedStatement updateStatement = null;
         try {
 
             updateStatement = connection.prepareStatement(statement);
 
-            if (isNullOrEmpty(mdv)) {
+            if (mdv == null) {
                 updateStatement.setNull(1, Types.VARCHAR);
             } else {
                 updateStatement.setString(1, mdv);
             }
             updateStatement.setInt(2, rev);
-            updateStatement.setObject(pkIndex, pk);
-
-            if (-1 != flag) {
-                updateStatement.setInt(3, flag); //NOSONAR
-            }
+            updateStatement.setInt(3, flag); //NOSONAR
+            updateStatement.setObject(4, pk);
 
             if (updateStatement.executeUpdate() <= 0) {
                 throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_UPDATE_MD_ROW, tableName));
@@ -694,19 +667,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void insertMdRow(int rev, int f, Object pk, String mdv, String tableName) throws DatabaseAdapterException {
 
-        LOGGER.debug(
-            String.format("inserting md row with values: pk:%s mdv:%s rev:%d flag: %d tablename:%s", pk, mdv, rev, f,
-                tableName));
+        LOGGER.debug(String.format("inserting md row with values: pk:%s mdv:%s rev:%d flag: %d tablename:%s",
+            pk, mdv, rev, f, tableName));
 
-        final String statement;
-        if (-1 != f) {
-            statement = String.format("insert into %s (pk,mdv,rev,f) VALUES (?,?,?,?)",
-                tableName + CONF.getMdTableSuffix());
-        } else {
-            statement = String.format("insert into %s (pk,mdv,rev) VALUES (?,?,?)",
-                tableName + CONF.getMdTableSuffix());
-        }
-
+        final String statement = String.format("insert into %s (pk,mdv,rev,f) VALUES (?,?,?,?)",
+            tableName + CONF.getMdTableSuffix());
         PreparedStatement insertStatement = null;
 
         try {
@@ -720,9 +685,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                 insertStatement.setInt(3, rev); //NOSONAR
             }
 
-            if (-1 != f) {
-                insertStatement.setInt(4, f); //NOSONAR
-            }
+            insertStatement.setInt(4, f); //NOSONAR
+
             if (insertStatement.executeUpdate() <= 0) {
                 throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_INSERT_MD_ROW, tableName));
             }
@@ -853,7 +817,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         DatabaseAdapterException {
 
         String mdTableName = table + CONF.getMdTableSuffix();
-        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where f = 1", mdTableName,
+        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where f <> 0", mdTableName,
             table, mdTableName, table, getPrimaryKeyColumn(table).getName());
 
         LOGGER.debug("reading changes by flag with query: {}", query);
@@ -877,14 +841,15 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public int updateRevision(int rev, String table, Object pk) throws DatabaseAdapterException {
         int updateCount;
-        String statement = String.format("update %s SET rev = ?, f = 0 where pk = ?", table);
+        String statement = String.format("update %s SET rev = ?, f = ? where pk = ?", table);
 
         PreparedStatement stmt = null;
         try {
 
             stmt = connection.prepareStatement(statement);
             stmt.setInt(1, rev);
-            stmt.setObject(2, pk);
+            stmt.setInt(2, FLAG_PROCESSED);
+            stmt.setObject(3, pk);
             updateCount = stmt.executeUpdate();
             return updateCount;
 
@@ -908,11 +873,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
 
             stmt = connection.prepareStatement(statement);
-            LOGGER.debug("got statement from {}", statement);
             stmt.setObject(1, primaryKey);
-            LOGGER.debug("set primary key {}", primaryKey);
+            LOGGER.debug("Executing with pk={}: {}", new Object[]{primaryKey, statement});
             rst = stmt.executeQuery();
-            LOGGER.debug("query successful executed!");
             callback.onSuccess(rst);
 
         } catch (SQLException e) {
@@ -937,7 +900,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
                 String.format("select rev, pk, mdv, f from %s left join %s on %s.pk = %s where %s is null", mdTable,
-                    tableName, mdTable, tmpPkName, tmpPkName));
+                tableName, mdTable, tmpPkName, tmpPkName));
             callback.onSuccess(deletedRows);
 
         } catch (SQLException e) {
@@ -980,8 +943,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         }
     }
 
-    private Schema buildSchema(String catalog, DatabaseMetaData metaData) throws DatabaseAdapterException,
-        SQLException {
+    private Schema buildSchema(String catalog, DatabaseMetaData metaData) throws DatabaseAdapterException {
         Schema schema = new Schema();
         ResultSet columns = null; //NOSONAR
         ResultSet primaryKeys = null; //NOSONAR
@@ -1011,6 +973,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
                 schema.addTables(table);
             }
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
         } finally {
             closeResultSets(columns, primaryKeys);
         }
@@ -1019,37 +983,66 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     @Override
     public void createMDSchema() throws DatabaseAdapterException {
-
-        List<String> databaseTables = getTableNamesFromDatabase();
-        Schema schema = new Schema();
-        Table table;
-
         for (String tableName : CONF.getSyncTables()) {
-
-            String mdTableName = tableName + CONF.getMdTableSuffix();
-
-            LOGGER.debug("searching md table for table with name: {}", tableName);
-
-            if (databaseTables.contains(tableName) && databaseTables.contains(mdTableName)) {
-                LOGGER.debug("skipping creation of table: {}. Does already exist.", tableName);
-                // skip table creation because table already exists
-                continue;
-            }
-
-            LOGGER.debug("creating new table: {}", mdTableName);
-
-            table = new Table(mdTableName);
-            Column pkColumn = getPrimaryKeyColumn(tableName);
-            table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-            table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-            table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-            table.add(new Column("f", Types.INTEGER, 0, 0, true));
-
-            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
-            schema.addTables(table);
+            createMDTable(tableName);
         }
-        if (schema.countTables() > 0) {
-            applySchema(schema);
+    }
+
+    @Override
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+        String mdTableName = tableName + CONF.getMdTableSuffix();
+        LOGGER.debug("creating new metadata table: {}", mdTableName);
+
+        Column pkColumn = getPrimaryKeyColumn(tableName);
+        Table mdTable = new Table(mdTableName);
+        mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+        mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
+        mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
+        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+
+        try {
+            String sqlTableStatement = getTableConverter().toSQL(mdTable);
+            executeSqlQuery(sqlTableStatement);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        }
+    }
+
+    @Override
+    public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
+        String mdTableName = tableName + CONF.getMdTableSuffix();
+        List<String> tableNames = getTableNamesFromDatabase();
+        return tableNames.contains(tableName) && tableNames.contains(mdTableName);
+    }
+
+    /**
+     * Executes a single SQL query.
+     * <p/>
+     * @param query the query to execute
+     * @throws DatabaseAdapterException
+     */
+    protected void executeSqlQuery(String query) throws DatabaseAdapterException {
+        executeSqlQueries(new String[]{query});
+    }
+
+    /**
+     * Executes many SQL queries, one after the other.
+     * <p/>
+     * @param queries the queries to execute
+     * @throws DatabaseAdapterException
+     */
+    protected void executeSqlQueries(String[] queries) throws DatabaseAdapterException {
+        Statement stmt = null; //NOSONAR
+        try {
+            stmt = connection.createStatement();
+            for (String query : queries) {
+                stmt.execute(query);
+            }
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+        } finally {
+            closeStatements(stmt);
         }
     }
 

@@ -30,7 +30,7 @@ import org.junit.Assert;
  */
 public class ExecuteStatementHelper {
 
-    private ChangeLogToSQLAdapter converter = new ChangeLogToSQLConverter();
+    private ChangeLogToSQLConverter converter = new ChangeLogToSQLConverter();
     private ResultSet clientResultSet, serverResultSet;
     private Connection clientConnection, serverConnection;
     private Map<String, String> clientTableContentMap = newHashMap(), serverTableContentMap = newHashMap();
@@ -61,15 +61,19 @@ public class ExecuteStatementHelper {
         String sql = new Scanner(sqlStream).useDelimiter("\\A").next();
         Statement stmt = null;
         int result = 0;
+        String currentQuery = "";
         try {
             String[] queries = converter.fromChangelog(sql).replace("\n", "").split(";");
             for (String query : queries) {
+                currentQuery = query;
                 stmt = conn.createStatement();
                 result += stmt.executeUpdate(query);
             }
             return result;
         } catch (SerializationException e) {
             throw new SyncException("could not convert from changelog", e);
+        } catch (SQLException e) {
+            throw new SyncException("Unable to execute query: " + currentQuery, e);
         } finally {
             if (stmt != null) {
                 stmt.close();
@@ -137,8 +141,8 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type
-    ) throws
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf,
+        ConnectionType type) throws
         SQLException, SyncException {
 
         executeStatementAndCompareResults(statementsToExecute, conf, type, null);
@@ -152,9 +156,9 @@ public class ExecuteStatementHelper {
      * @throws SQLException
      * @throws SyncException
      */
-    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf, ConnectionType type,
-                                                  ConnectionType type2
-    ) throws
+    public void executeStatementAndCompareResults(Map<String, String> statementsToExecute, Config conf,
+        ConnectionType type,
+        ConnectionType type2) throws
         SQLException, SyncException {
 
         for (String tableName : statementsToExecute.keySet()) {
@@ -204,8 +208,7 @@ public class ExecuteStatementHelper {
         }
     }
 
-    private String getContentToCompare(String tableName, ConnectionType type
-    ) {
+    private String getContentToCompare(String tableName, ConnectionType type) {
         if (type == ConnectionType.CLIENT) {
             return clientTableContentMap.get(tableName);
         } else {
@@ -217,7 +220,7 @@ public class ExecuteStatementHelper {
         if (rs == null) {
             throw new IllegalArgumentException("Passed result set hasn't be null!!!");
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         while (rs.next()) {
             ResultSetMetaData metaData = rs.getMetaData();
@@ -244,8 +247,7 @@ public class ExecuteStatementHelper {
         return sortedList;
     }
 
-    public void readTableContent(Map<String, String> tableStatementMap
-    ) throws
+    public void readTableContent(Map<String, String> tableStatementMap) throws
         SQLException {
 
         fillTableContentMap(tableStatementMap, clientTableContentMap, ConnectionType.CLIENT);
@@ -253,8 +255,7 @@ public class ExecuteStatementHelper {
     }
 
     private void fillTableContentMap(Map<String, String> tableStatementMap, Map<String, String> tableContentMap,
-                                     ConnectionType type
-    ) throws SQLException {
+        ConnectionType type) throws SQLException {
         Statement contentRelatedToStrategyStmt = null;
         try {
             final Connection connection = getConnectionFromType(type);

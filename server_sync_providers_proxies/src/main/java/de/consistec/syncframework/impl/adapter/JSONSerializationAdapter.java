@@ -116,7 +116,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 mdEntryObject = object.getJSONObject("mdentry");
 
                 if (mdEntryObject.has(FIELD_NAME_EXISTS)) {
-                    mdEntry.setExists(mdEntryObject.getBoolean(FIELD_NAME_EXISTS));
+                    mdEntry.setDataRowExists(mdEntryObject.getBoolean(FIELD_NAME_EXISTS));
                 }
 
                 mdEntry.setPrimaryKey(mdEntryObject.get(FIELD_NAME_PRIMARYKEY));
@@ -169,11 +169,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 entry = c.getMdEntry();
                 mdEntryObject = new JSONObject();
 
-                if (entry.isExists()) {
-                    mdEntryObject.put(FIELD_NAME_EXISTS, true);
-                } else {
-                    mdEntryObject.put(FIELD_NAME_EXISTS, false);
-                }
+                mdEntryObject.put(FIELD_NAME_EXISTS, entry.dataRowExists());
 
                 mdEntryObject.put(FIELD_NAME_PRIMARYKEY, entry.getPrimaryKey());
                 mdEntryObject.put(FIELD_NAME_REVISION, entry.getRevision());
@@ -220,11 +216,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 entry = c.getMdEntry();
                 mdEntryObject = new JSONObject();
 
-                if (entry.isExists()) {
-                    mdEntryObject.put(FIELD_NAME_EXISTS, true);
-                } else {
-                    mdEntryObject.put(FIELD_NAME_EXISTS, false);
-                }
+                mdEntryObject.put(FIELD_NAME_EXISTS, entry.dataRowExists());
 
                 mdEntryObject.put(FIELD_NAME_PRIMARYKEY, entry.getPrimaryKey());
                 mdEntryObject.put(FIELD_NAME_REVISION, entry.getRevision());

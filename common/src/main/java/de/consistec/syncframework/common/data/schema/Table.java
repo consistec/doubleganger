@@ -39,7 +39,7 @@ public class Table {
     //<editor-fold defaultstate="expanded" desc=" Class accessors " >
     /**
      *
-     * @return table name
+     * @return Table name
      */
     public String getName() {
         return name;
@@ -47,7 +47,7 @@ public class Table {
 
     /**
      *
-     * @param name Tabe name.
+     * @param name Table name.
      */
     public void setName(String name) {
         this.name = name;
@@ -63,8 +63,8 @@ public class Table {
     }
 
     /**
-     * Adds a columns to the table.
-     * <i>column</i> can't be null.
+     * Adds columns to the table.
+     * <i>columns</i> can't be null.
      *
      * @param columns Table's columns.
      */
@@ -77,7 +77,7 @@ public class Table {
 
     /**
      * Removes columns from the table.
-     * <i>constraint</i> can not be null.
+     * <i>columns</i> can not be null.
      *
      * @param columns Table's columns.
      */
@@ -86,7 +86,21 @@ public class Table {
     }
 
     /**
-     * Returns a copy of original constraint set, so changes to this copy does not affect original set.
+     * Gets the name of the table's primary key column.
+     *
+     * @return columnName the name of the table's PK column, or an empty string if there is none.
+     */
+    public String getPkColumnName() {
+        for (Constraint constraint : this.constraints) {
+            if (ConstraintType.PRIMARY_KEY.equals(constraint.getType())) {
+                return constraint.getColumn();
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Returns a copy of original constraint set, so changes to this copy won't affect original set.
      *
      * @return Defensive copy of constraints set.
      */
@@ -95,8 +109,8 @@ public class Table {
     }
 
     /**
-     * Adds a constraints to the table.
-     * <i>constraint</i> can not be null.
+     * Adds constraints to the table.
+     * <i>constraints</i> can not be null.
      *
      * @param constraints Table's constraints
      */

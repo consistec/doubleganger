@@ -42,7 +42,7 @@ public class DefaultConflictStrategy implements IConflictStrategy {
         DatabaseAdapterException {
         int remotePK = ((Integer) data.getRemoteEntry().getPrimaryKey()).intValue();
         int localRevision = data.getLocalEntry().getRevision();
-        boolean localMod = data.getLocalEntry().isExists();
+        boolean localMod = data.getLocalEntry().dataRowExists();
         String localMdv = data.getLocalEntry().getMdv();
         String remoteTableName = data.getRemoteEntry().getTableName();
         int remoteRevision = data.getRemoteEntry().getRevision();
@@ -74,7 +74,7 @@ public class DefaultConflictStrategy implements IConflictStrategy {
 
         int remotePK = ((Integer) data.getRemoteEntry().getPrimaryKey()).intValue();
         int localRevision = data.getLocalEntry().getRevision();
-        boolean localMod = data.getLocalEntry().isExists();
+        boolean localMod = data.getLocalEntry().dataRowExists();
         String remoteTableName = data.getRemoteEntry().getTableName();
         int remoteRevision = data.getRemoteEntry().getRevision();
 

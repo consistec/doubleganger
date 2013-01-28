@@ -68,14 +68,13 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     //<editor-fold defaultstate="expanded" desc=" Class fields" >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerSyncProvider.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
+    private static final int NUMBER_OF_SYNC_RETRIES = 3;
 
     // database adapter only for test classes
     private IDatabaseAdapter dbAdapter;
 
     //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
-
     /**
      * Creates provider with its own database connection.
      *
@@ -113,7 +112,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
-
     /**
      * Creates database adapter object (no autocommit).
      *
@@ -159,7 +157,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 if (!clientSyncStrategy.equals(serverSyncStrategy)) {
                     throw new SyncException(
                         MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
-                            serverSyncStrategy));
+                        serverSyncStrategy));
                 }
 
                 createMDTableIfNotExists(clientTable);
@@ -171,18 +169,18 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
     private void createMDTableIfNotExists(String clientTable) throws SyncException, DatabaseAdapterException {
 
-        IDatabaseAdapter adapter = null;
         try {
-            boolean mdTableExists = false;
-
-            adapter = prepareDbAdapter();
+            IDatabaseAdapter adapter = prepareDbAdapter();
 
             // prepareDbAdapter sets autocommit to false but here we need it set to true
             adapter.getConnection().setAutoCommit(true);
 
             String mdTable = clientTable + CONF.getMdTableSuffix();
 
-            int retries = 3;
+            // in case of multiple clients trying to synchronize, we make sure
+            // the schema is not created multiple times
+            int retries = NUMBER_OF_SYNC_RETRIES;
+
             while (!adapter.existsMDTable(mdTable)) {
                 try {
                     LOGGER.warn(Warnings.COMMON_RECREATING_SERVER_META_TABLES, mdTable);
@@ -226,9 +224,8 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             ServerHashProcessor hashProcessor = new ServerHashProcessor(adapter);
             validateChangeList(clientData.getChanges());
             tableSynchronizer.synchronizeServerTables();
-            int result = hashProcessor.applyChangesFromClientOnServer(clientData.getChanges(),
-                clientData.getRevision());
-//            adapter.getConnection().commit();
+
+            int result = hashProcessor.applyChangesFromClientOnServer(clientData.getChanges(), clientData.getRevision());
             adapter.commit();
             LOGGER.info(Infos.COMMON_SENDING_NEW_REVISION_TO_CLIENT, result);
 
@@ -298,7 +295,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 }
                 try {
                     if (!tableColumnMappingPositive.containsKey(tableName)) {
-                        tableColumnMappingPositive.put(tableName, newHashSet(adapter.getColumns(tableName)));
+                        tableColumnMappingPositive.put(tableName, newHashSet(adapter.getColumnNamesFromTable(tableName)));
                     }
                 } catch (DatabaseAdapterException e) {
                     throw new SyncException(read(Errors.DATA_CANT_LOAD_COLUMNS_FOR_TABLE, tableName), e);
@@ -372,6 +369,5 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             closeConnection(adapter);
         }
     }
-
     //</editor-fold>
 }

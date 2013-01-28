@@ -62,7 +62,7 @@ public class ConfigTest extends TestBase {
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_DB_ADAPTER").get(null));
             String proxyProviderPrefix = String.valueOf(
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_PROXY_PROVIDER").get(
-                    null));
+                null));
 
             String conflictActionPrefix = String.valueOf(Whitebox.getField(ConfigConstants.class,
                 "OPTIONS_COMMON_CONFLICT_ACTION").get(null));
@@ -90,7 +90,7 @@ public class ConfigTest extends TestBase {
 
             String serverSyncProxyPrefix = String.valueOf(
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_SERV_PROXY").get(
-                    null));
+                null));
 
             String[] adapterOptionsNames = {"option1", "option2", "option3"};
             String[] adapterOptionsValues = {"value1", "value2", "value3"};
@@ -291,7 +291,7 @@ public class ConfigTest extends TestBase {
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_DB_ADAPTER").get(null));
             String proxyProviderPrefix = String.valueOf(
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_PROXY_PROVIDER").get(
-                    null));
+                null));
 
             String conflictActionPrefix = String.valueOf(Whitebox.getField(ConfigConstants.class,
                 "OPTIONS_COMMON_CONFLICT_ACTION").get(null));
@@ -319,7 +319,7 @@ public class ConfigTest extends TestBase {
 
             String serverSyncProxyPrefix = String.valueOf(
                 Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_SERV_PROXY").get(
-                    null));
+                null));
 
             String[] adapterOptionsNames = {"option1", "option2", "option3"};
             String[] adapterOptionsValues = {"value1", "value2", "value3"};

@@ -5,8 +5,6 @@ import static org.junit.Assert.assertEquals;
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
 import de.consistec.syncframework.common.exception.SerializationException;
 
-import java.io.InputStream;
-import java.util.Scanner;
 import org.junit.Test;
 
 /**
@@ -22,14 +20,14 @@ public class ChangeLogToSQLConverterTest extends TestBase {
     @Test
     public void testDeleteFromXml() throws SerializationException {
         ISQLConverter converter = new ChangeLogToSQLConverter();
-        String sql = converter.fromChangelog(getStringFromXMLFile("category6_a_delete.xml"));
+        String sql = converter.fromChangelog(getStringFromFile("category6_a_delete.xml"));
         assertEquals("delete from categories where categoryid=6;\n", sql);
     }
 
     @Test
     public void testUpdateFromXml() throws SerializationException {
         ISQLConverter converter = new ChangeLogToSQLConverter();
-        String sql = converter.fromChangelog(getStringFromXMLFile("category6_b_update.xml"));
+        String sql = converter.fromChangelog(getStringFromFile("category6_b_update.xml"));
         assertEquals(
             "update categories SET categoryid=6,categoryname='Cat6b',description='uhhhhhhh 6b' where categoryid=6;\n",
             sql);
@@ -38,7 +36,7 @@ public class ChangeLogToSQLConverterTest extends TestBase {
     @Test
     public void testInsertFromXml() throws SerializationException {
         ISQLConverter converter = new ChangeLogToSQLConverter();
-        String sql = converter.fromChangelog(getStringFromXMLFile("category7_a_insert.xml"));
+        String sql = converter.fromChangelog(getStringFromFile("category7_a_insert.xml"));
         assertEquals("insert into categories (categoryid,categoryname,description) VALUES (7,'Cat7a','uhhhhhhh 7a');\n",
             sql);
     }
@@ -63,18 +61,8 @@ public class ChangeLogToSQLConverterTest extends TestBase {
             + "insert into categories_md (rev,mdv,pk,f) VALUES (1,'A52D87B86798B317A7C1C01837290D2F',5,0);\n"
             + "insert into categories_md (rev,mdv,pk,f) VALUES (1,'0D9F6F55D5BF5190D2B8C1105AE21325',6,0);\n";
         ISQLConverter converter = new ChangeLogToSQLConverter();
-        String sql = converter.fromChangelog(getStringFromXMLFile("client_data.xml"));
+        String sql = converter.fromChangelog(getStringFromFile("client_data_log_converter_test.xml"));
         assertEquals(expected, sql);
     }
 
-    /**
-     * Returns content of the xml file as simple string.
-     *
-     * @param filename XML file
-     * @return Content of the file
-     */
-    private static String getStringFromXMLFile(String filename) {
-        InputStream is = TestUtil.class.getClassLoader().getResourceAsStream(filename);
-        return new Scanner(is, "UTF-8").useDelimiter("\\A").next();
-    }
 }

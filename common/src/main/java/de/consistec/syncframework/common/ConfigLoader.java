@@ -19,22 +19,6 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class ConfigLoader {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     /**
      * Default configuration file.<br/>
      * Value: {@value}
@@ -88,12 +72,6 @@ public class ConfigLoader {
         if (props.isEmpty()) {
             LOGGER.info(Infos.CONFIG_CONFIGURATION_FILE_IS_EMPTY);
         } else {
-
-//            LOGGER.debug("Printing config file content ( option = value ): ");
-//            for (String key : props.stringPropertyNames()) {
-//                LOGGER.debug("\"{}\" = \"{}\"", key, props.getProperty(key));
-//            }
-
             LOGGER.info(Infos.CONFIG_CONFIG_LOADED);
         }
         return props;

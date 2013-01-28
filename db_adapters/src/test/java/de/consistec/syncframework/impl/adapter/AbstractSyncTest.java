@@ -10,27 +10,39 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncContext.LocalContext;
+import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
+import de.consistec.syncframework.common.Tuple;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
+import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
+import de.consistec.syncframework.common.client.ClientChangesEnumerator;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
+import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.ResultSetHelper;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.server.ServerChangesEnumerator;
+import de.consistec.syncframework.impl.TestDatabase;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import javax.sql.DataSource;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +63,18 @@ import org.slf4j.LoggerFactory;
  * @date 19.04.12 15:47
  * @since 0.0.1-SNAPSHOT
  */
-public abstract class AbstractSyncTest implements ISyncIntegrationTest {
+@RunWith(Parameterized.class)
+public abstract class AbstractSyncTest {
 
+    @Parameterized.Parameters(name = "{index}: {0}")
+    public static Collection<Object[]> AllDatabases() {
+
+        return Arrays.asList(new Object[][]{
+                {new TestDatabase(GenericDatabaseAdapter.MYSQL_CONFIG_FILE, DumpDataSource.SupportedDatabases.MYSQL)},
+                {new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL)},
+                {new TestDatabase(GenericDatabaseAdapter.SQLITE_CONFIG_FILE, DumpDataSource.SupportedDatabases.SQLITE)}
+            });
+    }
     /**
      * Test watcher, with methods invoked before and after of each tests.
      * This "watcher" prints test name populateWithTestData and after each test.
@@ -72,58 +94,31 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         }
     };
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSyncTest.class.getCanonicalName());
-    /**
-     * Framework configuration singleton.
-     */
-    protected static final Config CONF = Config.getInstance();
-    /**
-     * Jdbc connection for client database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection clientConnection;
-    /**
-     * Jdbc connection for server database.
-     * Use this connection to prepare the data for tests.
-     */
-    protected static Connection serverConnection;
-    private final transient ExecuteStatementHelper helper;
+    protected static Config CONF;
+    private static final String[] tableNames = new String[]{"categories_md", "categories", "items", "items_md"};
+    private transient ExecuteStatementHelper helper;
+    protected TestDatabase db;
 
-    /**
-     * This constructor initialize log4j framework.
-     */
-    public AbstractSyncTest() {
+    public AbstractSyncTest(TestDatabase db) {
+        this.db = db;
+
         // initialize logging framework
         DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
-        helper = new ExecuteStatementHelper(getClientConnection(), getServerConnection());
+    }
+
+    @Before
+    public void setUp() throws IOException, SQLException {
+        db.init();
+        CONF = Config.getInstance();
+        helper = new ExecuteStatementHelper(db.getClientConnection(), db.getServerConnection());
     }
 
     /**
      * Closes server and client connection.
-     *
-     * @throws SQLException
      */
-    @AfterClass
-    public static void tearDownClass() throws SQLException {
-
-        if (clientConnection != null) {
-            try {
-                clientConnection.close();
-                clientConnection = null;
-            } catch (SQLException e) {
-                LOGGER.error("could not close client connection!", e);
-                throw e;
-            }
-        }
-
-        if (serverConnection != null) {
-            try {
-                serverConnection.close();
-                serverConnection = null;
-            } catch (SQLException e) {
-                LOGGER.warn("could not close server connection!", e);
-                throw e;
-            }
-        }
+    @After
+    public void tearDown() throws SQLException {
+        db.closeConnections();
     }
 
     /**
@@ -153,34 +148,20 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         }
     }
 
-    /**
-     * @param resourceName
-     * @return
-     */
-    @Override
     public InputStream getResourceAsStream(String resourceName) {
         return ClassLoader.getSystemResourceAsStream(resourceName);
     }
 
-    /**
-     * @throws SyncException
-     * @throws SQLException
-     * @throws ContextException
-     */
-    @Override
     public void resetClientAndServerDatabase() throws SyncException, SQLException, ContextException {
         Statement stmt = null;
-        String[] tables = new String[]{"categories_md", "categories", "items", "items_md"};
 
         try {
             LOGGER.info("Dropping tables...");
-
-            helper.createAndExecuteDropBatch(SERVER, tables);
-            helper.createAndExecuteDropBatch(ConnectionType.CLIENT, tables);
+            db.dropTablesOnClient(tableNames);
+            db.dropTablesOnServer(tableNames);
 
             LOGGER.info("Creating tables...");
-
-            helper.createAndExecuteBatch(SERVER, getCreateTableQueries());
+            db.executeQueriesOnServer(getCreateTableQueries());
 
             syncWithoutCompare(SERVER_WINS);
 
@@ -196,13 +177,12 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
      */
     protected String[] getCreateTableQueries() {
         return new String[]{
-            "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" VARCHAR (30000),\"description\" VARCHAR (30000));",
-            "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" VARCHAR (30000),\"description\" VARCHAR (30000));"};
+                "create table categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (30000),description VARCHAR (30000));",
+                "create table items (itemid INTEGER NOT NULL PRIMARY KEY ,itemname VARCHAR (30000),description VARCHAR (30000));"};
     }
 
     protected void initAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                               ConnectionType dbToUpdate, ConnectionType type, ConnectionType type2
-    ) throws SyncException,
+        ConnectionType dbToUpdate, ConnectionType type, ConnectionType type2) throws SyncException,
         SQLException, ContextException {
         InputStream stream = null;
         try {
@@ -223,8 +203,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
     }
 
     protected void initAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                               ConnectionType dbToUpdate, ConnectionType type
-    ) throws SyncException,
+        ConnectionType dbToUpdate, ConnectionType type) throws SyncException,
         SQLException, ContextException {
         InputStream stream = null;
         try {
@@ -245,8 +224,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
     }
 
     protected void initClientAndServerWithSync(String resource1, String resource2, SyncDirection syncDirection,
-                                               ConflictStrategy strategy, ConnectionType type
-    ) throws
+        ConflictStrategy strategy, ConnectionType type) throws
         SyncException, SQLException, ContextException {
         InputStream stream = null;
         try {
@@ -290,8 +268,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
     }
 
     protected void initClientAndServerAndSync(String resource, SyncDirection syncDirection, ConflictStrategy strategy,
-                                              ConnectionType type
-    ) throws SyncException,
+        ConnectionType type) throws SyncException,
         SQLException, ContextException {
         initClientAndServerWithSync(resource, resource, syncDirection, strategy, type);
     }
@@ -308,7 +285,6 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
     }
 
     // was already ignored
-
     /**
      * Sync.
      *
@@ -342,8 +318,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
      * @throws ContextException
      */
     public void sync(final SyncDirection direction, final ConflictStrategy strategy, final ConnectionType type,
-                     final ConnectionType type2
-    ) throws
+        final ConnectionType type2) throws
         SyncException, SQLException,
         ContextException {
 
@@ -367,7 +342,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         TableSyncStrategies strategies = new TableSyncStrategies();
         strategies.addSyncStrategyForTable("categories", tableSyncStrategy);
 
-        final LocalContext localCtx = SyncContext.local(getServerDataSource(), getClientDataSource(), strategies);
+        final LocalContext localCtx = SyncContext.local(db.getServerDs(), db.getClientDs(), strategies);
 
         if (strategy == FIRE_EVENT) {
             localCtx.setConflictListener(new IConflictListener() {
@@ -392,7 +367,7 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
     public void syncWithoutCompare(final ConflictStrategy strategy) throws SyncException, SQLException,
         ContextException {
 
-        final LocalContext localCtx = SyncContext.local(getServerDataSource(), getClientDataSource());
+        final LocalContext localCtx = SyncContext.local(db.getServerDs(), db.getClientDs());
 
         if (strategy == FIRE_EVENT) {
             localCtx.setConflictListener(new IConflictListener() {
@@ -428,7 +403,6 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
 //
 //        localCtx.synchronize();
 //    }
-
     private Map<String, String> initTestTableStatementMap() {
         Map<String, String> statementsToExecute = newHashMap();
         statementsToExecute.put("categories", "select * from categories order by categoryid asc");
@@ -465,13 +439,57 @@ public abstract class AbstractSyncTest implements ISyncIntegrationTest {
         helper.executeStatementAndCompareResults(statementsToExecute, CONF, type, type2);
     }
 
-    @Override
-    public DataSource getClientDataSource() {
-        return null;
+    public TableSyncStrategies setStrategyForTable(String tableName, ConflictStrategy strategy, SyncDirection direction) {
+        TableSyncStrategies strategies = new TableSyncStrategies();
+        TableSyncStrategy tablsSyncStrategy = new TableSyncStrategy(direction, strategy);
+        strategies.addSyncStrategyForTable(tableName, tablsSyncStrategy);
+        return strategies;
     }
 
-    @Override
-    public DataSource getServerDataSource() {
-        return null;
+    public TableSyncStrategies setGlobalStrategy(ConflictStrategy conflictStrategy, SyncDirection syncDirection) {
+        Config configInstance = Config.getInstance();
+        configInstance.setGlobalConflictStrategy(conflictStrategy);
+        configInstance.setGlobalSyncDirection(syncDirection);
+        return new TableSyncStrategies();
+    }
+
+    public SyncData getClientChanges(TableSyncStrategies strategies)
+        throws SyncException, ContextException, SQLException, DatabaseAdapterException {
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
+
+            ClientChangesEnumerator clientChangesEnumerator = new ClientChangesEnumerator(adapter, strategies);
+
+            return clientChangesEnumerator.getChanges();
+
+        } finally {
+            if (adapter != null) {
+                if (adapter.getConnection() != null) {
+                    adapter.getConnection().close();
+                }
+            }
+        }
+    }
+
+    public SyncData getServerChanges(TableSyncStrategies strategies)
+        throws SyncException, ContextException, SQLException, DatabaseAdapterException {
+        IDatabaseAdapter adapter = null;
+
+        try {
+            adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+
+            ServerChangesEnumerator serverChangesEnumerator = new ServerChangesEnumerator(adapter, strategies);
+
+            return serverChangesEnumerator.getChanges(1);
+
+        } finally {
+            if (adapter != null) {
+                if (adapter.getConnection() != null) {
+                    adapter.getConnection().close();
+                }
+            }
+        }
     }
 }

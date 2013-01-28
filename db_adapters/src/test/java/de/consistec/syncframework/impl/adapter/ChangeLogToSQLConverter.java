@@ -2,6 +2,8 @@ package de.consistec.syncframework.impl.adapter;
 
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
+import de.consistec.syncframework.common.data.schema.ISQLConverter;
+import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.SerializationException;
 import de.consistec.syncframework.common.i18n.Errors;
 
@@ -23,28 +25,29 @@ import org.xml.sax.helpers.DefaultHandler;
  * @company Consistec Engineering and Consulting GmbH
  * @date 04.12.12 11:04
  */
-public class ChangeLogToSQLConverter extends ChangeLogToSQLAdapter {
-
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
+public class ChangeLogToSQLConverter implements ISQLConverter {
 
     private static final char QUOTE = ' ';
     private static final String LITERALS_COMMA = ",";
     private SQLChangelogConverterHandler handler;
 
+    /**
+     * @param schema Schema to convert.
+     * @return empty String because it is not necessary to implement
+     * @throws SchemaConverterException if conversion fails.
+     * @see de.consistec.syncframework.common.data.schema.ISQLConverter.toSQL(final de.consistec.syncframework.common.data.schema.Schema schema)
+     */
+    @Override
+    public String toSQL(Object objectToConvert) throws SchemaConverterException {
+        return "";
+    }
+
+    /**
+     * @param xml Change log.
+     * @return SQL query for parsed xml document
+     * @throws SerializationException if parsing of xml document fails.
+     * @see de.consistec.syncframework.common.data.schema.ISQLConverter.fromChangelog(final String xml)}
+     */
     @Override
     public String fromChangelog(String xml) throws SerializationException {
         final StringBuilder result = new StringBuilder();
