@@ -112,7 +112,11 @@ public class ContextListener implements ServletContextListener {
     }
 
     private File readFile(String fileName) {
-        return new File(ctx.getRealPath(fileName));
+        if (fileName.contains("WEB-INF")) {
+            return new File(ctx.getRealPath(fileName));
+        }
+
+        return new File(ctx.getRealPath("/WEB-INF/" + fileName));
     }
 
     private void loadSyncFrameworkConfig() throws IOException {
