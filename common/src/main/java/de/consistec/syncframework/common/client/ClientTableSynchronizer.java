@@ -117,6 +117,7 @@ public class ClientTableSynchronizer {
                                             adapter.updateMdRow(result.getInt("rev"), FLAG_MODIFIED, primaryKey, hash,
                                                 table);
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
+                                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);

@@ -48,13 +48,7 @@ public final class DBMapperUtil {
             } else if (PK_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 tmpEntry.setPrimaryKey(resultSet.getObject(i));
             } else if (MDV_COLUMN_NAME.equalsIgnoreCase(columnName)) {
-                String mdv = resultSet.getString(i);
-                if (StringUtil.isNullOrEmpty(mdv)) {
-                    tmpEntry.setDataRowDeleted();
-                } else {
-                    tmpEntry.setDataRowExists(true);
-                }
-                tmpEntry.setMdv(mdv);
+                tmpEntry.setMdv(resultSet.getString(i));
             } else if (FLAG_COLUMN_NAME.equalsIgnoreCase(columnName)) {
                 // do nothing, we don't want to sync the f flag
                 continue;
@@ -83,6 +77,21 @@ public final class DBMapperUtil {
     }
 
     /**
+     * Checks if at least one value in the data row is not null.
+     *
+     * @param dataRow the data row
+     * @return true if it still exists
+     */
+    public static boolean dataRowExists(Map<String, Object> dataRow) {
+        for (Object value : dataRow.values()) {
+            if (value != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Checks if the current row is already marked as deleted, i.e the hash value in the metadata is null or empty.
      * <p/>
      * @param deletedRows result set positioned on the current row
@@ -90,7 +99,7 @@ public final class DBMapperUtil {
      * @throws SQLException
      */
     public static boolean rowIsAlreadyDeleted(ResultSet deletedRows) throws SQLException {
-        return StringUtil.isNullOrEmpty(deletedRows.getString(MDV_COLUMN_NAME));
+        return deletedRows.getString(MDV_COLUMN_NAME) == null;
     }
 
     /**

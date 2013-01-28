@@ -88,11 +88,12 @@ public class ServerChangesEnumerator {
 
                             Change tmpChange = new Change();
 
-                            MDEntry tmpEntry = DBMapperUtil.getMetadata(resultSet, syncTable);
-                            tmpChange.setMdEntry(tmpEntry);
-
                             Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
                             tmpChange.setRowData(rowData);
+
+                            MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, syncTable);
+                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
+                            tmpChange.setMdEntry(mdEntry);
 
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
                                 syncTable).getDirection();

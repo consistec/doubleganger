@@ -87,8 +87,9 @@ public class ClientChangesEnumerator {
                             SyncDirection syncDirection = syncStrategy.getDirection();
 
                             if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
-                                MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
                                 Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
+                                MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
+                                mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
 
                                 Change change = new Change(mdEntry, rowData);
                                 allChanges.add(change);
