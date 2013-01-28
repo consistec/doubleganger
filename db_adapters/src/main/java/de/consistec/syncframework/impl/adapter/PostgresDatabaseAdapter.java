@@ -151,7 +151,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public void createMDTable(final String tableName) throws UniqueConstraintException, DatabaseAdapterException {
+    public void createMDTable(final String tableName) throws DatabaseAdapterException {
         try {
             if (!existsMDTable(tableName)) {
                 String mdTableName = tableName + CONF.getMdTableSuffix();

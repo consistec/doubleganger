@@ -19,7 +19,6 @@ import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
-import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.util.CollectionsUtil;
 import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.common.util.StringUtil;

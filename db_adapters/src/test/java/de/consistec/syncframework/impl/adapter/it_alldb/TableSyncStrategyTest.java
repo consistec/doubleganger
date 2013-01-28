@@ -46,7 +46,7 @@ import org.powermock.reflect.Whitebox;
  * @date 31.10.12 09:56
  * @since 0.0.1-SNAPSHOT
  */
-public class TableSyncStrategyTest extends AbstractSyncTest {
+public class TableSyncStrategyTest {
 
     private static final String TEST_STRING = "testString";
     private static final String TEST_TABLE_NAME = "testTablename";
@@ -63,14 +63,9 @@ public class TableSyncStrategyTest extends AbstractSyncTest {
     @Mock
     private IDatabaseAdapter dbAdapter;
 
-    public TableSyncStrategyTest(TestDatabase db) {
-        super(db);
-    }
-
     @Before
     public void before() throws IOException, SyncException, SQLException, ContextException {
         MockitoAnnotations.initMocks(this);
-        resetClientAndServerDatabase();
     }
 
     @Test
