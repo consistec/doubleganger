@@ -24,7 +24,7 @@ public class EmbeddedSyncServiceServer {
     private static ServletTester tester;
     private static String baseUrl;
     private boolean debugEnabled;
-    private DebugContextListener listener;
+    private ContextListenerMock listener;
 
     public void init() throws Exception {
         tester = new ServletTester();
@@ -34,7 +34,7 @@ public class EmbeddedSyncServiceServer {
         System.out.println("+++++++++++++++++++++++");
         System.out.println(tester.getResourceBase());
         System.out.println("+++++++++++++++++++++++");
-        listener = new DebugContextListener(CONFIG_FILE);
+        listener = new ContextListenerMock(CONFIG_FILE);
 //        tester.setAttribute("debug.listener", listener);
         tester.addEventListener(listener);
         tester.addServlet(SyncServiceServlet.class, "/SyncServer/SyncService");

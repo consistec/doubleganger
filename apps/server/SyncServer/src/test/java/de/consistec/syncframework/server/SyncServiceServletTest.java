@@ -87,7 +87,7 @@ public class SyncServiceServletTest {
         rowDataOne.put(TEST_COLUMN2, "ääüüöö");
         expectedChangeList.add(new Change(entryOne, rowDataOne));
 
-        server.addRequest(SyncAction.GET_CHANGES, new TestableGetChangesCommand(expectedSyncData));
+        server.addRequest(SyncAction.GET_CHANGES, new GetChangesCommandMock(expectedSyncData));
 
         SyncData retrievedSyncData = proxy.getChanges(0);
 

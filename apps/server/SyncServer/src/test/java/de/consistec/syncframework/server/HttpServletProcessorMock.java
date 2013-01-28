@@ -11,15 +11,15 @@ import de.consistec.syncframework.impl.proxy.http_servlet.SyncAction;
  * @company Consistec Engineering and Consulting GmbH
  * @date 25.01.13 09:59
  */
-public class TestableHttpServletProcessor extends HttpServletProcessor {
+public class HttpServletProcessorMock extends HttpServletProcessor {
 
 
-    public TestableHttpServletProcessor(final boolean isDebugEnabled) throws ContextException {
+    public HttpServletProcessorMock(final boolean isDebugEnabled) throws ContextException {
         super(isDebugEnabled);
     }
 
-    public TestableHttpServletProcessor(final TableSyncStrategies tableSyncStrategies,
-                                        final boolean isDebugEnabled
+    public HttpServletProcessorMock(final TableSyncStrategies tableSyncStrategies,
+                                    final boolean isDebugEnabled
     ) throws ContextException {
         super(tableSyncStrategies, isDebugEnabled);
     }

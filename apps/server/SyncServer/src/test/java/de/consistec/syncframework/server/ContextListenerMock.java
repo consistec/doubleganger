@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @company Consistec Engineering and Consulting GmbH
  * @date 25.01.13 09:56
  */
-public class DebugContextListener implements ServletContextListener {
+public class ContextListenerMock implements ServletContextListener {
 
     public static final String SERVER_OPTION_POOLING = "pooling";
     public static final String SERVER_OPTION_DEBUG = "debug";
@@ -40,13 +40,13 @@ public class DebugContextListener implements ServletContextListener {
     private boolean isDebugEnabled;
     private final String configFileName;
     private Map<SyncAction, RequestCommand> mockedRequests = newHashMap();
-    private TestableHttpServletProcessor processor;
+    private HttpServletProcessorMock processor;
 
-    public DebugContextListener(String configFileName) {
+    public ContextListenerMock(String configFileName) {
         this.configFileName = configFileName;
     }
 
-    public DebugContextListener() {
+    public ContextListenerMock() {
         this.configFileName = "/WEB-INF/" + DEFAULT_FRAMEWORK_CONFIG_FILE;
     }
 
@@ -86,7 +86,7 @@ public class DebugContextListener implements ServletContextListener {
 
     private void prepareHttpProcessor() throws Exception {
 
-        processor = new TestableHttpServletProcessor(isDebugEnabled);
+        processor = new HttpServletProcessorMock(isDebugEnabled);
         ctx.setAttribute(HTTP_PROCESSOR_CTX_ATTR, processor);
     }
 

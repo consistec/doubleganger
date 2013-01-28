@@ -17,15 +17,15 @@ import org.slf4j.cal10n.LocLogger;
  * @company Consistec Engineering and Consulting GmbH
  * @date 25.01.13 10:09
  */
-public class TestableGetChangesCommand implements RequestCommand {
+public class GetChangesCommandMock implements RequestCommand {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(
-        TestableGetChangesCommand.class.getCanonicalName());
+        GetChangesCommandMock.class.getCanonicalName());
 
     private final SyncData expectedSyncData;
 
 
-    public TestableGetChangesCommand(SyncData expectedSyncData) {
+    public GetChangesCommandMock(SyncData expectedSyncData) {
         this.expectedSyncData = expectedSyncData;
     }
 
