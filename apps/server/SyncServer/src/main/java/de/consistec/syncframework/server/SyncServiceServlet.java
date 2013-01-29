@@ -5,10 +5,12 @@ import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdap
 import de.consistec.syncframework.impl.proxy.http_servlet.HttpServletProcessor;
 
 import java.io.IOException;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -43,9 +45,11 @@ public class SyncServiceServlet extends HttpServlet {
         throws ServletException, IOException {
         try {
 
-            MDC.put("session-id", req.getSession().getId());
+            HttpSession session = req.getSession();
+            MDC.put("session-id", session.getId());
 
-            HttpServletProcessor processor = (HttpServletProcessor) req.getSession().getServletContext().getAttribute(
+            ServletContext ctx = session.getServletContext();
+            HttpServletProcessor processor = (HttpServletProcessor) ctx.getAttribute(
                 ContextListener.HTTP_PROCESSOR_CTX_ATTR);
             processor.execute(req, resp);
 
