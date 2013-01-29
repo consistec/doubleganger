@@ -18,7 +18,6 @@ import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdap
 import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -28,7 +27,6 @@ import org.junit.Test;
  * @company Consistec Engineering and Consulting GmbH
  * @date 13.12.12 12:16
  */
-@Ignore
 public class ClientChangesEnumeratorTest extends EnumeratorTest {
 
     private static String[] serverInsertQueries = new String[]{
