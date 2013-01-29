@@ -6,11 +6,7 @@ import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
-import de.consistec.syncframework.common.data.schema.Column;
-import de.consistec.syncframework.common.data.schema.Constraint;
-import de.consistec.syncframework.common.data.schema.ConstraintType;
 import de.consistec.syncframework.common.data.schema.Schema;
-import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
@@ -24,7 +20,6 @@ import java.sql.BatchUpdateException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
@@ -153,43 +148,24 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     @Override
     public void createMDTable(final String tableName) throws DatabaseAdapterException {
         try {
-            if (!existsMDTable(tableName)) {
-                String mdTableName = tableName + CONF.getMdTableSuffix();
+            super.createMDTable(tableName);
 
-                LOGGER.debug("creating new table: {}", mdTableName);
-
-                Table mdTable = new Table(mdTableName);
-                Column pkColumn = getPrimaryKeyColumn(tableName);
-                mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-                mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-                mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
-                mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
-                mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
-
-                try {
-                    String sqlTableStatement = getTableConverter().toSQL(mdTable);
-                    executeSqlQuery(sqlTableStatement);
-                } catch (SchemaConverterException e) {
-                    throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
-                }
-
-                if (CONF.isSqlTriggerActivated()) {
-                    getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
-                        @Override
-                        public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
-                            while (result.next()) {
-                                final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
-                                insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
-                            }
+            if (CONF.isSqlTriggerActivated()) {
+                getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
+                    @Override
+                    public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
+                        while (result.next()) {
+                            final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
+                            insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
                         }
-                    });
+                    }
+                });
 
-                    String createLanguageQuery = generatePlpgsqlLanguageQuery();
-                    executeSqlQuery(createLanguageQuery);
+                String createLanguageQuery = generatePlpgsqlLanguageQuery();
+                executeSqlQuery(createLanguageQuery);
 
-                    String triggerQuery = generateSqlTriggersForTable(tableName);
-                    executeSqlQuery(triggerQuery);
-                }
+                String triggerQuery = generateSqlTriggersForTable(tableName);
+                executeSqlQuery(triggerQuery);
             }
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
@@ -199,9 +175,9 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
                 throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
                     sqlEx); //NOSONAR
             } else {
-                handleTransactionAborted(ex);
-            }
+            handleTransactionAborted(ex);
         }
+    }
     }
 
     private String generatePlpgsqlLanguageQuery() {
