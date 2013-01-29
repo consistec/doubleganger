@@ -206,6 +206,8 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             }
         } catch (SQLException e) {
             throw new DatabaseAdapterException(e);
+        } finally {
+            closeConnection(adapter);
         }
     }
 

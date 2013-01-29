@@ -10,11 +10,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.sql.DataSource;
+import org.apache.tomcat.dbcp.dbcp.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 //import javax.servlet.annotation.WebListener;
@@ -44,13 +46,19 @@ public class ContextListener implements ServletContextListener {
     private boolean isPooling;
     private boolean isDebugEnabled;
     private final String configFileName;
+    private InitialContext initCxt;
 
     public ContextListener(String configFileName) {
         this.configFileName = configFileName;
+        try {
+            initCxt = new InitialContext();
+        } catch (NamingException e) {
+            throw new RuntimeException("Could not create initial context", e);
+        }
     }
 
     public ContextListener() {
-        this.configFileName = "/WEB-INF/" + DEFAULT_FRAMEWORK_CONFIG_FILE;
+        this("/WEB-INF/" + DEFAULT_FRAMEWORK_CONFIG_FILE);
     }
 
     @Override
@@ -88,11 +96,12 @@ public class ContextListener implements ServletContextListener {
 
         if (isPooling) {
 
-            InitialContext initCxt = new InitialContext();
+            initCxt = new InitialContext();
             if (initCxt == null) {
                 throw new Exception("Uh oh -- no context!");
             }
             DataSource ds = (DataSource) initCxt.lookup("java:/comp/env/jdbc/sync");
+
             if (ds == null) {
                 throw new ServletException("Data source not found!");
             } else {
@@ -173,6 +182,20 @@ public class ContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(final ServletContextEvent servletContextEvent) {
+
+        try {
+                BasicDataSource ds = (BasicDataSource) initCxt.lookup("java:/comp/env/jdbc/sync");
+            try {
+                if (ds != null) {
+                    ds.close();
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Couldn't close connection");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Couldn't get datasource to close connections", e);
+        }
+
         LOGGER.info("ContextListener finished ...");
     }
 }
