@@ -541,7 +541,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                     Column newColumn = new Column(primaryKeyColumnName, columns.getInt(DATA_TYPE),
                         columns.getInt(COLUMN_SIZE),
                         columns.getInt(DECIMAL_DIGITS), columns.getBoolean(NULLABLE));
-                    LOGGER.debug("primary key column is {}", newColumn);
+                    LOGGER.debug("primary key column for {} is {}", table, newColumn);
                     return newColumn;
                 }
             }
@@ -983,7 +983,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void createMDSchema() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
-            createMDTable(tableName);
+            if (!existsMDTable(tableName)) {
+                createMDTable(tableName);
+            }
         }
     }
 
@@ -1012,7 +1014,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         List<String> tableNames = getTableNamesFromDatabase();
-        return tableNames.contains(tableName) && tableNames.contains(mdTableName);
+        return tableNames.contains(mdTableName);
     }
 
     /**
