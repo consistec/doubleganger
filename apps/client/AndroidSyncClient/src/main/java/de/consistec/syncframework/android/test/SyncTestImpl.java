@@ -1,9 +1,7 @@
 package de.consistec.syncframework.android.test;
 
-import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.adapter.DefaultSyncTest;
 import de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter;
 
 import android.content.res.AssetManager;
