@@ -1,5 +1,6 @@
 package de.consistec.syncframework.common.client;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 
@@ -59,7 +60,6 @@ public class ClientHashProcessor {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Instantiates a new client hash processor.
      *
@@ -69,8 +69,7 @@ public class ClientHashProcessor {
      * {@link de.consistec.syncframework.common.conflict.ConflictStrategy ConflictStrategy} is FIRE_EVENT.
      */
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
-                               IConflictListener conflictListener
-    ) {
+        IConflictListener conflictListener) {
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
@@ -79,7 +78,6 @@ public class ClientHashProcessor {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Resolves the conflicts between the client changes and the server changes.
      *
@@ -169,8 +167,8 @@ public class ClientHashProcessor {
         final Map<String, Object> remoteRowData = serverChange.getRowData();
 
         // SERVER ADD, MOD OR DEL
-        if (serverChange.getMdEntry().dataRowExists()) {
-            adapter.getRowForPrimaryKey(serverChange.getMdEntry().getPrimaryKey(), remoteEntry.getTableName(),
+        if (remoteEntry.dataRowExists()) {
+            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
                 new DatabaseAdapterCallback<ResultSet>() {
                     @Override
                     public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
@@ -182,31 +180,30 @@ public class ClientHashProcessor {
                         }
                         if (result.next()) {
                             // SERVER MOD
-                            adapter.updateDataRow(serverChange.getRowData(), remoteEntry.getPrimaryKey(),
-                                remoteEntry.getTableName());
-                            adapter.updateMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
+                            adapter.updateDataRow(remoteRowData, remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
+                            adapter.updateMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
                                 hash, remoteEntry.getTableName());
                         } else {
                             // SERVER ADD
                             // on initialization everything is a server add, but deleted items no longer need to be added
                             adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
-                            adapter.insertMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
+                            adapter.insertMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
                                 hash, remoteEntry.getTableName());
                         }
                     }
                 });
         } else {
             // SERVER DEL
-            adapter.getRowForPrimaryKey(serverChange.getMdEntry().getPrimaryKey(), remoteEntry.getTableName(),
+            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
                 new DatabaseAdapterCallback<ResultSet>() {
                     @Override
                     public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
                         if (result.next()) {
                             adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                            adapter.updateMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
+                            adapter.updateMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
                                 null, remoteEntry.getTableName());
                         } else {
-                            adapter.insertMdRow(remoteEntry.getRevision(), 0, remoteEntry.getPrimaryKey(),
+                            adapter.insertMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
                                 null, remoteEntry.getTableName());
                         }
                     }
@@ -219,8 +216,7 @@ public class ClientHashProcessor {
     }
 
     private void resolveConflict(final Change serverChange, final Change clientChange,
-                                 SyncDataHolder dataHolder
-    )
+        SyncDataHolder dataHolder)
         throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
 
         MDEntry remoteEntry = serverChange.getMdEntry();
@@ -295,8 +291,7 @@ public class ClientHashProcessor {
     }
 
     private void resolveConflictsFireEvent(ConflictHandlingData data,
-                                           IConflictStrategy conflictHandlingStrategy
-    )
+        IConflictStrategy conflictHandlingStrategy)
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {

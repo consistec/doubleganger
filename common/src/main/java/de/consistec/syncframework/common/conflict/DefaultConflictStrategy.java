@@ -1,5 +1,8 @@
 package de.consistec.syncframework.common.conflict;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
+
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ConflictHandlingData;
@@ -49,22 +52,22 @@ public class DefaultConflictStrategy implements IConflictStrategy {
 
         if (ConflictType.CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client ADD, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 1, remotePK, localMdv, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_ADD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client ADD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 1, remotePK, localMdv, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client MOD, Server MOD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 1, remotePK, localMdv, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client MOD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 1, remotePK, localMdv, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client DEL, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 1, remotePK, localMdv, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client DEL, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
         }
     }
 
@@ -81,29 +84,29 @@ public class DefaultConflictStrategy implements IConflictStrategy {
         if (ConflictType.CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client ADD, Server ADD", data.getRemoteChange(), localRevision, localMod);
             adapter.updateDataRow(data.getRemoteChange().getRowData(), remotePK, remoteTableName);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, data.getRemoteChange().calculateHash(),
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
                 remoteTableName);
         } else if (ConflictType.CLIENT_ADD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo(" Client ADD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
             adapter.deleteRow(remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client MOD, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, data.getRemoteChange().calculateHash(),
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
                 remoteTableName);
             adapter.updateDataRow(data.getRemoteChange().getRowData(), remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo(" Client MOD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
             adapter.deleteRow(remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client DEL, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, data.getRemoteChange().calculateHash(),
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
                 remoteTableName);
             adapter.insertDataRow(data.getRemoteChange().getRowData(), remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client DEL, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, 0, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
         }
     }
 
@@ -118,23 +121,23 @@ public class DefaultConflictStrategy implements IConflictStrategy {
 
             if (!rowHasData(resolved)) {
                 adapter.deleteRow(data.getRemoteEntry().getPrimaryKey(), data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), 1, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
                     null,
                     data.getRemoteEntry().getTableName());
             } else {
                 adapter.updateDataRow(resolved, data.getRemoteEntry().getPrimaryKey(),
                     data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), 1, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
                     new HashCalculator().getHash(resolved), data.getRemoteEntry().getTableName());
             }
         } else {
             if (rowHasData(resolved)) {
                 adapter.insertDataRow(resolved, data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), 1, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
                     new HashCalculator().getHash(resolved), data.getRemoteEntry().getTableName());
 
             } else {
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), 0, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_PROCESSED, data.getRemoteEntry().getPrimaryKey(),
                     null,
                     data.getRemoteEntry().getTableName());
             }
