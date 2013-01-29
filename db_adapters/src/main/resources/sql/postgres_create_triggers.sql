@@ -24,8 +24,14 @@ CREATE OR REPLACE FUNCTION %table%_update_flag() RETURNS trigger AS $BODY$
             RETURN NEW;
 
         ELSIF (TG_OP = 'DELETE') THEN
+            -- if it's been deleted and never synced, the revision will be NULL
+            -- no one needs to know about it, it sort of never existed - we delete it silently
+            DELETE FROM %table%%_md% WHERE pk = OLD.%pk% AND rev IS NULL;
 
-            UPDATE %table%%_md% SET f = -1 WHERE pk = OLD.%pk%;
+            IF NOT FOUND THEN
+                UPDATE %table%%_md% SET f = -1 WHERE pk = OLD.%pk%;
+            END IF;
+
             RETURN OLD;
 
         END IF;
