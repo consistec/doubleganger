@@ -12,6 +12,8 @@ import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.exception.ServerStatusException;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.i18n.Warnings;
@@ -164,10 +166,12 @@ public class SyncAgent {
             doAfterGetServerChanges();
 
             // transaction phase 1 client
+            clientProvider.beginTransaction();
             SyncData clientData = clientProvider.getChanges();
             SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
             SyncData clientChangesToApply = dataHolder.getClientSyncData();
             int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
+            clientProvider.commit();
             clientChangesToApply.setRevision(currentRevision);
 
             // transaction phase 2 server
@@ -196,6 +200,10 @@ public class SyncAgent {
             } else {
                 throw ex;
             }
+        } catch (DatabaseAdapterInstantiationException e) {
+            throw new SyncException(e);
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
         } finally {
             if (recursionDepth > 0) {
                 recursionDepth--;

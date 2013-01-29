@@ -341,7 +341,11 @@ public enum Errors {
     /**
      * Server Meta Table could not be recreated after x retries.
      */
-    COMMON_CANT_RECREATE_SERVER_META_TABLE_FOR_N_TIMES;
+    COMMON_CANT_RECREATE_SERVER_META_TABLE_FOR_N_TIMES,
+    /**
+     * no database adapter initialized.
+     */
+    DATA_NULLABLE_DATABASEADAPTER;
 
     //</editor-fold>
 }
