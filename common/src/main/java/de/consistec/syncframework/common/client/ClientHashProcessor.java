@@ -215,16 +215,14 @@ public class ClientHashProcessor {
         return foundIndex >= 0;
     }
 
-    private void resolveConflict(final Change serverChange, final Change clientChange,
-        SyncDataHolder dataHolder)
+    private void resolveConflict(final Change serverChange, final Change clientChange, SyncDataHolder dataHolder)
         throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
 
         MDEntry remoteEntry = serverChange.getMdEntry();
 
         ConflictHandlingData data = new ConflictHandlingData(clientChange, serverChange);
 
-        TableSyncStrategy tableSyncStrategy = strategies.getSyncStrategyForTable(
-            remoteEntry.getTableName());
+        TableSyncStrategy tableSyncStrategy = strategies.getSyncStrategyForTable(remoteEntry.getTableName());
 
         ConflictStrategy conflictStrategy = tableSyncStrategy.getConflictStrategy();
         LOGGER.info("Conflict Action: {}", conflictStrategy.name());
@@ -232,8 +230,6 @@ public class ClientHashProcessor {
         SyncDirection syncDirection = tableSyncStrategy.getDirection();
         LOGGER.info("Sync Direction: {}", syncDirection.name());
 
-        SyncData clientChangesToApply = null;
-        SyncData serverChangesToApply = null;
         IConflictStrategy conflictHandlingStrategy = ConflictStrategyFactory.newInstance(syncDirection);
 
         switch (conflictStrategy) {
