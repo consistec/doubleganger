@@ -169,8 +169,10 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
     private void createMDTableIfNotExists(String clientTable) throws SyncException, DatabaseAdapterException {
 
+        IDatabaseAdapter adapter = null;
+        
         try {
-            IDatabaseAdapter adapter = prepareDbAdapter();
+            adapter = prepareDbAdapter();
 
             // prepareDbAdapter sets autocommit to false but here we need it set to true
             adapter.getConnection().setAutoCommit(true);

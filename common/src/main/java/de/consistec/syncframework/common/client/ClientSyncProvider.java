@@ -46,6 +46,7 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientSyncProvider.class.getCanonicalName());
     private IConflictListener conflictListener;
+    private IDatabaseAdapter adapter = null;
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
 
@@ -95,10 +96,8 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     @Override
     public boolean hasSchema() throws SyncException {
 
-        IDatabaseAdapter adapter = null;
-
         try {
-            adapter = prepareAdapterNoAutoCommit();
+            adapter = prepareAdapterWithAutoCommit();
             return adapter.hasSchema();
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
@@ -110,8 +109,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
 
     @Override
     public void applySchema(Schema schema) throws SyncException {
-
-        IDatabaseAdapter adapter = null;
 
         try {
             // For some databases (e.g. SQLite) DDL statements have to be committed, thats why here autocommit mode=true.
@@ -131,10 +128,9 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     public int getLastRevision() throws SyncException {
 
         int rev = 0;
-        IDatabaseAdapter adapter = null;
 
         try {
-            adapter = prepareAdapterNoAutoCommit();
+            adapter = prepareAdapterWithAutoCommit();
             rev = adapter.getLastRevision();
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
@@ -149,10 +145,11 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     @Override
     public SyncData getChanges() throws SyncException {
 
-        IDatabaseAdapter adapter = null;
+        if (adapter == null) {
+            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
+        }
 
         try {
-            adapter = prepareAdapterNoAutoCommit();
 
             if (!isTriggerSupported()) {
                 List<Change> detectedChanges = synchronizeClientTables();
@@ -163,9 +160,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
             return changesEnumerator.getChanges();
         } catch (DatabaseAdapterException e) {
             throw new SyncException(read(Errors.COMMON_CANT_GET_CLIENT_CHANGES), e);
-        } finally {
-            // changesEnumerator.getChanges() performs only SELECT queries so here we do not need to rollback.
-            closeConnection(adapter);
         }
     }
 
@@ -181,15 +175,11 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     public SyncDataHolder resolveConflicts(SyncData serverData, SyncData clientData) throws
         SyncException {
 
-        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
-
-        IDatabaseAdapter adapter = null;
-
-        try {
-            adapter = prepareAdapterNoAutoCommit();
-        } catch (DatabaseAdapterInstantiationException ex) {
-            throw new SyncException(ex);
+        if (adapter == null) {
+            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
         }
+
+        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
 
         try {
             ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
@@ -200,8 +190,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
              */
             rollback(adapter);
             throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
-        } finally {
-            closeConnection(adapter);
         }
     }
 
@@ -217,29 +205,22 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     public int applyChanges(SyncData serverData) throws
         SyncException {
 
-        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
-
-        IDatabaseAdapter adapter = null;
-
-        try {
-            adapter = prepareAdapterNoAutoCommit();
-        } catch (DatabaseAdapterInstantiationException ex) {
-            throw new SyncException(ex);
+        if (adapter == null) {
+            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
         }
+
+        checkSyncDirectionOfServerChanges(serverData.getChanges(), getStrategies());
 
         ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
 
         try {
             hashProcessor.applyChangesFromServerOnClient(serverData.getChanges());
-            adapter.getConnection().commit();
         } catch (Throwable ex) {
             /**
              * no matter what happened, we have to rollback
              */
             rollback(adapter);
             throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
-        } finally {
-            closeConnection(adapter);
         }
 
         // return always max revision from server independet from changeset
@@ -254,13 +235,10 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     @Override
     public void updateClientRevision(SyncData clientData) throws SyncException {
 
-        IDatabaseAdapter adapter = null;
-
         try {
-            adapter = prepareAdapterNoAutoCommit();
+            adapter = prepareAdapterWithAutoCommit();
             ClientHashProcessor hashProcessor = new ClientHashProcessor(adapter, getStrategies(), conflictListener);
             hashProcessor.updateClientRevision(clientData);
-            adapter.getConnection().commit();
         } catch (Throwable e) {
             rollback(adapter);
             throw new SyncException(read(Errors.COMMON_CANT_UPDATE_CLIENT_REVISIONS), e);
@@ -278,6 +256,35 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     @Override
     public IConflictListener getConflictListener() {
         return this.conflictListener;
+    }
+
+    @Override
+    public void beginTransaction() throws DatabaseAdapterInstantiationException {
+        adapter = prepareAdapterNoAutoCommit();
+    }
+
+    @Override
+    public void commit() throws DatabaseAdapterException {
+        if (adapter == null) {
+            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
+        }
+
+        try {
+            adapter.commit();
+        } catch (DatabaseAdapterException e) {
+            LOGGER.error(Errors.DATA_PROBLEMS_WITH_TRANSACTION, e);
+            try {
+                adapter.getConnection().rollback();
+            } catch (SQLException e1) {
+                throw new DatabaseAdapterException(read(Errors.DATA_TRANSACTION_ROLLBACK_FAILED), e1);
+            }
+        } finally {
+            try {
+                adapter.getConnection().close();
+            } catch (SQLException e) {
+                LOGGER.error(Errors.DATA_CLOSE_CONNECTION_FAILED);
+            }
+        }
     }
 
     /**
@@ -298,27 +305,22 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
      */
     private List<Change> synchronizeClientTables() throws SyncException {
 
-        IDatabaseAdapter adapter = null;
+        if (adapter == null) {
+            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
+        }
 
         try {
-            adapter = prepareAdapterNoAutoCommit();
             ClientTableSynchronizer tableSynchronizer = new ClientTableSynchronizer(adapter);
             List<Change> clientChanges = tableSynchronizer.synchronizeClientTables();
-            adapter.getConnection().commit();
             return clientChanges;
         } catch (DatabaseAdapterException e) {
 
             rollback(adapter);
             throw new SyncException(read(Errors.COMMON_SYNCHRONIZE_CLIENT_TABLE_FAILED), e);
-        } catch (SQLException ex) {
-            rollback(adapter);
-            throw new SyncException(null, ex);
         } catch (RuntimeException ex) {
             // No matter what, do rollback.
             rollback(adapter);
             throw ex;
-        } finally {
-            closeConnection(adapter);
         }
     }
 
@@ -330,8 +332,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
      * @throws DatabaseAdapterInstantiationException
      */
     private IDatabaseAdapter prepareAdapter(boolean autocommit) throws DatabaseAdapterInstantiationException {
-
-        IDatabaseAdapter adapter = null;
         try {
             if (getDs() == null) {
                 adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);

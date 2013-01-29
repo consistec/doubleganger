@@ -5,6 +5,8 @@ import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 
 /**
  * This interface defines the behavior of the synchronization provider on the client's side.
@@ -93,6 +95,16 @@ public interface IClientSyncProvider {
      * @return the conflict listener
      */
     IConflictListener getConflictListener();
+
+    /**
+     * Creates the database adapter with autocommit set to false.
+     */
+    void beginTransaction() throws DatabaseAdapterInstantiationException;
+
+    /**
+     * Commits the connection created in beginTransaction.
+     */
+    void commit() throws DatabaseAdapterException;
 
 //    /**
 //     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified

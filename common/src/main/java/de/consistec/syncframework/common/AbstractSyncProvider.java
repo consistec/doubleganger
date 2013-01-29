@@ -15,9 +15,9 @@ import org.slf4j.cal10n.LocLogger;
 /**
  * Skeleton class for server and client synchronization providers.
  *
+ * @author Piotr Wieczorek
  * @company Consistec Engineering and Consulting GmbH
  * @date 10.12.2012 11:19:42
- * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT
  */
 public abstract class AbstractSyncProvider {
@@ -89,9 +89,9 @@ public abstract class AbstractSyncProvider {
     /**
      * Rolls back database transaction in adapter connection.
      *
-     * @see java.sql.Connection#close()
      * @param adapter Database adapter
      * @throws SyncException When {@link java.sql.SQLException SQLException} occurs
+     * @see java.sql.Connection#close()
      */
     protected final void rollback(IDatabaseAdapter adapter) throws SyncException {
         if (adapter != null) {
@@ -99,6 +99,8 @@ public abstract class AbstractSyncProvider {
                 adapter.getConnection().rollback();
             } catch (SQLException ex) {
                 throw new SyncException(read(Errors.DATA_TRANSACTION_ROLLBACK_FAILED), ex);
+            } finally {
+                closeConnection(adapter);
             }
         }
     }

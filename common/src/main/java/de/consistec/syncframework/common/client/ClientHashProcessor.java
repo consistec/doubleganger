@@ -239,31 +239,23 @@ public class ClientHashProcessor {
         switch (conflictStrategy) {
             case CLIENT_WINS:
                 conflictHandlingStrategy.resolveByClientWinsStrategy(adapter, data);
-                removeChange(dataHolder.getServerSyncData().getChanges(), serverChange, ConflictStrategy.SERVER_WINS);
+                dataHolder.getServerSyncData().getChanges().remove(serverChange);
                 break;
             case SERVER_WINS:
                 conflictHandlingStrategy.resolveByServerWinsStrategy(adapter, data);
                 // remove client change from change list if syncdirection is server_to_client
-                removeChange(dataHolder.getClientSyncData().getChanges(), clientChange, ConflictStrategy.CLIENT_WINS);
+                dataHolder.getClientSyncData().getChanges().remove(clientChange);
+                dataHolder.getServerSyncData().getChanges().remove(serverChange);
                 break;
             case FIRE_EVENT:
                 resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 // remove client change from change list if syncdirection is server_to_client
-                removeChange(dataHolder.getClientSyncData().getChanges(), clientChange, ConflictStrategy.CLIENT_WINS);
-//                removeChange(dataHolder.getServerSyncData().getChanges(), serverChange, ConflictStrategy.SERVER_WINS);
+                dataHolder.getClientSyncData().getChanges().remove(clientChange);
+                dataHolder.getServerSyncData().getChanges().remove(serverChange);
                 break;
             default:
                 throw new IllegalStateException(
                     String.format("Unknown conflict strategy %s", conflictStrategy.name()));
-        }
-    }
-
-    private void removeChange(List<Change> changeList, Change change, ConflictStrategy conflictStrategy) {
-        // remove client change from change list if syncdirection is server_to_client
-        TableSyncStrategy tableStrategy = strategies.getSyncStrategyForTable(
-            change.getMdEntry().getTableName());
-        if (tableStrategy.getConflictStrategy() != conflictStrategy) {
-            changeList.remove(change);
         }
     }
 
