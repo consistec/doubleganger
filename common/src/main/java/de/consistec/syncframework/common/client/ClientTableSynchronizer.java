@@ -124,6 +124,7 @@ public class ClientTableSynchronizer {
                                             // if synchronization is repeated then previous changes or inserts are
                                             // marked with th CLIENT_FLAG
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
+                                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);
@@ -136,6 +137,7 @@ public class ClientTableSynchronizer {
 
                                         MDEntry mdEntry = new MDEntry(primaryKey, true, CLIENT_INIT_REVISION, table,
                                             hash);
+                                        mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
                                         change.setMdEntry(mdEntry);
                                         change.setRowData(rowData);
                                         changeList.add(change);
