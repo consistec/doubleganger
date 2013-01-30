@@ -131,7 +131,8 @@ public class ClientTableSynchronizer {
                                     } else {
                                         // create new entry
                                         LOGGER.info(Infos.COMMON_CREATING_NEW_CLIENT_HASH_ENTRY);
-                                        adapter.insertMdRow(CLIENT_INIT_REVISION, FLAG_MODIFIED, primaryKey, hash, table);
+                                        adapter.insertMdRow(CLIENT_INIT_REVISION, FLAG_MODIFIED, primaryKey, hash,
+                                            table);
 
                                         MDEntry mdEntry = new MDEntry(primaryKey, true, CLIENT_INIT_REVISION, table,
                                             hash);
@@ -173,8 +174,6 @@ public class ClientTableSynchronizer {
                     while (deletedRows.next()) {
                         Change change = new Change();
                         if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
-                            continue;
-                        } else {
                             if (deletedRows.getInt("f") == FLAG_MODIFIED) {
                                 // if synchronization is repeated then previous changes or inserts are
                                 // marked with th CLIENT_FLAG
@@ -183,6 +182,8 @@ public class ClientTableSynchronizer {
                                 Map<String, Object> rowData = newHashMap();
                                 change.setRowData(rowData);
                                 changeList.add(change);
+                            } else {
+                                continue;
                             }
                         }
 
