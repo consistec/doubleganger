@@ -83,7 +83,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
-    private static final String SYNC_USER = "syncuser";
     private static final String CREATE_LANGUAGE_FILE_PATH = "/sql/postgres_create_language.sql";
     private static final String CREATE_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
@@ -164,7 +163,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
                 String createLanguageQuery = generatePlpgsqlLanguageQuery();
                 executeSqlQuery(createLanguageQuery);
 
-                String triggerQuery = generateSqlTriggersForTable(tableName);
+                String triggerQuery = generateSqlTriggersForTable(tableName, CREATE_TRIGGERS_FILE_PATH);
                 executeSqlQuery(triggerQuery);
             }
         } catch (DatabaseAdapterException ex) {
@@ -183,32 +182,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private String generatePlpgsqlLanguageQuery() {
         // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
         return new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH)).useDelimiter("\\A").next();
-    }
-
-    /**
-     * Creates a trigger to update the F flag in the metadata oon every change in the data table ON THE SERVER.
-     * <p/>
-     * @param tableName the table's name
-     * @return sql query for the triggers
-     */
-    private String generateSqlTriggersForTable(String tableName) throws DatabaseAdapterException {
-        String triggerQuery = "";
-
-        // we don't want any trigger on the metadata tables
-        if (!tableName.endsWith(CONF.getMdTableSuffix())) {
-
-            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(CREATE_TRIGGERS_FILE_PATH))
-                .useDelimiter("\\A").next();
-
-            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
-            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-            triggerQuery = triggerQuery.replaceAll("%pk%", getPrimaryKeyColumn(tableName).getName());
-            triggerQuery = triggerQuery.replaceAll("%_md%", CONF.getMdTableSuffix());
-
-            LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
-        }
-        return triggerQuery;
     }
 
     @Override

@@ -9,27 +9,27 @@ CREATE OR REPLACE FUNCTION %table%_update_flag() RETURNS trigger AS $BODY$
         IF (TG_OP = 'INSERT') THEN
 
             BEGIN
-                INSERT INTO %table%%_md% (pk, f) VALUES (NEW.%pk%, 2);
+                INSERT INTO %table%%md_suffix% (%pk_md%, %flag_md%) VALUES (NEW.%pk_data%, 2);
             EXCEPTION
                 -- the key already exists, so let's update
                 -- see http://postgresql.1045698.n5.nabble.com/Howto-quot-insert-or-update-quot-td3276313.html
                 WHEN unique_violation THEN
-                    UPDATE %table%%_md% SET f = 1 WHERE pk = NEW.%pk%;
+                    UPDATE %table%%md_suffix% SET %flag_md% = 1 WHERE %pk_md% = NEW.%pk_data%;
             END;
             RETURN NEW;
 
         ELSIF (TG_OP = 'UPDATE') THEN
 
-            UPDATE %table%%_md% SET f = 1 WHERE pk = NEW.%pk% AND f = 0;
+            UPDATE %table%%md_suffix% SET %flag_md% = 1 WHERE %pk_md% = NEW.%pk_data%;
             RETURN NEW;
 
         ELSIF (TG_OP = 'DELETE') THEN
             -- if it's been deleted and never synced, the revision will be NULL
             -- no one needs to know about it, it sort of never existed - we delete it silently
-            DELETE FROM %table%%_md% WHERE pk = OLD.%pk% AND rev IS NULL;
+            DELETE FROM %table%%md_suffix% WHERE %pk_md% = OLD.%pk_data% AND rev IS NULL;
 
             IF NOT FOUND THEN
-                UPDATE %table%%_md% SET f = -1 WHERE pk = OLD.%pk%;
+                UPDATE %table%%md_suffix% SET %flag_md% = -1 WHERE %pk_md% = OLD.%pk_data%;
             END IF;
 
             RETURN OLD;

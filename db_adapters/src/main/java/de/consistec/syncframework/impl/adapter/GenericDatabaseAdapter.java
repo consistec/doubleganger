@@ -1,6 +1,8 @@
 package de.consistec.syncframework.impl.adapter;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.PropertiesUtil.defaultIfNull;
 import static de.consistec.syncframework.common.util.PropertiesUtil.readString;
@@ -37,6 +39,7 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Scanner;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.slf4j.cal10n.LocLogger;
@@ -235,6 +238,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
     private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
     private static final Config CONF = Config.getInstance();
+    private static final String SYNC_USER = "syncuser";
     /**
      * Jdbc connection on which adapter operates.
      * <p/>
@@ -1045,6 +1049,35 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         } finally {
             closeStatements(stmt);
         }
+    }
+
+    /**
+     * Creates a trigger to update the F flag in the metadata oon every change in the data table ON THE SERVER.
+     * <p/>
+     * @param tableName the table's name
+     * @param filePath path to the trigger's definition file
+     * @return sql query for the triggers
+     */
+    protected String generateSqlTriggersForTable(String tableName, String filePath) throws DatabaseAdapterException {
+        String triggerQuery = "";
+
+        // we don't want any trigger on the metadata tables
+        if (!tableName.endsWith(CONF.getMdTableSuffix())) {
+
+            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
+                .useDelimiter("\\A").next();
+
+            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
+            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
+            triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
+            triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
+            triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
+            triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
+
+            LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
+        }
+        return triggerQuery;
     }
 
     /**
