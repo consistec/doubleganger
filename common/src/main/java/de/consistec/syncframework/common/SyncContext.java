@@ -31,13 +31,13 @@ import org.slf4j.cal10n.LocLogger;
  * Represents synchronization context.
  * <br/>Both for the server and the client site of synchronization process.<br/>
  * <p>
- * This class is an Facade to interact with framework. <br/>
- * <span style="color: red;">You should use always use this class to interact with framework!.</span><br/>
- * Attempts to directly invoking methods on others frameworks objects can lead to undefined behavior,
+ * This class is a Facade to interact with the framework. <br/>
+ * <span style="color: red;">You should use always use this class to interact with the framework!</span><br/>
+ * Attempts to invoke methods directly on others frameworks objects can lead to undefined behavior,
  * because database structures could be not prepared or other requirements could be not fulfilled.
- * When sub contexts are created, all needed initialization is performed. so it is important to create so little
- * context objects as possible. Context object can be used for more than synchronization process.<br/>
- * <span style="color: red;">One only need to create new context object when one has changed framework configuration.
+ * When sub contexts are created, all needed initialization is performed. It is thus important to create as little
+ * context objects as possible. Context object can be used for more than one synchronization process.<br/>
+ * <span style="color: red;">One only needs to create a new context object if the framework configuration has changed.
  * </span>
  * </p>
  * <p>
@@ -47,7 +47,7 @@ import org.slf4j.cal10n.LocLogger;
  * <li>{@link de.consistec.syncframework.common.SyncContext.ServerContext},</li>
  * <li>{@link de.consistec.syncframework.common.SyncContext.LocalContext}</li>
  * </ul>
- * Each of sub-context can be created with static factory methods of its class.<br/>
+ * Each sub-context can be created with static factory methods of its class.<br/>
  * Simplest examples:<br/>
  * <ul>
  * <li>On client - <br/><pre>SyncContext.ClientContext.create().synchronize();</pre></li>
@@ -97,9 +97,9 @@ import org.slf4j.cal10n.LocLogger;
  * <p/>
  * <h1>Configuration</h1>
  * <p>
- * Before creating the context objects, <b style="color: red;">remember</b> to populate framework's
- * {@link de.consistec.syncframework.common.Config configuration class} with desired values
- * (either loading from file or manually through mutators ).
+ * Before creating the context objects, <b style="color: red;">remember</b> to populate the framework's
+ * {@link de.consistec.syncframework.common.Config configuration class} with the desired values
+ * (either loading from file or manually through mutators).
  * </p>
  *
  * @author Piotr Wieczorek
@@ -578,56 +578,6 @@ public final class SyncContext {
         }
 
         /**
-         * Creates server synchronization context.
-         * Context will use its own database connection.
-         * <p>
-         * While creating the context, framework will be prepared for server operations.
-         * <b style="color: red;">Warning!</b> framework's
-         * {@link de.consistec.syncframework.common.Config configuration} has to be populated with desired values.
-         * </p>
-         *
-         * @return Server synchronization context
-         * @throws ContextException When creation of database adapter or server provider fails.
-         */
-//        public static ServerContext create() throws ContextException {
-//            try {
-//                initServer(null);
-//                ServerContext ctx = new ServerContext();
-//                ctx.serverProvider = ServerSyncProviderFactory.newInstance();
-//                return ctx;
-//            } catch (SyncProviderInstantiationException ex) {
-//                throw new ContextException(read(Errors.COMMON_SYNC_PROVIDER_INSTANTIATION_FAILED), ex);
-//            }
-//        }
-        /**
-         * Creates server synchronization context.
-         * context will use provided <i>connection</i> object.
-         * <p>
-         * While creating the context, framework will be prepared for server operations.
-         * <b style="color: red;">Warning!</b> framework's
-         * {@link de.consistec.syncframework.common.Config configuration} has to be populated with desired values.
-         * </p>
-         *
-         * @param ds SQL data source for server provider.
-         * @return Server synchronization context.
-         * @throws ContextException When creation of database adapter or server provider fails.
-         */
-//        public static ServerContext create(DataSource ds) throws ContextException {
-//            try {
-//                try {
-//                    initServer(ds.getConnection());
-//                } catch (SQLException ex) {
-//                    throw new ContextException(read(Errors.COMMON_CANT_INIT_FRAMEWORK), ex);
-//                }
-//                ServerContext ctx = new ServerContext();
-//                ctx.serverProvider = ServerSyncProviderFactory.newInstance(ds);
-//                return ctx;
-//            } catch (SyncProviderInstantiationException ex) {
-//                throw new ContextException(read(Errors.COMMON_SYNC_PROVIDER_INSTANTIATION_FAILED), ex);
-//            }
-//        }
-
-        /**
          * Apply changes from client to server.
          * <p/>
          *
@@ -715,83 +665,6 @@ public final class SyncContext {
         public TableSyncStrategies getStrategies() {
             return strategies;
         }
-
-        /**
-         * Creates LocalContext object for scenario where both client and server provider use
-         * their own database connection, created from database adapter configuration.
-         * <p>
-         * While creating the context, framework will be prepared for client and server operations.
-         * <b style="color: red;">Warning!</b> framework's
-         * {@link de.consistec.syncframework.common.Config configuration} has to be populated with desired values.
-         * </p>
-         *
-         * @return LocalContext Context instance.
-         * @throws ContextException When creation of database adapter or server provider fails.
-         */
-//        public static LocalContext create() throws ContextException, SyncException {
-//            try {
-//                LocalContext ctx = new LocalContext();
-//                initServer(null);
-//                ctx.serverProvider = ServerSyncProviderFactory.newInstance();
-//                IClientSyncProvider clientPrvider = new ClientSyncProvider();
-//                initClient(ctx.serverProvider, clientPrvider);
-//                ctx.agent = new SyncAgent(ctx.serverProvider, clientPrvider);
-//                return ctx;
-//            } catch (DatabaseAdapterInstantiationException ex) {
-//                throw new ContextException(read(Errors.DATA_DB_ADAPTER_INSTANTIATION), ex);
-//            } catch (SyncProviderInstantiationException ex) {
-//                throw new ContextException(read(Errors.COMMON_SYNC_PROVIDER_INSTANTIATION_FAILED), ex);
-//            }
-//        }
-        /**
-         * Creates LocalContext object for scenario where both client and server provider can use
-         * (provided) external database connection.
-         * <p>
-         * While creating the context, framework will be prepared for client and server operations.
-         * <b style="color: red;">Warning!</b> framework's
-         * {@link de.consistec.syncframework.common.Config configuration} has to be populated with desired values.
-         * </p>
-         *
-         * @param serverDs DataSource for server sync provider. If <i>null</i>,
-         * <b>internal</b> connection will be used.
-         * @param clientDs DataSource for client sync provider. If <i>strategiesnull</i>,
-         * <b>internal</b> connection will be used.
-         * @return instance of LocalContext
-         * @throws ContextException When creation of database adapter or server provider fails.
-         */
-//        public static LocalContext create(DataSource serverDs, DataSource clientDs) throws ContextException,
-//            SyncException {
-//
-//            LocalContext ctx = new LocalContext();
-//
-//            try {
-//                if (serverDs == null) {
-//                    initServer(null);
-//                    ctx.serverProvider = ServerSyncProviderFactory.newInstance();
-//                } else {
-//                    initServer(serverDs.getConnection());
-//                    ctx.serverProvider = ServerSyncProviderFactory.newInstance(serverDs);
-//                }
-//
-//                IClientSyncProvider clientProvider;
-//                if (clientDs == null) {
-//                    clientProvider = new ClientSyncProvider();
-//                } else {
-//                    clientProvider = new ClientSyncProvider(clientDs);
-//                }
-//
-//                initClient(ctx.serverProvider, clientProvider);
-//                ctx.agent = new SyncAgent(ctx.serverProvider, clientProvider);
-//
-//                return ctx;
-//            } catch (DatabaseAdapterInstantiationException ex) {
-//                throw new ContextException(read(Errors.DATA_DB_ADAPTER_INSTANTIATION), ex);
-//            } catch (SyncProviderInstantiationException ex) {
-//                throw new ContextException(read(Errors.COMMON_SYNC_PROVIDER_INSTANTIATION_FAILED), ex);
-//            } catch (SQLException ex) {
-//                throw new ContextException(read(Errors.DATA_CANT_GET_CONNECTION_FROM_PROVIDED_DATASOURCE), ex);
-//            }
-//        }
 
         /**
          * Apply changes from client to server.

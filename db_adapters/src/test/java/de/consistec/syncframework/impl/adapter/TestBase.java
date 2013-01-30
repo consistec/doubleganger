@@ -2,7 +2,9 @@ package de.consistec.syncframework.impl.adapter;
 
 import de.consistec.syncframework.common.Config;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Scanner;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -27,7 +29,6 @@ public class TestBase {
      * Logger instance.
      */
     protected static final Logger LOGGER = LoggerFactory.getLogger(TestBase.class.getCanonicalName());
-
     /**
      * Test watcher, with methods invoked before and after of each tests.
      * This "watcher" prints test name before and after each test, and resets configuration singleton before each test.
@@ -53,7 +54,6 @@ public class TestBase {
         }
     };
 
-
     /**
      * Allow only instance of subclasses.
      */
@@ -61,18 +61,26 @@ public class TestBase {
         // do nothing
     }
 
-    private void resetConfigSingleton() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field instance = Config.class.getDeclaredField("instance");
-        instance.setAccessible(true);
-        instance.set(null, null);
-    }
-
-    /**
-     * Load log4j configuration file.
-     */
     @BeforeClass
     public static void setUpClass() {
         // initialize logging framework
         DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
+    }
+
+    /**
+     * Returns content of the xml file as simple string.
+     *
+     * @param filename XML file
+     * @return Content of the file
+     */
+    protected static String getStringFromFile(String filename) {
+        InputStream is = TestBase.class.getClassLoader().getResourceAsStream(filename);
+        return new Scanner(is, "UTF-8").useDelimiter("\\A").next();
+    }
+
+    private void resetConfigSingleton() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field instance = Config.class.getDeclaredField("instance");
+        instance.setAccessible(true);
+        instance.set(null, null);
     }
 }

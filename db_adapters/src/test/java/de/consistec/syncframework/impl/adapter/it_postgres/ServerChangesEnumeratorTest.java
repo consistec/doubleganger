@@ -44,7 +44,6 @@ public class ServerChangesEnumeratorTest extends EnumeratorTest {
         super.setUp();
 
         postgresDB.executeQueriesOnServer(serverInsertQueries);
-
     }
 
     private SyncData testGetChangesGlobal(ConflictStrategy strategy, SyncDirection direction) throws
@@ -117,7 +116,7 @@ public class ServerChangesEnumeratorTest extends EnumeratorTest {
         SyncData serverChanges = testGetChangesGlobal(ConflictStrategy.CLIENT_WINS,
             SyncDirection.CLIENT_TO_SERVER);
 
-        assertTrue(serverChanges.getChanges().size() == 0);
+        assertTrue(serverChanges.getChanges().isEmpty());
         assertTrue(serverChanges.getRevision() == 2);
     }
 
@@ -151,7 +150,7 @@ public class ServerChangesEnumeratorTest extends EnumeratorTest {
         SyncData serverChanges = testGetChangesPerTable(ConflictStrategy.CLIENT_WINS,
             SyncDirection.CLIENT_TO_SERVER);
 
-        assertTrue(serverChanges.getChanges().size() == 0);
+        assertTrue(serverChanges.getChanges().isEmpty());
         assertTrue(serverChanges.getRevision() == 2);
     }
 

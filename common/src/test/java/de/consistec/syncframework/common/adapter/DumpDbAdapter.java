@@ -143,7 +143,7 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public List<String> getColumns(String tableName) throws DatabaseAdapterException {
+    public List<String> getColumnNamesFromTable(String tableName) throws DatabaseAdapterException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

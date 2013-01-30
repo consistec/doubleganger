@@ -6,6 +6,7 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.TableSyncStrategy;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
@@ -46,7 +47,6 @@ public class ClientChangesEnumerator {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * Instantiates a new client changes enumerator.
      *
@@ -56,15 +56,14 @@ public class ClientChangesEnumerator {
     public ClientChangesEnumerator(IDatabaseAdapter adapter, TableSyncStrategies tableSyncStrategies) {
         this.adapter = adapter;
         this.tableSyncStrategies = tableSyncStrategies;
-        LOGGER.debug("ChangesEnumerator Constructor finished");
+        LOGGER.debug("ClientChangesEnumerator Constructor finished");
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
-     * The method {@code getChanges()} creates the list of {@code Change}
-     * objects for all inserted, modified or deleted data rows in the client tables to sync.
+     * Creates the list of {@code Change} objects for all inserted, modified or deleted
+     * data rows in the client tables to sync.
      *
      * @return The changes
      * @throws DatabaseAdapterException if database operations fail
@@ -73,7 +72,7 @@ public class ClientChangesEnumerator {
 
         LOGGER.debug("getClientChanges called");
 
-        final List<Change> list = newArrayList();
+        final List<Change> allChanges = newArrayList();
 
         for (final String tableName : CONF.getSyncTables()) {
 
@@ -84,21 +83,20 @@ public class ClientChangesEnumerator {
                 public void onSuccess(ResultSet resultSet) throws DatabaseAdapterException {
                     try {
                         while (resultSet.next()) {
-                            Change tmpChange = new Change();
 
-                            MDEntry tmpEntry = DBMapperUtil.getMetadata(resultSet, tableName);
-                            tmpChange.setMdEntry(tmpEntry);
+                            TableSyncStrategy syncStrategy = tableSyncStrategies.getSyncStrategyForTable(tableName);
+                            SyncDirection syncDirection = syncStrategy.getDirection();
 
-                            Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
-                            tmpChange.setRowData(rowData);
-
-                            SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
-                                tableName).getDirection();
                             if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
-                                list.add(tmpChange);
-                            }
+                                Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
+                                MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
+                                mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
 
-                            LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, tmpChange.toString());
+                                Change change = new Change(mdEntry, rowData);
+                                allChanges.add(change);
+
+                                LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, change);
+                            }
                         }
                     } catch (SQLException e) {
                         throw new DatabaseAdapterException(e);
@@ -107,7 +105,7 @@ public class ClientChangesEnumerator {
             });
         }
         LOGGER.debug("getClientChanges finished");
-        return new SyncData(0, list);
+        return new SyncData(0, allChanges);
     }
     //</editor-fold>
 }

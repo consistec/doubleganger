@@ -24,6 +24,11 @@ public final class ConfigConstants {
      */
     public static final String DEFAULT_MD_TABLE_SUFFIX = "_md";
     /**
+     * Default activation for the SQL triggers.<br/>
+     * Value: {@value}
+     */
+    public static final boolean DEFAULT_IS_SQL_TRIGGER_ACTIVATED = false;
+    /**
      * Default number of synchronization tries when transaction error occurs.<br/>
      * Value: {@value}
      */
@@ -133,6 +138,12 @@ public final class ConfigConstants {
      * Value: {@value}
      */
     public static final String OPTIONS_COMMON_MD_TABLE_SUFFIX = OPTIONS_COMMON_PREFIX + ".md_table_suffix";
+    /**
+     * Key for {@link Config.isSqlTriggerActivated() } value.
+     * <p/>
+     * Value: {@value}
+     */
+    public static final String OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED = OPTIONS_COMMON_PREFIX + ".use_sql_triggers";
     /**
      * Key for options which form {@link Config.getServerProxyProviderProperties() } object.
      * <p/>

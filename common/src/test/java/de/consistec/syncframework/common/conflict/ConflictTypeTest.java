@@ -66,7 +66,7 @@ public class ConflictTypeTest extends TestBase {
                 rowData.put(TEST_COLUMN5, 4.5);
                 break;
             case DEL:
-                entry = new MDEntry(1, isClient ? true : false, 1, TEST_TABLE_NAME, null);
+                entry = new MDEntry(1, false, 1, TEST_TABLE_NAME, null);
                 // no rowData, they were deleted
                 break;
             default:
@@ -169,34 +169,4 @@ public class ConflictTypeTest extends TestBase {
 
         assertTrue(CLIENT_MOD_SERVER_DEL.isTheCase(data));
     }
-
-//    @Test
-//    public void testIsModModConflict() {
-//        assertFalse(CLIENT_MOD_SERVER_MOD.isTheCase(0, 0, TEST_MDV, new MDEntry()));
-//        assertTrue(CLIENT_MOD_SERVER_MOD.isTheCase(0, 0, TEST_MDV, new MDEntry(1, true, 0, TEST_TABLE_NAME)));
-//    }
-//
-//    @Test
-//    public void testIsServerDel() {
-//        assertFalse(SERVER_DEL.isTheCase(0, 0, null, new MDEntry(0, true, 0, null)));
-//        assertTrue(SERVER_DEL.isTheCase(0, 0, null, new MDEntry(0, false, 0, null)));
-//    }
-//
-//    @Test
-//    public void testIsAddAddConflict() {
-//        assertFalse(CLIENT_ADD_SERVER_ADD.isTheCase(1, 0, null, new MDEntry()));
-//        assertTrue(CLIENT_ADD_SERVER_ADD.isTheCase(0, 0, null, new MDEntry()));
-//    }
-//
-//    @Test
-//    public void testIsOutOfDate() {
-//        assertFalse(OUT_OF_DATE.isTheCase(0, 0, null, new MDEntry()));
-//        assertTrue(OUT_OF_DATE.isTheCase(0, 1, null, new MDEntry()));
-//    }
-//
-//    @Test
-//    public void testIsDelDelConflict() {
-//        assertFalse(CLIENT_DEL_SERVER_DEL.isTheCase(0, 0, null, new MDEntry(0, true, 0, null)));
-//        assertTrue(CLIENT_DEL_SERVER_DEL.isTheCase(0, 0, null, new MDEntry(0, false, 0, null)));
-//    }
 }

@@ -1,7 +1,7 @@
 package de.consistec.syncframework.common.client;
 
-import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_FLAG;
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
@@ -15,7 +15,6 @@ import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.util.DBMapperUtil;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.common.util.StringUtil;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
@@ -43,7 +42,6 @@ import org.slf4j.cal10n.LocLogger;
 public class ClientTableSynchronizer {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientTableSynchronizer.class.getCanonicalName());
-    private static final String MDV_COLUMN_NAME = "mdv";
     private static final Config CONF = Config.getInstance();
     private IDatabaseAdapter adapter;
 
@@ -66,25 +64,27 @@ public class ClientTableSynchronizer {
      */
     public List<Change> synchronizeClientTables() throws DatabaseAdapterException {
 
-        LOGGER.debug("SynchronizeClientTables called. Searching for changed rows ...");
+        LOGGER.debug("synchronizeClientTables called");
 
-        List<Change> changes = newArrayList();
+        final List<Change> changeList = newArrayList();
+
+        LOGGER.debug("Searching for modifications and updating metadata accordingly.");
 
         for (final String table : CONF.getSyncTables()) {
-            LOGGER.debug(String.format("processing table %s", table));
-            changes.addAll(searchAndProcessChangedRows(table));
-            changes.addAll(searchAndProcessDeletedRows(table));
+            LOGGER.debug("Processing table {}", table);
+            changeList.addAll(searchAndProcessChangedRows(table));
+            changeList.addAll(searchAndProcessDeletedRows(table));
         }
 
         LOGGER.debug("synchronizeClientTables finished");
 
-        return changes;
+        return changeList;
     }
 
     private List<Change> searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
 
         final List<Change> changeList = newArrayList();
-        final List<String> columns = adapter.getColumns(table);
+        final List<String> columns = adapter.getColumnNamesFromTable(table);
         Collections.sort(columns);
 
         adapter.getAllRowsFromTable(table, new DatabaseAdapterCallback<ResultSet>() {
@@ -111,17 +111,16 @@ public class ClientTableSynchronizer {
                                 Change change = new Change();
                                 try {
                                     if (result.next()) {
-                                        // compare hashes
-                                        String mdTableHash = result.getString(MDV_COLUMN_NAME);
-                                        if (mdTableHash == null || !mdTableHash.equalsIgnoreCase(hash)) {
+                                        if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
-                                            adapter.updateMdRow(result.getInt("rev"), CLIENT_FLAG, primaryKey, hash,
+                                            adapter.updateMdRow(result.getInt("rev"), FLAG_MODIFIED, primaryKey, hash,
                                                 table);
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
+                                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);
-                                        } else if (result.getInt("f") == CLIENT_FLAG) {
+                                        } else if (result.getInt("f") == FLAG_MODIFIED) {
                                             // if synchronization is repeated then previous changes or inserts are
                                             // marked with th CLIENT_FLAG
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
@@ -132,7 +131,7 @@ public class ClientTableSynchronizer {
                                     } else {
                                         // create new entry
                                         LOGGER.info(Infos.COMMON_CREATING_NEW_CLIENT_HASH_ENTRY);
-                                        adapter.insertMdRow(CLIENT_INIT_REVISION, CLIENT_FLAG, primaryKey, hash, table);
+                                        adapter.insertMdRow(CLIENT_INIT_REVISION, FLAG_MODIFIED, primaryKey, hash, table);
 
                                         MDEntry mdEntry = new MDEntry(primaryKey, true, CLIENT_INIT_REVISION, table,
                                             hash);
@@ -172,10 +171,11 @@ public class ClientTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        String mdvValue = deletedRows.getString(MDV_COLUMN_NAME);
                         Change change = new Change();
-                        if (StringUtil.isNullOrEmpty(mdvValue)) {
-                            if (deletedRows.getInt("f") == CLIENT_FLAG) {
+                        if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
+                            continue;
+                        } else {
+                            if (deletedRows.getInt("f") == FLAG_MODIFIED) {
                                 // if synchronization is repeated then previous changes or inserts are
                                 // marked with th CLIENT_FLAG
                                 MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
@@ -183,22 +183,16 @@ public class ClientTableSynchronizer {
                                 Map<String, Object> rowData = newHashMap();
                                 change.setRowData(rowData);
                                 changeList.add(change);
-                            } else {
-                                // this row has already been deleted
-                                continue;
                             }
                         }
 
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
-                        adapter.updateMdRow(deletedRows.getInt("rev"), CLIENT_FLAG, deletedRows.getObject("pk"), "",
+                        adapter.updateMdRow(deletedRows.getInt("rev"), FLAG_MODIFIED, deletedRows.getObject("pk"), "",
                             table);
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
-                        mdEntry.setMdv("");
-                        mdEntry.setDeleted();
-
+                        mdEntry.setDataRowDeleted();
                         change.setMdEntry(mdEntry);
-                        //                        change.setRowData(rowData);
                         changeList.add(change);
                     }
                 } catch (SQLException e) {

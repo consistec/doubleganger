@@ -85,7 +85,7 @@ public class RepeatSyncTest {
 
     @After
     public void tearDown() throws SQLException {
-        db.clean();
+        db.closeConnections();
     }
 
     @Test

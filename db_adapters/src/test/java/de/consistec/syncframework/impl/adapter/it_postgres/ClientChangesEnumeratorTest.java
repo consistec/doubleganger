@@ -100,7 +100,7 @@ public class ClientChangesEnumeratorTest extends EnumeratorTest {
 
     {
         SyncData clientChanges = testGetChangesGlobal(ConflictStrategy.SERVER_WINS, SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.getChanges().size() == 0);
+        assertTrue(clientChanges.getChanges().isEmpty());
     }
 
     @Test
@@ -126,7 +126,7 @@ public class ClientChangesEnumeratorTest extends EnumeratorTest {
     {
         SyncData clientChanges = testGetChangesPerTable(ConflictStrategy.SERVER_WINS,
             SyncDirection.SERVER_TO_CLIENT);
-        assertTrue(clientChanges.getChanges().size() == 0);
+        assertTrue(clientChanges.getChanges().isEmpty());
     }
 
     @Test

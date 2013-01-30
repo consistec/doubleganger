@@ -4,7 +4,6 @@ import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.impl.TestDatabase;
-import de.consistec.syncframework.impl.adapter.TestUtil;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -36,7 +35,7 @@ public class EnumeratorTest {
     public static void setUpClass() throws Exception {
         postgresDB = new PostgresDatabase();
 
-        TestUtil.initConfig(ServerChangesEnumeratorTest.class, postgresDB.getConfigFile());
+        postgresDB.init();
 
         savedConflictStrategy = Config.getInstance().getGlobalConflictStrategy();
         savedSyncDirection = Config.getInstance().getGlobalSyncDirection();
@@ -64,7 +63,7 @@ public class EnumeratorTest {
     @AfterClass
     public static void tearDownClass() throws SQLException {
 
-        postgresDB.clean();
+        postgresDB.closeConnections();
     }
 
 }

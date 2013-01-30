@@ -1,5 +1,6 @@
 package de.consistec.syncframework.impl.proxy.http_servlet;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.syncframework.impl.proxy.http_servlet.SyncAction.APPLY_CHANGES;

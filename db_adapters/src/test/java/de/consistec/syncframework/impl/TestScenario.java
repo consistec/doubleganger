@@ -1,10 +1,6 @@
 package de.consistec.syncframework.impl;
 
-import static de.consistec.syncframework.common.SyncDirection.CLIENT_TO_SERVER;
-import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
-import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.IConflictListener;
@@ -39,9 +35,6 @@ import org.junit.Assert;
  */
 public class TestScenario {
 
-//    @Rule
-//    public ExpectedException thrown = ExpectedException.none();
-
     private final String name;
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
@@ -53,6 +46,7 @@ public class TestScenario {
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
     private String expectedErrorMsg;
+    private Class expectedExceptionClass;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
@@ -70,6 +64,14 @@ public class TestScenario {
 
     public ConflictStrategy getStrategy() {
         return strategy;
+    }
+
+    public String getExpectedErrorMsg() {
+        return expectedErrorMsg;
+    }
+
+    public Class getExpectedExceptionClass() {
+        return expectedExceptionClass;
     }
 
     /**
@@ -107,15 +109,22 @@ public class TestScenario {
     }
 
     /**
-     * Tells if this szenario expects an exception of passed exception class type and
+     * Tells that this scenario expects an exception of passed exception class type and
      * what error message will be expected.
      *
      * @param errorMsg expected error message
-     * @return this test szenario
+     * @return this test scenario
      */
-    public TestScenario expectException(Errors errorMsg) {
-        this.expectedErrorMsg = read(errorMsg);
+    public TestScenario expectException(Class clazz, Errors errorMsg) {
+        this.expectedExceptionClass = clazz;
+        this.expectedErrorMsg = read(errorMsg).split("\\{")[0];
         return this;
+    }
+
+    public void assertNoExceptionExpected() {
+        if (expectedExceptionClass != null) {
+            Assert.fail("Expected exception (" + expectedExceptionClass + ") wasn't thrown.");
+        }
     }
 
     public void setDataSources(DumpDataSource serverDs, DumpDataSource clientDs) {
@@ -163,42 +172,51 @@ public class TestScenario {
         clientStmt.close();
     }
 
-    public void saveCurrentState() throws SQLException {
+    public void saveCurrentState() {
+        if (this.expectedExceptionClass != null) {
+            // An exception will be thrown, no need to save the state
+            return;
+        }
+
         expectedFlatClientResultSets = new String[selectTableQueries.length];
         expectedFlatServerResultSets = new String[selectTableQueries.length];
 
-        Statement serverStmt = serverConnection.createStatement();
-        Statement clientStmt = clientConnection.createStatement();
+        try {
+            Statement serverStmt = serverConnection.createStatement();
+            Statement clientStmt = clientConnection.createStatement();
 
-        ResultSet serverRs, clientRs;
+            ResultSet serverRs, clientRs;
+            for (int i = 0; i < selectTableQueries.length; i += 2) {
+                String query = selectTableQueries[i];
 
-        for (int i = 0; i < selectTableQueries.length; i += 2) {
-            String query = selectTableQueries[i];
+                serverRs = serverStmt.executeQuery(query);
+                clientRs = clientStmt.executeQuery(query);
+                expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                    expectedServerState);
 
-            serverRs = serverStmt.executeQuery(query);
-            clientRs = clientStmt.executeQuery(query);
-            expectedFlatServerResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
-                expectedServerState);
+                serverRs = serverStmt.executeQuery(query);
+                clientRs = clientStmt.executeQuery(query);
+                expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
+                    expectedClientState);
+            }
+            serverStmt.close();
+            clientStmt.close();
 
-            serverRs = serverStmt.executeQuery(query);
-            clientRs = clientStmt.executeQuery(query);
-            expectedFlatClientResultSets[i] = ResultSetHelper.getExpectedResultSet(serverRs, clientRs,
-                expectedClientState);
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error: please ensure the client and the server both have data.", ex);
         }
-
-        serverStmt.close();
-        clientStmt.close();
     }
 
-    public boolean hasInvalidDirectionAndStrategyCombination() {
-        return direction.equals(CLIENT_TO_SERVER) && strategy.equals(SERVER_WINS)
-            || direction.equals(SERVER_TO_CLIENT) && strategy.equals(CLIENT_WINS);
+    public void synchronize(String[] tableNames, IConflictListener conflictListener) throws SyncException,
+        ContextException, SQLException {
+        synchronize(tableNames, conflictListener, direction);
     }
 
-    public void synchronize(String[] tableNames) throws SyncException, ContextException, SQLException {
+    public void synchronize(String[] tableNames, IConflictListener conflictListener, SyncDirection dir) throws
+        SyncException, ContextException, SQLException {
         TableSyncStrategies strategies = new TableSyncStrategies();
 
-        TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(direction, strategy);
+        TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(dir, strategy);
         for (int i = 0; i < tableNames.length; i += 2) {
             strategies.addSyncStrategyForTable(tableNames[i], tableSyncStrategy);
         }
@@ -206,12 +224,7 @@ public class TestScenario {
         final SyncContext.LocalContext localCtx = SyncContext.local(serverDs, clientDs, strategies);
 
         if (strategy == FIRE_EVENT) {
-            localCtx.setConflictListener(new IConflictListener() {
-                @Override
-                public Map<String, Object> resolve(Map<String, Object> serverData, Map<String, Object> clientData) {
-                    return serverData;
-                }
-            });
+            localCtx.setConflictListener(conflictListener);
         }
 
         localCtx.synchronize();
