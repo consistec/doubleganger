@@ -110,7 +110,7 @@
                     <include>PerformanceTest.jmx</include>
                     <include>config_postgre.properties</include>
                     <include>performance_config_postgre.properties</include>
-                    <include>testsync.sh</include>
+                    <include>*.sh</include>
                 </includes>
                 <filtering>true</filtering>
             </testResource>
