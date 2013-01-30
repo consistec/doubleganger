@@ -2,7 +2,7 @@
 
 # This script runs a specified jmeter test for x times.
 # The name and number of tests is passed through the arguments.
-# This is practical if a specified has an error which can not
+# This is practical if a specified test has an error which can not
 # always be reproduced.
 # if the number is not set as argument, then the default value
 # of 5 will be used.
