@@ -26,7 +26,7 @@
         <project_name>doppleganger</project_name>
         <license.licenseName>gpl_v3</license.licenseName>
         <!-- or change "gpl_v3" to "consistec" -->
-        <license.licenseResolver>file://${project.parent.basedir}/src/license</license.licenseResolver>
+        <license.licenseResolver>file://${project.basedir}/../parent/src/license</license.licenseResolver>
 
         <fail_on_checkstyle_errors>true</fail_on_checkstyle_errors>
         <fail_on_checkstyle_violation>true</fail_on_checkstyle_violation>
@@ -347,7 +347,7 @@
                         <organizationName>consistec GmbH</organizationName>
                         <projectName>doppelganger</projectName>
                         <descriptionTemplate>
-                            ${project.parent.basedir}/src/license/consistec/description_template.ftl
+                            ${project.basedir}/../parent/src/license/consistec/description_template.ftl
                         </descriptionTemplate>
                         <roots>
                             <root>src/main/java</root>

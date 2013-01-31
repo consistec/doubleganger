@@ -10,8 +10,14 @@
     <name> checkstyle </name>
     <description>Contains the checkstyle settings for the syncframework project</description>
 
-    <properties>
+     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <license.inceptionYear>2011</license.inceptionYear>
+        <license.organizationName>consistec GmbH</license.organizationName>
+        <license.projectName>doppelganger</license.projectName>
+        <license.licenseName>gpl_v3</license.licenseName>
+        <!-- or change "gpl_v3" to "consistec" -->
+        <license.licenseResolver>file://${basedir}/../parent/src/license</license.licenseResolver>
     </properties>
 
     <build>
