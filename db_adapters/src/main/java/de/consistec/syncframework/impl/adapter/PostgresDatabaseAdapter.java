@@ -225,7 +225,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
                 .useDelimiter("\\A").next();
 
-            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", username);
+            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
             triggerQuery = triggerQuery.replaceAll("%table%", tableName);
             triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
             triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());

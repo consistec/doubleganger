@@ -77,7 +77,7 @@ public class MysqlDatabaseAdapter extends GenericDatabaseAdapter {
                 String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
                     .useDelimiter("\\A").next();
 
-                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", "syncuser");
+                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
                 triggerQuery = triggerQuery.replaceAll("%table%", tableName);
                 triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
                 triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
