@@ -94,17 +94,19 @@ public final class DBMapperUtil {
     /**
      * Checks if the current row is already marked as deleted, i.e the hash value in the metadata is null or empty.
      * <p/>
+     *
      * @param deletedRows result set positioned on the current row
      * @return true if the row is already deleted
      * @throws SQLException
      */
     public static boolean rowIsAlreadyDeleted(ResultSet deletedRows) throws SQLException {
-        return deletedRows.getString(MDV_COLUMN_NAME) == null;
+        return "".equals(deletedRows.getString(MDV_COLUMN_NAME)) || deletedRows.getString(MDV_COLUMN_NAME) == null;
     }
 
     /**
      * Compares the current hash value in the metadata with the given hash, to assert if a row data has changed or not.
      * <p/>
+     *
      * @param rows the result set
      * @param hash the calculated hash
      * @return true in case of equality

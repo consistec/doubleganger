@@ -1,18 +1,19 @@
-package de.consistec.syncframework.common.data.schema;
+package de.consistec.syncframework.impl.data.schema;
 
+import de.consistec.syncframework.common.data.schema.Column;
+import de.consistec.syncframework.common.data.schema.Constraint;
+import de.consistec.syncframework.common.data.schema.ISQLConverter;
+import de.consistec.syncframework.common.data.schema.Schema;
+import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SchemaConverterException;
 import de.consistec.syncframework.common.util.SQLTypesUtil;
 
 /**
- * Implementation of {@link de.consistec.syncframework.common.data.schema.ISQLConverter ISQLConverter} interface.
- * <p/>
- *
- * @author Markus Backes
+ * @author marcel
  * @company Consistec Engineering and Consulting GmbH
- * @date 26.07.12 14:21
- * @since 0.0.1-SNAPSHOT
+ * @date 30.01.13 17:10
  */
-public class CreateSchemaToSQLConverter implements ISQLConverter<Schema> {
+public class CreateSchemaToMySQLConverter implements ISQLConverter<Schema> {
 
     /**
      * space constant.
@@ -22,7 +23,6 @@ public class CreateSchemaToSQLConverter implements ISQLConverter<Schema> {
      * sparator constant.
      */
     protected static final String LITERALS_COMMA = ",";
-
 
     /**
      * This method converts the passed Schema object to SQL queries which can be
@@ -73,7 +73,8 @@ public class CreateSchemaToSQLConverter implements ISQLConverter<Schema> {
                         }
                     }
                 }
-                result.append(");");
+
+                result.append(") engine=InnoDB;");
             }
         } catch (IllegalAccessException e) {
             throw new SchemaConverterException(e);
