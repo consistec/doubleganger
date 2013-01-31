@@ -23,8 +23,7 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.util.HashCalculator;
 import de.consistec.syncframework.impl.TestDatabase;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
-import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
+import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -57,7 +56,7 @@ public class TableSyncStrategyTest {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
-    private TestDatabase db = new TestDatabase(PostgresDatabaseAdapter.CONFIG_FILE, DumpDataSource.SupportedDatabases.POSTGRESQL);
+    private TestDatabase db = new PostgresDatabase();
     @Mock
     private ResultSet localDataResultSet;
     @Mock
