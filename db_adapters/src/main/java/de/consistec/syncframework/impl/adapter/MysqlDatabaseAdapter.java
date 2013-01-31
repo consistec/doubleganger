@@ -33,8 +33,8 @@ public class MysqlDatabaseAdapter extends GenericDatabaseAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(MysqlDatabaseAdapter.class.getCanonicalName());
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
-        super.createMDTable(tableName);
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
+        super.createMDTableOnServer(tableName);
 
         if (CONF.isSqlTriggerActivated()) {
 

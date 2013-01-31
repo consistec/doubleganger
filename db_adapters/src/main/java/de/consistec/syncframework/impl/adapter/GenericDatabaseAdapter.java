@@ -973,16 +973,16 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createClientMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnClient() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
             if (!existsMDTable(tableName)) {
-                createClientMDTable(tableName);
+                createMDTableOnClient(tableName);
             }
         }
     }
 
     @Override
-    public void createClientMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         LOGGER.debug("creating new metadata table: {}", mdTableName);
 
@@ -1003,16 +1003,16 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
             if (!existsMDTable(tableName)) {
-                createMDTable(tableName);
+                createMDTableOnServer(tableName);
             }
         }
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         LOGGER.debug("creating new metadata table: {}", mdTableName);
 

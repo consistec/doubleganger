@@ -147,9 +147,9 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public void createClientMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
         try {
-            super.createClientMDTable(tableName);
+            super.createMDTableOnClient(tableName);
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
 
@@ -164,14 +164,14 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
         try {
             if (CONF.isSqlTriggerActivated()) {
                 String createLanguageQuery = generatePlpgsqlLanguageQuery();
                 executeSqlQuery(createLanguageQuery);
             }
 
-            super.createMDTable(tableName);
+            super.createMDTableOnServer(tableName);
 
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();

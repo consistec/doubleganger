@@ -147,7 +147,7 @@ public final class SyncContext {
             }
 
             adapter.getConnection().setAutoCommit(true);
-            adapter.createMDSchema();
+            adapter.createMDSchemaOnServer();
             LOGGER.info(Infos.COMMON_FRAMEWORK_INITIALIZED_SERVER);
 
         } catch (SQLException ex) {

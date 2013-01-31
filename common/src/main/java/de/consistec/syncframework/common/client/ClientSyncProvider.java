@@ -114,7 +114,7 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
             // For some databases (e.g. SQLite) DDL statements have to be committed, thats why here autocommit mode=true.
             adapter = prepareAdapterWithAutoCommit();
             adapter.applySchema(schema);
-            adapter.createClientMDSchema();
+            adapter.createMDSchemaOnClient();
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
         } finally {

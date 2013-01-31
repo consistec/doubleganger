@@ -94,11 +94,11 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
     }
 
     @Override
-    public void createClientMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnClient() throws DatabaseAdapterException {
     }
 
     @Override
@@ -178,11 +178,11 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
     }
 
     @Override
-    public void createClientMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
     }
 //</editor-fold>
 }
