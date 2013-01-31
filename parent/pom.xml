@@ -63,6 +63,8 @@
         <mysql_extern_user>extern</mysql_extern_user>
         <mysql_extern_pwd>extern</mysql_extern_pwd>
         <mysql_driver>com.mysql.jdbc.Driver</mysql_driver>
+        <mysql_database_adapter>de.consistec.syncframework.impl.adapter.MysqlDatabaseAdapter
+        </mysql_database_adapter>
         <sqlite_extern_user></sqlite_extern_user>
         <sqlite_extern_pwd></sqlite_extern_pwd>
         <!-- Sonar Properties -->
