@@ -195,10 +195,10 @@ public class DumpDataSource implements DataSource {
         String filePath;
         switch (dbType) {
             case MYSQL:
-                filePath = GenericDatabaseAdapter.MYSQL_CONFIG_FILE;
+                filePath = MySqlDatabaseAdapter.MYSQL_CONFIG_FILE;
                 break;
             case POSTGRESQL:
-                filePath = PostgresDatabaseAdapter.CONFIG_FILE;
+                filePath = PostgresDatabaseAdapter.POSTGRE_CONFIG_FILE;
                 break;
             case SQLITE:
                 filePath = GenericDatabaseAdapter.SQLITE_CONFIG_FILE;

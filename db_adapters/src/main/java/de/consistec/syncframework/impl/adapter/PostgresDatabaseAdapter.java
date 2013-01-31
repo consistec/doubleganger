@@ -1,7 +1,9 @@
 package de.consistec.syncframework.impl.adapter;
 
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
+import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
@@ -58,7 +60,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * Database property file.
      * Value: {@value}.
      */
-    public static final String CONFIG_FILE = "/config_postgre.properties";
+    public static final String POSTGRE_CONFIG_FILE = "/config_postgre.properties";
     /**
      * Default port on which database server is listening.
      * <p/>
@@ -83,9 +85,8 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
-    private static final String SYNC_USER = "syncuser";
     private static final String CREATE_LANGUAGE_FILE_PATH = "/sql/postgres_create_language.sql";
-    private static final String CREATE_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
+    private static final String CREATE_POSTGRES_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
     private Integer port;
     private String host;
@@ -146,27 +147,9 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
         try {
-            super.createMDTable(tableName);
-
-            if (CONF.isSqlTriggerActivated()) {
-                getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
-                    @Override
-                    public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
-                        while (result.next()) {
-                            final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
-                            insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
-                        }
-                    }
-                });
-
-                String createLanguageQuery = generatePlpgsqlLanguageQuery();
-                executeSqlQuery(createLanguageQuery);
-
-                String triggerQuery = generateSqlTriggersForTable(tableName);
-                executeSqlQuery(triggerQuery);
-            }
+            super.createMDTableOnClient(tableName);
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
 
@@ -175,9 +158,47 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
                 throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
                     sqlEx); //NOSONAR
             } else {
-            handleTransactionAborted(ex);
+                handleTransactionAborted(ex);
+            }
         }
     }
+
+    @Override
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
+        try {
+            if (CONF.isSqlTriggerActivated()) {
+                String createLanguageQuery = generatePlpgsqlLanguageQuery();
+                executeSqlQuery(createLanguageQuery);
+            }
+
+            super.createMDTableOnServer(tableName);
+
+        } catch (DatabaseAdapterException ex) {
+            SQLException sqlEx = (SQLException) ex.getCause();
+
+            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState()) || RELATION_ALREADY_EXIST.equals(
+                sqlEx.getSQLState())) {
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
+                    sqlEx); //NOSONAR
+            } else {
+                handleTransactionAborted(ex);
+            }
+        }
+
+        if (CONF.isSqlTriggerActivated()) {
+
+            getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
+                @Override
+                public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
+                    while (result.next()) {
+                        final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
+                        insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
+                    }
+                }
+            });
+            String triggerQuery = generateSqlTriggersForTable(tableName, CREATE_POSTGRES_TRIGGERS_FILE_PATH);
+            executeSqlQuery(triggerQuery);
+        }
     }
 
     private String generatePlpgsqlLanguageQuery() {
@@ -186,25 +207,30 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     /**
-     * Creates a trigger to update the F flag in the metadata oon every change in the data table ON THE SERVER.
+     * Creates a trigger to update the F flag in the metadata on every change in the data table ON THE SERVER.
      * <p/>
      * @param tableName the table's name
+     * @param filePath path to the trigger's definition file
      * @return sql query for the triggers
      */
-    private String generateSqlTriggersForTable(String tableName) throws DatabaseAdapterException {
+    protected String generateSqlTriggersForTable(String tableName, String filePath) throws DatabaseAdapterException {
         String triggerQuery = "";
 
         // we don't want any trigger on the metadata tables
         if (!tableName.endsWith(CONF.getMdTableSuffix())) {
 
             // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(CREATE_TRIGGERS_FILE_PATH))
+            // Yes, we read this file *every time* a MD table is created... It's not optimized, but
+            // we do it only once: the first sync is somewhat slower, but that's all.
+            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
                 .useDelimiter("\\A").next();
 
             triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
             triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-            triggerQuery = triggerQuery.replaceAll("%pk%", getPrimaryKeyColumn(tableName).getName());
-            triggerQuery = triggerQuery.replaceAll("%_md%", CONF.getMdTableSuffix());
+            triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
+            triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
+            triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
+            triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
 
             LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
         }
