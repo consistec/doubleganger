@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * This class tests the correct handling of getChanges for client side.
@@ -22,6 +24,7 @@ import org.junit.Test;
  * @company Consistec Engineering and Consulting GmbH
  * @date 13.12.12 12:16
  */
+@RunWith(value = Parameterized.class)
 public class ClientChangesEnumeratorTest extends ChangesEnumeratorTest {
 
     private static String[] serverInsertQueries = new String[]{

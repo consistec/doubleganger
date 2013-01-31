@@ -2,6 +2,7 @@ package de.consistec.syncframework.impl.adapter.it_postgres;
 
 import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
 import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
+
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDirection;
@@ -16,7 +17,8 @@ import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.server.ServerChangesEnumerator;
 import de.consistec.syncframework.impl.TestDatabase;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
+import de.consistec.syncframework.impl.adapter.it_mysql.MySqlDatabase;
+import de.consistec.syncframework.impl.adapter.it_sqlite.SqlLiteDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -33,7 +35,6 @@ import org.junit.runners.Parameterized;
  * @company Consistec Engineering and Consulting GmbH
  * @date 28.01.13 15:44
  */
-@RunWith(value = Parameterized.class)
 public class ChangesEnumeratorTest {
 
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
@@ -50,9 +51,9 @@ public class ChangesEnumeratorTest {
     public static Collection<Object[]> AllScenarii() {
 
         return Arrays.asList(new Object[][]{
-                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)},
-                {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
-                {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)}});
+                {new SqlLiteDatabase()},
+                {new MySqlDatabase()},
+                {new PostgresDatabase()}});
 
     }
 
