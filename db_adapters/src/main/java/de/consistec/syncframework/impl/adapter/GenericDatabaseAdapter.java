@@ -1,8 +1,6 @@
 package de.consistec.syncframework.impl.adapter;
 
-import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
-import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.PropertiesUtil.defaultIfNull;
 import static de.consistec.syncframework.common.util.PropertiesUtil.readString;
@@ -39,7 +37,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Scanner;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.slf4j.cal10n.LocLogger;
@@ -121,11 +118,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      */
     public static final String PROPS_SCHEMA = "schema";
     /**
-     * MySQL database property file.
-     * Value: {@value}
-     */
-    public static final String MYSQL_CONFIG_FILE = "/config_mysql.properties";
-    /**
      * SQLite database property file.
      * Value: {@value}
      */
@@ -171,11 +163,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <LI> columnNullableUnknown - nullability unknown
      * </UL>
      * <p/>
-     * <
-     * p/>
      * Value: {@value}.
      * <p/>
-     *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
      * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
@@ -238,7 +227,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
     private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
     private static final Config CONF = Config.getInstance();
-    private static final String SYNC_USER = "syncuser";
     /**
      * Jdbc connection on which adapter operates.
      * <p/>
@@ -985,6 +973,36 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public void createClientMDSchema() throws DatabaseAdapterException {
+        for (String tableName : CONF.getSyncTables()) {
+            if (!existsMDTable(tableName)) {
+                createClientMDTable(tableName);
+            }
+        }
+    }
+
+    @Override
+    public void createClientMDTable(final String tableName) throws DatabaseAdapterException {
+        String mdTableName = tableName + CONF.getMdTableSuffix();
+        LOGGER.debug("creating new metadata table: {}", mdTableName);
+
+        Column pkColumn = getPrimaryKeyColumn(tableName);
+        Table mdTable = new Table(mdTableName);
+        mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+        mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
+        mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
+        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+
+        try {
+            String sqlTableStatement = getTableConverter().toSQL(mdTable);
+            executeSqlQuery(sqlTableStatement);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        }
+    }
+
+    @Override
     public void createMDSchema() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
             if (!existsMDTable(tableName)) {
@@ -1014,6 +1032,12 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         }
     }
 
+    /**
+     * Returns true if the corresponding metadata table exists.
+     * @param table the table name
+     * @return true if exists
+     * @throws DatabaseAdapterException
+     */
     @Override
     public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
@@ -1042,7 +1066,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
             stmt = connection.createStatement();
             for (String query : queries) {
-                stmt.execute(query);
+                if (query != null && !query.startsWith("--") && !query.trim().isEmpty()) {
+                    stmt.execute(query);
+                }
             }
         } catch (SQLException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
@@ -1052,32 +1078,24 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     /**
-     * Creates a trigger to update the F flag in the metadata oon every change in the data table ON THE SERVER.
+     * Executes many SQL queries, one after the other.
      * <p/>
-     * @param tableName the table's name
-     * @param filePath path to the trigger's definition file
-     * @return sql query for the triggers
+     * @param queries the queries to execute
+     * @throws DatabaseAdapterException
      */
-    protected String generateSqlTriggersForTable(String tableName, String filePath) throws DatabaseAdapterException {
-        String triggerQuery = "";
-
-        // we don't want any trigger on the metadata tables
-        if (!tableName.endsWith(CONF.getMdTableSuffix())) {
-
-            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
-                .useDelimiter("\\A").next();
-
-            triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
-            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-            triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
-            triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
-            triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
-            triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
-
-            LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
+    protected void executeBatch(String[] queries) throws DatabaseAdapterException {
+        Statement stmt = null; //NOSONAR
+        try {
+            stmt = connection.createStatement();
+            for (String query : queries) {
+                stmt.addBatch(query);
+            }
+            stmt.executeBatch();
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+        } finally {
+            closeStatements(stmt);
         }
-        return triggerQuery;
     }
 
     /**

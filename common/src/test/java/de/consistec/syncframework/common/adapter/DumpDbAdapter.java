@@ -98,6 +98,10 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
+    public void createClientMDSchema() throws DatabaseAdapterException {
+    }
+
+    @Override
     public void updateMdRow(int rev, int f, Object pk, String mdv, String tableName) throws DatabaseAdapterException,
         TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -177,5 +181,8 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     public void createMDTable(final String tableName) throws DatabaseAdapterException {
     }
 
+    @Override
+    public void createClientMDTable(final String tableName) throws DatabaseAdapterException {
+    }
 //</editor-fold>
 }
