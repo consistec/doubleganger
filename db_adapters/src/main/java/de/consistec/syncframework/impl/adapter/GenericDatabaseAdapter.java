@@ -1034,7 +1034,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     /**
      * Returns true if the corresponding metadata table exists.
-     * @param table the table name
+     * @param tableName the table name
      * @return true if exists
      * @throws DatabaseAdapterException
      */
