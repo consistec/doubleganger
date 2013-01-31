@@ -49,12 +49,12 @@ public class DumpDataSource implements DataSource {
 
                 propertiesPrefix = String.valueOf(
                     Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP").get(
-                    null));
+                        null));
 
             } else {
                 propertiesPrefix = String.valueOf(
                     Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_SERV_DB_ADAP_GROUP").get(
-                    null));
+                        null));
             }
 
             propertiesPrefix += ".";
@@ -121,9 +121,22 @@ public class DumpDataSource implements DataSource {
         return buildConnection(driver, url, username, password);
     }
 
-    private Connection createMySql(String username, String password) throws IOException, ClassNotFoundException,
-        SQLException {
-        return createGeneric(username, password);
+    private Connection createMySql(String username, String password) throws Exception {
+        String driver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
+        if (isNullOrEmpty(driver)) {
+            driver = "com.mysql.jdbc.Driver";
+        }
+        String url = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, false);
+
+        if (isNullOrEmpty(url)) {
+            String host = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_HOST, true);
+            String dbName = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_DB_NAME, true);
+            String tmpPort = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PORT, false);
+
+            url = Whitebox.<String>invokeMethod(MySqlDatabaseAdapter.class, "createUrl", host,
+                StringUtil.isNullOrEmpty(tmpPort) ? null : Integer.valueOf(tmpPort), dbName);
+        }
+        return buildConnection(driver, url, username, password);
     }
 
     private Connection createSqlLite(String username, String password) throws IOException, ClassNotFoundException,
@@ -242,6 +255,8 @@ public class DumpDataSource implements DataSource {
     public enum SupportedDatabases {
 
         POSTGRESQL, MYSQL, SQLITE;
-    };
+    }
+
+    ;
     //</editor-fold>
 }

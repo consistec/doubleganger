@@ -8,6 +8,11 @@ import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.client.ClientSyncProvider;
 import de.consistec.syncframework.common.data.Change;
+import de.consistec.syncframework.common.data.schema.Column;
+import de.consistec.syncframework.common.data.schema.Constraint;
+import de.consistec.syncframework.common.data.schema.ConstraintType;
+import de.consistec.syncframework.common.data.schema.Schema;
+import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.server.ServerSyncProvider;
@@ -19,6 +24,7 @@ import de.consistec.syncframework.impl.adapter.it_sqlite.SqlLiteDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
 import org.junit.After;
@@ -36,12 +42,7 @@ import org.junit.runners.Parameterized;
 @RunWith(value = Parameterized.class)
 public class ClientProviderTransactionTest {
 
-    protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
-    protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);"};
+    protected static String[] tableNames = new String[]{"categories", "items", "categories_md", "items_id"};
 
     private TestDatabase db;
 
@@ -50,14 +51,72 @@ public class ClientProviderTransactionTest {
     }
 
     @Before
-    public void setUp() throws IOException, SQLException {
+    public void setUp() throws IOException, SQLException, DatabaseAdapterException {
         db.init();
 
         db.dropTablesOnServer(tableNames);
         db.dropTablesOnClient(tableNames);
 
-        db.executeQueriesOnClient(createQueries);
-        db.executeQueriesOnServer(createQueries);
+        Schema dbSchema = buildSchema();
+
+        db.createSchemaOnClient(dbSchema);
+        db.createSchemaOnServer(dbSchema);
+    }
+
+    private Schema buildSchema() throws DatabaseAdapterException {
+        Schema schema = new Schema();
+        Table table;
+        Constraint constraint;
+
+        // create table categories
+        Column categoryid = new Column("categoryid", Types.INTEGER);
+        categoryid.setNullable(false);
+        categoryid.setSize(10);
+        categoryid.setDecimalDigits(0);
+
+        Column categoryname = new Column("categoryname", Types.VARCHAR);
+        categoryname.setNullable(true);
+        categoryname.setSize(300);
+        categoryname.setDecimalDigits(0);
+
+        Column categorydescription = new Column("description", Types.VARCHAR);
+        categorydescription.setNullable(true);
+        categorydescription.setSize(300);
+        categorydescription.setDecimalDigits(0);
+
+        table = new Table("categories");
+        table.add(categoryid, categoryname, categorydescription);
+
+        constraint = new Constraint(ConstraintType.PRIMARY_KEY, "DATAPK", "categoryid");
+        table.add(constraint);
+
+        schema.addTables(table);
+
+        // create table items
+        Column itemsid = new Column("id", Types.INTEGER);
+        itemsid.setNullable(false);
+        itemsid.setSize(10);
+        itemsid.setDecimalDigits(0);
+
+        Column itemsname = new Column("name", Types.VARCHAR);
+        itemsname.setNullable(true);
+        itemsname.setSize(300);
+        itemsname.setDecimalDigits(0);
+
+        Column itemsdescription = new Column("description", Types.VARCHAR);
+        itemsdescription.setNullable(true);
+        itemsdescription.setSize(300);
+        itemsdescription.setDecimalDigits(0);
+
+        table = new Table("items");
+        table.add(itemsid, itemsname, itemsdescription);
+
+        constraint = new Constraint(ConstraintType.PRIMARY_KEY, "DATAID", "id");
+        table.add(constraint);
+
+        schema.addTables(table);
+
+        return schema;
     }
 
     /**

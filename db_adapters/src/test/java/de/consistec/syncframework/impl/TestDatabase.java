@@ -1,6 +1,10 @@
 package de.consistec.syncframework.impl;
 
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
+import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
+import de.consistec.syncframework.common.data.schema.Schema;
+import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
 import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
@@ -11,12 +15,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
+ * @author davidm
  * @company Consistec Engineering and Consulting GmbH
  * @date 11.01.2013 11:43:45
- * @author davidm
- * @since
  */
-public class TestDatabase {
+public abstract class TestDatabase {
 
     private final SupportedDatabases supportedDb;
     private final String configFile;
@@ -146,5 +149,22 @@ public class TestDatabase {
     @Override
     public String toString() {
         return "TestDatabase: " + supportedDb + ", " + configFile;
+    }
+
+    public void createSchemaOnClient(Schema schema) throws DatabaseAdapterException, SQLException {
+        createSchemaOnDB(schema, DatabaseAdapterFactory.AdapterPurpose.CLIENT, getClientConnection());
+    }
+
+    public void createSchemaOnServer(Schema schema) throws DatabaseAdapterException, SQLException {
+        createSchemaOnDB(schema, DatabaseAdapterFactory.AdapterPurpose.SERVER, getServerConnection());
+    }
+
+    private void createSchemaOnDB(Schema schema, DatabaseAdapterFactory.AdapterPurpose db, Connection conn) throws
+        DatabaseAdapterException,
+        SQLException {
+        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(db);
+        adapter.init(conn);
+        adapter.applySchema(schema);
+        adapter.createMDSchema();
     }
 }
