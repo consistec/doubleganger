@@ -128,7 +128,7 @@ public class SchemaXMLConverter extends DefaultHandler {
             SchemaFactory factory;
 
             try {
-                // cearte a SchemaFactory capable of understanding WXS schemas
+                // create a SchemaFactory capable of understanding WXS schemas
                 factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             } catch (IllegalArgumentException e) {
                 LOGGER.warn(read(Warnings.COMMON_CANT_CREATE_XML_SCHEMA_FACTORY), e);

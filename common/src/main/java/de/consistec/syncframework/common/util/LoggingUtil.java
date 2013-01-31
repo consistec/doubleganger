@@ -59,16 +59,6 @@ public final class LoggingUtil {
         return DEFAULT_FACTORY.getLocLogger(clazz);
     }
 
-//    This method will be needed in future, for various bundles.
-//    public static IMessageConveyor lookup(Locale locale) {
-//        IMessageConveyor conveyor = cache.get(locale);
-//        if (conveyor == null) {
-//            conveyor = new MessageConveyor(locale);
-//            cache.put(locale, conveyor);
-//        }
-//        return conveyor;
-//    }
-
 //</editor-fold>
 
 }

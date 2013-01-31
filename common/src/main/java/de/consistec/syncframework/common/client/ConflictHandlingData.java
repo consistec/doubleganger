@@ -15,22 +15,6 @@ import java.util.Map;
  */
 public class ConflictHandlingData {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private int localRev;
     private int localFlag;
     private String localMdv;
@@ -65,34 +49,6 @@ public class ConflictHandlingData {
         this.clientChange = clientChange;
         this.remoteChange = serverChange;
     }
-
-
-//    /**
-//     * returns the revision of any data row from the client.
-//     *
-//     * @return revision of the data row
-//     */
-//    public int getLocalRev() {
-//        return localRev;
-//    }
-//
-//    /**
-//     * returns the flag of any data row from the client.
-//     *
-//     * @return flag of the data row
-//     */
-//    public int getLocalFlag() {
-//        return localFlag;
-//    }
-//
-//    /**
-//     * returns the hash value of any data row from the client.
-//     *
-//     * @return has value of the data row
-//     */
-//    public String getLocalMdv() {
-//        return localMdv;
-//    }
 
     /**
      * returns the remote entry of the data row from the server

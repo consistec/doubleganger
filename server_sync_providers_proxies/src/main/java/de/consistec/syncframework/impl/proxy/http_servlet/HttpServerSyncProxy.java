@@ -83,7 +83,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     private URI host;
     private Credentials credentials;
     private ISerializationAdapter serializationAdapter;
-    //    private long threadId;
     private String threadId;
 
     //</editor-fold>
@@ -166,7 +165,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public int applyChanges(SyncData clientData) throws SyncException {
 
-//        threadId = Thread.currentThread().getId();
         threadId = ManagementFactory.getRuntimeMXBean().getName();
 
         try {
@@ -186,7 +184,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     public SyncData getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
 
-//        threadId = Thread.currentThread().getId();
         threadId = ManagementFactory.getRuntimeMXBean().getName();
 
         try {
@@ -204,7 +201,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Schema getSchema() throws SyncException {
 
-//        threadId = Thread.currentThread().getId();
         threadId = ManagementFactory.getRuntimeMXBean().getName();
 
         try {
@@ -217,14 +213,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
             throw new SyncException(read(Errors.CANT_GET_SCHEMA_SERIALIZATION_FAILURE), e);
         }
     }
-
-    /**
-     * Do nothing.
-     */
-//    @Override
-//    public void close() {
-//        LOGGER.debug("Close called");
-//    }
 
     /**
      * Sends the http Request to server and returns its response as a JSON String.

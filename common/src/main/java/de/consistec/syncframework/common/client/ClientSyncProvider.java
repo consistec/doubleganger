@@ -223,7 +223,7 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
             throw new SyncException(read(Errors.COMMON_APPLY_CHANGES_FAILED), ex);
         }
 
-        // return always max revision from server independet from changeset
+        // return always max revision from server independent from changeset
         int maxRev = serverData.getRevision();
 
         LOGGER.debug("return maxRev {}: ", maxRev);

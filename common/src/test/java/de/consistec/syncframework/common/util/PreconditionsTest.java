@@ -25,22 +25,6 @@ import org.junit.Test;
  */
 public class PreconditionsTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     @Test(expected = SyncException.class)
     public void checkSyncDirectionOfServerChangesFail() throws SyncException {
         List<Change> serverChanges = newArrayList();

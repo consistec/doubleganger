@@ -82,7 +82,6 @@ public class Change implements Serializable {
      * @param mdEntry the new md entry
      */
     public void setMdEntry(MDEntry mdEntry) {
-
         this.mdEntry = mdEntry;
     }
 

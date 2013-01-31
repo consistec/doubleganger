@@ -144,7 +144,6 @@ public class ClientProviderTransactionTest {
 
 
         String[] insertServerQuery = new String[]{
-//            "DELETE FROM categories WHERE pk = 1",
             "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
             "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (2, null, 1, 0)",
             "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (2, '75901F57520C09EB990837C7AA93F717', 2, 0)",};

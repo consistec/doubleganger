@@ -20,7 +20,7 @@ import java.util.Properties;
  * @date 31.10.2012 14:48:35
  * @since 0.0.1-SNAPSHOT
  */
-public class DumpDbAdapter implements IDatabaseAdapter {
+public class DumbDbAdapter implements IDatabaseAdapter {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     public Connection connection;
@@ -29,7 +29,7 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
 //</editor-fold>
 //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-    private DumpDbAdapter() {
+    private DumbDbAdapter() {
     }
 
     //</editor-fold>
@@ -154,7 +154,6 @@ public class DumpDbAdapter implements IDatabaseAdapter {
 
     @Override
     public Connection getConnection() {
-//        throw new UnsupportedOperationException("Not supported yet.");
         return this.connection;
     }
 

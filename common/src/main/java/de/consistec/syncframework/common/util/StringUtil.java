@@ -6,7 +6,7 @@ package de.consistec.syncframework.common.util;
  * @company Consistec Engineering and Consulting GmbH
  * @date 11.10.2012 09:04:56
  * @author Piotr Wieczorek
- * @since 0.0.1-SNAPHOST
+ * @since 0.0.1-SNAPSHOT
  */
 public final class StringUtil {
 
@@ -23,7 +23,7 @@ public final class StringUtil {
 
     /**
      * Checks if provided string value is null or empty.
-     * 
+     *
      * @param value String value to check.
      * @return true if string is empty or null.
      */

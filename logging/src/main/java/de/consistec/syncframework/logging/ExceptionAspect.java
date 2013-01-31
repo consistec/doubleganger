@@ -21,56 +21,9 @@ import org.slf4j.MarkerFactory;
 @Aspect
 public class ExceptionAspect {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
 
     private static final Logger LOGGER = LoggerFactory.getLogger("ExceptionAspect");
     private static final Marker ERROR_MARKER = MarkerFactory.getMarker("ERROR");
-
-//    @Pointcut("handler(Exception+) && args(ex)")
-//    void handleException(Exception ex) {
-//    }
-//
-////    @Pointcut("execution(* *(String, ..)) && args(th)")
-////    void throwingException(Throwable th) {
-////    }
-//
-//    @Before("handleException(ex)")
-//    public void logHandledException(Exception ex, JoinPoint.StaticPart thisJoinPointStaticPart) {
-//        Signature sig = thisJoinPointStaticPart.getSignature();
-//
-//        System.out.println("Exception thrown !!!" + sig.getDeclaringType().getName() + ":" + sig.getName() + ":"
-//            + ex.toString());
-//        LOGGER.error(ERROR_MARKER, "Exception thrown !!!" + sig.getDeclaringType().getName(), sig.getName(),
-//            ex.toString());
-//    }
-//
-//
-//    //    @AfterThrowing("throwingException(th)")
-////    public void logThrowingException(Throwable th, JoinPoint joinPoint) {
-//    @AfterThrowing(pointcut = "execution(* *(String, ..))", throwing = "th")
-//    public void myAfterThrowing(JoinPoint joinPoint, Throwable th) {
-//        Signature signature = joinPoint.getSignature();
-//
-//        System.out.println(
-//            "Exception thrown !!!" + signature.getDeclaringType().getName() + ":" + signature.getName() + ":"
-//                + th.toString());
-//        LOGGER.error(ERROR_MARKER, "Exception thrown !!!" + signature.getDeclaringType().getName(), signature.getName(),
-//            th.toString());
-//    }
 
     @Pointcut("execution(* *(..)) && !cflow(within(TracingAspectUtil))")
     void throwableMethod() {

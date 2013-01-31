@@ -106,13 +106,4 @@ public interface IClientSyncProvider {
      */
     void commit() throws DatabaseAdapterException;
 
-//    /**
-//     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
-//     * and deleted rows in all client data tables.
-//     *
-//     * @return List<Change> the list of client changes.
-//     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
-//     * and therefore throws an more specific exception.
-//     */
-//    List<Change> synchronizeClientTables() throws SyncException;
 }

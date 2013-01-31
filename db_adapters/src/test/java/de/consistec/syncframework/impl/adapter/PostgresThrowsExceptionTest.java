@@ -37,18 +37,6 @@ public class PostgresThrowsExceptionTest {
     private static final SQLException UNIQUE_EXCEPTION = new SQLException("test unique exception", "23505");
 //</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     @Mock
     private Connection connectionMock;
     @Mock

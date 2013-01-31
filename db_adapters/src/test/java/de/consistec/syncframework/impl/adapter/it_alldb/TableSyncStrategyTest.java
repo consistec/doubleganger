@@ -129,18 +129,10 @@ public class TableSyncStrategyTest {
             tableSyncStrategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
         assertTrue(dataHolder.getClientSyncData().getChanges().size() == 0);
 
-        // sollte mindestens einmal
-        // mit irgendeinem Parameterwert
-        // aufgerufen worden sein
-//        verify(model, atLeast(1)).setPeriod(anyInt());
-
-
-        // model.run(1) sollte genau einmal aufgerufen worden sein
+        // model.run(1) should be executed exactly one time.
         verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 0, entry.getPrimaryKey(), hashValue,
             entry.getTableName());
 
-        // mode.fail() sollte gar nicht aufgerufen worden sein
-//        verify(model, never()).fail();
     }
 
     @Test
@@ -202,18 +194,9 @@ public class TableSyncStrategyTest {
             tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
         assertTrue(clientChanges.size() == 1);
 
-        // sollte mindestens einmal
-        // mit irgendeinem Parameterwert
-        // aufgerufen worden sein
-//        verify(model, atLeast(1)).setPeriod(anyInt());
-
-
-        // model.run(1) sollte genau einmal aufgerufen worden sein
+        // model.run(1) should be executed exactly one time.
         verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 1, entry.getPrimaryKey(), TEST_MDV,
             entry.getTableName());
-
-        // mode.fail() sollte gar nicht aufgerufen worden sein
-//        verify(model, never()).fail();
     }
 
     @Test
@@ -308,18 +291,6 @@ public class TableSyncStrategyTest {
         SyncContext.local(strategies);
     }
 
-    //    @Test
-//    public void validateStateClientToServerAndClientWins() throws ContextException, SyncException {
-//        TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER,
-//            ConflictStrategy.CLIENT_WINS);
-//        TableSyncStrategies strategies = new TableSyncStrategies();
-//        strategies.addSyncStrategyForTable("categories", syncStrategy);
-//        SyncContext.LocalContext ctx = SyncContext.local(strategies);
-//
-//        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
-//        assertTrue(strategy.getDirection() == SyncDirection.CLIENT_TO_SERVER);
-//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.CLIENT_WINS);
-//    }
     @Test(expected = IllegalStateException.class)
     public void validateStateClientToServerAndFireEvent() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.CLIENT_TO_SERVER,
@@ -329,18 +300,6 @@ public class TableSyncStrategyTest {
         SyncContext.local(strategies);
     }
 
-    //    @Test
-//    public void validateStateServerToClientAndServerWins() throws ContextException, SyncException {
-//        TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,
-//            ConflictStrategy.SERVER_WINS);
-//        TableSyncStrategies strategies = new TableSyncStrategies();
-//        strategies.addSyncStrategyForTable("categories", syncStrategy);
-//        SyncContext.LocalContext ctx = SyncContext.local(strategies);
-//
-//        TableSyncStrategy strategy = ctx.getStrategies().getSyncStrategyForTable("categories");
-//        assertTrue(strategy.getDirection() == SyncDirection.SERVER_TO_CLIENT);
-//        assertTrue(strategy.getGlobalConflictStrategy() == ConflictStrategy.SERVER_WINS);
-//    }
     @Test(expected = IllegalStateException.class)
     public void validateStateServerToClientAndClientWins() throws ContextException, SyncException {
         TableSyncStrategy syncStrategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,

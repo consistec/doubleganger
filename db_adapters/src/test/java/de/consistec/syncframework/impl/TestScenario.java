@@ -243,9 +243,6 @@ public class TestScenario {
             flatServerRs = ResultSetHelper.resultSetToString(serverResultSet);
 
             Assert.assertEquals("Server state is invalid.", expectedFlatServerResultSets[i], flatServerRs);
-
-//            serverResultSet.last();
-//            Assert.assertEquals("Wrong row count on server", expectedServerState.length(), serverResultSet.getRow());
         }
 
         serverStmt.close();
@@ -264,9 +261,6 @@ public class TestScenario {
             flatClientRs = ResultSetHelper.resultSetToString(clientResultSet);
 
             Assert.assertEquals("Client state is invalid.", expectedFlatClientResultSets[i], flatClientRs);
-
-//            clientResultSet.last();
-//            Assert.assertEquals("Wrong row count on client", expectedClientState.length(), clientResultSet.getRow());
         }
 
         clientStmt.close();

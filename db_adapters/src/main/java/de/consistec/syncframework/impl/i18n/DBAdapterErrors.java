@@ -22,7 +22,7 @@ public enum DBAdapterErrors {
      * <b>Parameter</b>: driver name.
      * </p>
      */
-    CANT_LOAD_JDBC_DIRVER,
+    CANT_LOAD_JDBC_DRIVER,
     /**
      * When creating adapter instance fails.
      * <p>

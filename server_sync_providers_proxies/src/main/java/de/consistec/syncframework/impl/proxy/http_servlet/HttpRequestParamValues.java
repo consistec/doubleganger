@@ -95,8 +95,4 @@ public class HttpRequestParamValues {
 
 //</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
 }

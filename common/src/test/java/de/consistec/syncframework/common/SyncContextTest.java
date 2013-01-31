@@ -3,7 +3,7 @@ package de.consistec.syncframework.common;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import de.consistec.syncframework.common.adapter.DumpDbAdapter;
+import de.consistec.syncframework.common.adapter.DumbDbAdapter;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.server.IServerSyncProvider;
@@ -37,7 +37,7 @@ public class SyncContextTest extends TestBase implements IServerSyncProvider {
         try {
             final Config conf = Config.getInstance();
 
-            conf.setServerDatabaseAdapter(DumpDbAdapter.class);
+            conf.setServerDatabaseAdapter(DumbDbAdapter.class);
             conf.setServerProxy(null);
 
             Class<Object> innerClass = Whitebox.getInnerClassType(SyncContext.class, "ServerProxyFactory");

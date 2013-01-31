@@ -98,19 +98,12 @@ public class ClientHashProcessor {
         SyncData copiedServerSyncData = new SyncData(serverData);
 
         // we have to copy the lists to remove items from it.
-//        List<Change> copiedList = CollectionsUtil.deepCopyList(clientData.getChanges());
         List<Change> newClientList = newArrayList(clientData.getChanges());
-//        Collections.copy(newClientList, clientData.getChanges());
-
         List<Change> newServerList = newArrayList(serverData.getChanges());
-//        Collections.copy(newServerList, serverData.getChanges());
 
         copiedClientSyncData.setChanges(newClientList);
-//        copiedList = CollectionsUtil.deepCopyList(serverData.getChanges());
         copiedServerSyncData.setChanges(newServerList);
 
-//        Collections.copy(copiedClientSyncData.getChanges(), clientData.getChanges());
-//        Collections.copy(copiedServerSyncData.getChanges(), serverData.getChanges());
 
         SyncDataHolder dataHolder = new SyncDataHolder(copiedClientSyncData, copiedServerSyncData);
         try {

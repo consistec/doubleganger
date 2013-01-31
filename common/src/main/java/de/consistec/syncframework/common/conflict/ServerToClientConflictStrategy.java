@@ -22,23 +22,6 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class ServerToClientConflictStrategy extends DefaultConflictStrategy {
 
-
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final LocLogger LOGGER = LoggingUtil.createLogger(
         ServerToClientConflictStrategy.class.getCanonicalName());
 

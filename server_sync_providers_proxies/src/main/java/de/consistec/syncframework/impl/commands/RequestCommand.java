@@ -13,18 +13,6 @@ import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues
  */
 public interface RequestCommand {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**

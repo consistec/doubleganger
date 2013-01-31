@@ -350,7 +350,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
                 connection = DriverManager.getConnection(connectionUrl, username, password);
             }
         } catch (ClassNotFoundException e) {
-            String msg = read(DBAdapterErrors.CANT_LOAD_JDBC_DIRVER, driverName);
+            String msg = read(DBAdapterErrors.CANT_LOAD_JDBC_DRIVER, driverName);
             LOGGER.error(FATAL_MARKER, msg, e);
             throw new DatabaseAdapterInstantiationException(msg, e);
         } catch (Exception e) {

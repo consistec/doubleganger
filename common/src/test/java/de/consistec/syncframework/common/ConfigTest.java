@@ -155,7 +155,6 @@ public class ConfigTest extends TestBase {
 
             Config instance = Config.getInstance();
             instance.init(new FileInputStream(propsFile));
-//            instance.loadFromFile(new FileInputStream(propsFile));
 
             assertEquals("Expected and loaded conflict action are different", conflictStrategy,
                 instance.getGlobalConflictStrategy());
@@ -198,7 +197,6 @@ public class ConfigTest extends TestBase {
             // recreating the file
             createFile(propsFile, props);
             instance.init(new FileInputStream(propsFile));
-//            instance.loadFromFile(new FileInputStream(propsFile));
 
             // checking if default values where loaded correctly
             assertEquals("Default and loaded conflict action are different", DEFAULT_CONFLICT_STRATEGY,
@@ -329,7 +327,6 @@ public class ConfigTest extends TestBase {
             Properties clientDbAdapterProps = new Properties();
             Properties serverProviderProxyProps = new Properties();
 
-//            ConflictStrategy conflictStrategy = FIRE_EVENT;
             ConflictStrategy conflictStrategy = ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
             props.put(conflictActionPrefix, conflictStrategy.name());
 

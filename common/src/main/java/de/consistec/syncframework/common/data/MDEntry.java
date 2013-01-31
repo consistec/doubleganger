@@ -225,6 +225,6 @@ public class MDEntry implements Serializable {
         result = hashcodePrime * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
-    //</editr-fold>
+    //</editor-fold>
 
 }

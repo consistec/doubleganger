@@ -81,7 +81,6 @@ import org.slf4j.LoggerFactory;
  */
 public class TestSyncClient {
 
-    //    private static final Logger LOGGER = Logger.getRootLogger();
     private static final Logger LOGGER = LoggerFactory.getLogger(TestSyncClient.class.getCanonicalName());
     // obtaining frameworks configuration object
     private static final Config CONF = Config.getInstance();
@@ -206,10 +205,8 @@ public class TestSyncClient {
 
         if (outFile != null) {
 
-//            Path logFilePath = Paths.get(outFile);
             File logFilePath = new File(outFile);
 
-//            String fileName = logFilePath.getFileName().toString();
             String fileName = logFilePath.getName();
             String extension = FileUtil.getExtension(fileName);
 
@@ -220,21 +217,7 @@ public class TestSyncClient {
             builder.append(System.currentTimeMillis());
             builder.append(".");
             builder.append(extension);
-
-//            logFilePath = Paths.get(builder.toString());
             logFilePath = new File(builder.toString());
-
-            if (logFilePath.getParent() != null) {
-//                Files.createDirectories(logFilePath.getParent());
-            }
-
-//            if (!Files.exists(logFilePath)) {
-//                Files.createFile(logFilePath);
-//            }
-
-//            if (!logFilePath.exists()) {
-//                logFilePath.createNewFile();
-//            }
             createFileLogger(logFilePath.toString());
 
         } else {

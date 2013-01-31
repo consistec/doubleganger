@@ -31,10 +31,6 @@ public class SyncSettings {
     }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
 //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**

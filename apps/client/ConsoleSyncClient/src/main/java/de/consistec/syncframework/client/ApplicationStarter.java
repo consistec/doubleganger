@@ -60,7 +60,6 @@ public class ApplicationStarter {
     private static final String OPTION_OUPTUT_FILE = "o";
     private static final String OPTION_SETTINGS_FILE = "s";
     private static final Config CONF = Config.getInstance();
-    //    private static final String OPTION_MULTITHREADED_MODE = "m";
     private Options options = new Options();
 
     public void start(final String[] args) throws DatabaseAdapterException, ContextException, SyncException {
@@ -71,8 +70,6 @@ public class ApplicationStarter {
         try {
             CommandLine line = parser.parse(options, args, true);
 
-            //</editor-fold defaultstate="collapsed" desc="Configuring framework">
-
             if (line.getOptionValue(OPTION_OUPTUT_FILE) == null) {
                 createConsoleLogger();
             } else {
@@ -81,13 +78,6 @@ public class ApplicationStarter {
 
             InputStream in = new FileInputStream(line.getOptionValue(OPTION_SETTINGS_FILE));
             CONF.init(in);
-
-            //</editor-fold>
-
-//            if (line.hasOption(OPTION_MULTITHREADED_MODE)) {
-//                startsAppInMultithreadinMode(Integer.parseInt(line.getOptionValue(OPTION_MULTITHREADED_MODE)));
-//                return;
-//            }
 
             if (line.hasOption("--server-wins")) {
                 CONF.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
@@ -110,59 +100,6 @@ public class ApplicationStarter {
         }
     }
 
-    //    /**
-//     * @param threadNumber
-//     * @throws DatabaseAdapterException
-//     */
-//    private void startsAppInMultithreadinMode(int threadNumber) throws DatabaseAdapterException {
-//
-//        IServerSyncProvider serverProxy = null;
-//        try {
-//
-//            serverProxy = ServerSyncProviderFactory.newInstance();
-//            List<Change> clientChangeSet = createChangeSet(threadNumber);
-//            serverProxy.applyChanges(clientChangeSet, 1);
-////            SyncAgent agent = new SyncAgent(serverProvider, clientProvider, logger);
-////            agent.synchronize();
-//
-//        } catch (SyncException e) {
-//            LOGGER.error("could not close the databaseadapter in serversyncprovider", e);
-//            e.printStackTrace(System.err);
-//        } finally {
-//            if (serverProxy != null) {
-//                try {
-//                    serverProxy.close();
-//                } catch (DatabaseAdapterException e) {
-//                    e.printStackTrace(System.err);
-//                    LOGGER.error("could not close server database connection!", e);
-//                }
-//            }
-//        }
-//
-//    }
-//
-//    private List<Change> createChangeSet(int threadNumber) {
-//
-//        List<Change> changeSet = new ArrayList<>();
-//        Change change = new Change();
-//        MDEntry mdEntry = new MDEntry();
-//        mdEntry.setPrimaryKey(threadNumber);
-//        mdEntry.setRevision(0);
-//        mdEntry.setTableName("categories");
-//        mdEntry.setExists(true);
-//
-//        Map<String, Object> rowData = new HashMap<>();
-//        rowData.put("categoryid", threadNumber);
-//        rowData.put("categoryname", "jmeter");
-//        rowData.put("description", "jmeter");
-//
-//        change.setMdEntry(mdEntry);
-//        change.setRowData(rowData);
-//
-//        changeSet.add(change);
-//
-//        return changeSet;
-//    }
     private void createOptions() {
 
         options.addOption(OptionBuilder
@@ -181,11 +118,6 @@ public class ApplicationStarter {
             .withDescription("Set to let the client win on conflicts")
             .hasArg(false)
             .create());
-//        options.addOption(OptionBuilder.withLongOpt("numbers of client")
-//                .withDescription("starts the client for multithreading mode")
-//                .isRequired(false)
-//                .hasArg(true)
-//                .create(OPTION_MULTITHREADED_MODE));
         options.addOption(OptionBuilder.withLongOpt("output")
             .withDescription("Output file. If not provided, all output will be printed to console")
             .isRequired(false)

@@ -29,13 +29,11 @@ public class EmbeddedSyncServiceServer {
     public void init() throws Exception {
         tester = new ServletTester();
         tester.setContextPath("/");
-//        tester.setResourceBase("./apps/server/SyncServer/src/test/resources/");
         tester.setResourceBase("./target/test-classes/server-tests");
         System.out.println("+++++++++++++++++++++++");
         System.out.println(tester.getResourceBase());
         System.out.println("+++++++++++++++++++++++");
         listener = new ContextListenerMock(CONFIG_FILE);
-//        tester.setAttribute("debug.listener", listener);
         tester.addEventListener(listener);
         tester.addServlet(SyncServiceServlet.class, "/SyncServer/SyncService");
         baseUrl = tester.createSocketConnector(true);

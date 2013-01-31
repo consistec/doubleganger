@@ -34,10 +34,6 @@ public class ConstraintTest extends TestBase {
     @Test
     public void testConstraintUnequality() {
         Constraint constraint1 = new Constraint(ConstraintType.PRIMARY_KEY, CONSTRAINTNAME1, COLUMNNAME1);
-        // FOREIGN_KEY is not implemented yet!
-//        Constraint constraint2 = new Constraint(ConstraintType.FOREIGN_KEY, CONSTRAINTNAME1, COLUMNNAME1);
-//        assertNotSame(constraint1, constraint2);
-
         Constraint constraint2 = new Constraint(ConstraintType.PRIMARY_KEY, CONSTRAINTNAME2, COLUMNNAME1);
         assertNotSame(constraint1, constraint2);
 

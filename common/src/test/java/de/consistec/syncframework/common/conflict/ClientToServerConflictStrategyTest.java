@@ -32,22 +32,6 @@ import org.mockito.MockitoAnnotations;
  */
 public class ClientToServerConflictStrategyTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final String TEST_STRING = "testString";
     private static final String TEST_TABLE_NAME = "testTableName";
     private static final String TEST_COLUMN1 = "column1";

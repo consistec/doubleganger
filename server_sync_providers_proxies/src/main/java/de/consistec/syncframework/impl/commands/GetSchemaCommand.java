@@ -23,14 +23,6 @@ public class GetSchemaCommand implements RequestCommand {
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GetSchemaCommand.class.getCanonicalName());
 //</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**

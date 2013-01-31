@@ -37,12 +37,7 @@ public final class Main {
             syncClient.start(args);
         } catch (SyncException e) {
             LOGGER.error("Sync failed! ", e);
-//            if (e.getStatus() == ServerStatus.TRANSACTION_ABORTED) {
             System.exit(2);
-//        Why is here exit(1) even if synchronization failed?
-//        } else {
-//                System.exit(1);
-//            }
         }
         System.exit(0);
     }

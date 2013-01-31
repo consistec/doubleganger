@@ -92,8 +92,6 @@ public final class TableSyncStrategy implements Serializable {
         checkState(!(strategy == FIRE_EVENT && direction == CLIENT_TO_SERVER), direction, strategy);
         checkState(!(strategy == CLIENT_WINS && direction == SERVER_TO_CLIENT), direction, strategy);
         checkState(!(strategy == FIRE_EVENT && direction == SERVER_TO_CLIENT), direction, strategy);
-
-//        checkSyncDirectionAndConflictStrategyState(direction, strategy);
     }
 
     /**

@@ -236,8 +236,6 @@ public final class CollectionsUtil {
         return new ArrayList<V>(initialCapacity);
     }
 
-    // <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> m)
-
     public static <X, Y> List<Tuple<X, Y>> removeNullableValues(List<Tuple<X, Y>> tuples) {
 
         List<Tuple<X, Y>> tupleList = newArrayList();

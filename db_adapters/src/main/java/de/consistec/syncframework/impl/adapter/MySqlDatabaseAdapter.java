@@ -33,7 +33,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      */
     public static final String PROPS_DB_NAME = "db_name";
     /**
-     * Default jdbc driver class for PostgreSQL.
+     * Default jdbc driver class for mySQL.
      * <p/>
      * Value: {@value}.
      */
@@ -97,13 +97,13 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     /**
-     * Creates jdbc url string for PostgreSQL.
+     * Creates jdbc url string for mySQL.
      * <p/>
      *
      * @param phost Server host address (preferably ip).
      * @param pport Port on which server is listing.
      * @param pdbName Database name to connect to.
-     * @return Jdbc url string for postgreSQL driver.
+     * @return Jdbc url string for mySQL driver.
      */
     private static String createUrl(String phost, Integer pport, String pdbName) {  //NOSONAR
 
@@ -130,7 +130,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      * Brief description of object's state.
      * <p/>
      * E.g.
-     * <code> PostgresDatabaseAdapter{ port=5432, host=192.168.3.1, databasename=myname} </code>
+     * <code> MySQLDatabaseAdapter{ port=3306, host=192.168.3.1, databasename=myname} </code>
      * <p/>
      * Result of this method could be changed in future so one should not rely on it.
      * <p/>

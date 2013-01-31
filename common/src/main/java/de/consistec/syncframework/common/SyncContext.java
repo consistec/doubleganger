@@ -130,8 +130,6 @@ public final class SyncContext {
     }
 
 //</editor-fold>
-//<editor-fold defaultstate="collapsed" desc=" Class accessors " >
-//</editor-fold>
 
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private void initServer(Connection connection) throws ContextException {

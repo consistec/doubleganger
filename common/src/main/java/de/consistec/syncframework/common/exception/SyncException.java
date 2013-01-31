@@ -10,8 +10,6 @@ package de.consistec.syncframework.common.exception;
  */
 public class SyncException extends Exception {
 
-//    private int status; moved to ServerStatusException class
-
     /**
      * Instantiates a new sync exception.
      */
@@ -31,18 +29,6 @@ public class SyncException extends Exception {
     /**
      * Instantiates a new sync exception.
      *
-     * @param status
-     * @param message the message
-     */
-//    public SyncException(int status, String message) {
-//        super(message);
-//
-//        this.status = status;
-//    }
-
-    /**
-     * Instantiates a new sync exception.
-     *
      * @param message the message
      * @param th the throwable
      */
@@ -58,12 +44,4 @@ public class SyncException extends Exception {
     public SyncException(Throwable cause) {
         super(cause);
     }
-
-    /**
-     *
-     * @return
-     */
-//    public int getStatus() {
-//        return this.status;
-//    }
 }

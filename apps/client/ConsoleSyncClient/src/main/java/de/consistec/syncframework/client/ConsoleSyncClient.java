@@ -46,11 +46,6 @@ public final class ConsoleSyncClient {
     private ConsoleSyncClient() {
     }
 
-//    public static void main(final String[] args) throws ContextException, SyncException, DatabaseAdapterException {
-////        DOMConfigurator.configure(ClassLoader.getSystemResource("log4j.xml"));
-//        new ApplicationStarter().start(args);
-//    }
-
     public static void main(String[] args) throws IOException, ParseException, ClassNotFoundException, ContextException,
         SyncException, DatabaseAdapterException, ContextException {
 

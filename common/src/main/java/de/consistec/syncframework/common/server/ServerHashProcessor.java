@@ -98,8 +98,6 @@ public class ServerHashProcessor {
 
         LOGGER.debug("compare client revision with current server revision {} : {}", clientRevision, (nextRev - 1));
 
-//        checkState(true)
-
         if (clientRevision != (nextRev - 1)) {
             LOGGER.warn(Warnings.COMMON_CANT_APLY_CLIENT_CHANGES_ON_SERVER);
             throw new ServerStatusException(ServerStatus.CLIENT_NOT_UPTODATE, read(Errors.COMMON_UPDATE_NECESSARY));

@@ -14,7 +14,7 @@ import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.SyncSettings;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
-import de.consistec.syncframework.common.adapter.DumpDbAdapter;
+import de.consistec.syncframework.common.adapter.DumbDbAdapter;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.SyncException;
@@ -38,22 +38,6 @@ import org.mockito.MockitoAnnotations;
  */
 public class ServerSyncProviderTest {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final SQLException TRANSACTION_EXCEPTION = new SQLException("test transaction aborted exception",
         "400001");
     private static final SQLException UNIQUE_EXCEPTION = new SQLException("test unique exception", "23505");
@@ -67,27 +51,17 @@ public class ServerSyncProviderTest {
     @Mock
     private IDatabaseAdapter databaseAdapterMock;
 
-//    @Mock
-//    private ServerSyncProvider serverSyncProviderMock;
-
-
     @Before
     public void setUp() throws IOException {
         MockitoAnnotations.initMocks(this);
-
         Config config = Config.getInstance();
-//        config.init(getClass().getResourceAsStream("/test_config_postgre.properties"));
-        config.setServerDatabaseAdapter(DumpDbAdapter.class);
-
+        config.setServerDatabaseAdapter(DumbDbAdapter.class);
         config.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
         config.setGlobalSyncDirection(SyncDirection.BIDIRECTIONAL);
-
-//        databaseAdapterMock.get.connection = connectionMock;
     }
 
     @Test
     public void validateClientSettings() throws DatabaseAdapterException, SyncException {
-
 
         Config.getInstance().addSyncTable("categories", "items");
         Config.getInstance().setMdTableSuffix("_md");
@@ -109,7 +83,6 @@ public class ServerSyncProviderTest {
             new TableSyncStrategy(SERVER_TO_CLIENT, SERVER_WINS));
         clientSyncStrategies.addSyncStrategyForTable("items",
             new TableSyncStrategy(BIDIRECTIONAL, SERVER_WINS));
-
 
         when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
         when(databaseAdapterMock.existsMDTable(any(String.class))).thenReturn(true);

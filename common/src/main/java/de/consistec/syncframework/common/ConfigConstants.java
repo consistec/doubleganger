@@ -191,12 +191,4 @@ public final class ConfigConstants {
     }
 //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
 }

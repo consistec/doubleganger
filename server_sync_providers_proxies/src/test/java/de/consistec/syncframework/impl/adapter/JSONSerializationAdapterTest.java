@@ -132,7 +132,6 @@ public class JSONSerializationAdapterTest extends TestBase {
         SyncData data = new SyncData(0, changeList);
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-//        final String jsonChangeList = adapter.serializeChangeList(changeList);
         final String jsonChangeList = adapter.serializeChangeList(data);
         final SyncData deserializedSyncData = adapter.deserializeMaxRevisionAndChangeList(
             jsonChangeList);
@@ -151,7 +150,6 @@ public class JSONSerializationAdapterTest extends TestBase {
         SyncData data = new SyncData(0, changeList);
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-//        final String jsonChangeList = adapter.serializeChangeList(changeList);
         final String jsonChangeList = adapter.serializeChangeList(data);
         final SyncData deserializedSyncData = adapter.deserializeMaxRevisionAndChangeList(
             jsonChangeList);

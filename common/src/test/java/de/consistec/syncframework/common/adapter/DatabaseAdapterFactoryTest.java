@@ -28,8 +28,8 @@ public class DatabaseAdapterFactoryTest extends TestBase {
     @Test
     public void testNewInstance() throws DatabaseAdapterInstantiationException {
         final Config conf = Config.getInstance();
-        conf.setServerDatabaseAdapter(DumpDbAdapter.class);
+        conf.setServerDatabaseAdapter(DumbDbAdapter.class);
         IDatabaseAdapter result = DatabaseAdapterFactory.newInstance(AdapterPurpose.SERVER);
-        assertEquals(DumpDbAdapter.class, result.getClass());
+        assertEquals(DumbDbAdapter.class, result.getClass());
     }
 }
