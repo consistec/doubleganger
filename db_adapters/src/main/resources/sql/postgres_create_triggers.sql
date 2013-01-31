@@ -29,6 +29,7 @@ CREATE OR REPLACE FUNCTION %table%_update_flag() RETURNS trigger AS $BODY$
             DELETE FROM %table%%md_suffix% WHERE %pk_md% = OLD.%pk_data% AND rev IS NULL;
 
             IF NOT FOUND THEN
+                -- if it has been synced already, we just update the flag
                 UPDATE %table%%md_suffix% SET %flag_md% = -1 WHERE %pk_md% = OLD.%pk_data%;
             END IF;
 
