@@ -33,28 +33,17 @@ import org.junit.runners.Parameterized;
  * @company Consistec Engineering and Consulting GmbH
  * @date 28.01.13 15:44
  */
-@RunWith(value = Parameterized.class)
 public class ChangesEnumeratorTest {
 
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
     protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
-        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);"};
+        "CREATE TABLE categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (300),description VARCHAR (300))",
+        "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0)",
+        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY ,name VARCHAR (300),description VARCHAR (300))",
+        "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0)"};
     private static ConflictStrategy savedConflictStrategy;
     private static SyncDirection savedSyncDirection;
     protected TestDatabase db;
-
-    @Parameterized.Parameters(name = "{index}: {0}")
-    public static Collection<Object[]> AllScenarii() {
-
-        return Arrays.asList(new Object[][]{
-                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)},
-                {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
-                {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)}});
-
-    }
 
     public ChangesEnumeratorTest(TestDatabase db) {
         this.db = db;

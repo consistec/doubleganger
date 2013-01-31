@@ -9,11 +9,16 @@ import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.impl.TestDatabase;
+import de.consistec.syncframework.impl.adapter.DumpDataSource;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collection;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * This class tests the correct handling of getChanges for client side.
@@ -22,6 +27,7 @@ import org.junit.Test;
  * @company Consistec Engineering and Consulting GmbH
  * @date 13.12.12 12:16
  */
+@RunWith(value = Parameterized.class)
 public class ClientChangesEnumeratorTest extends ChangesEnumeratorTest {
 
     private static String[] serverInsertQueries = new String[]{
@@ -29,6 +35,16 @@ public class ClientChangesEnumeratorTest extends ChangesEnumeratorTest {
         "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 1)",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (2, '75901F57520C09EB990837C7AA93F717', 2, 1)",};
+
+    @Parameterized.Parameters(name = "{index}: {0}")
+    public static Collection<Object[]> AllScenarii() {
+
+        return Arrays.asList(new Object[][]{
+                {new TestDatabase("/config_sqlite.properties", DumpDataSource.SupportedDatabases.SQLITE)},
+                {new TestDatabase("/config_mysql.properties", DumpDataSource.SupportedDatabases.MYSQL)},
+                {new TestDatabase("/config_postgre.properties", DumpDataSource.SupportedDatabases.POSTGRESQL)}});
+
+    }
 
     public ClientChangesEnumeratorTest(TestDatabase db) {
         super(db);
