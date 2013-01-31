@@ -64,14 +64,6 @@ public interface IDatabaseAdapter {
     ISQLConverter getSchemaConverter();
 
     /**
-     * Returns a table sql converter for the current database.
-     *
-     * @return the converter object
-     * @see de.consistec.syncframework.common.data.schema.ISQLConverter
-     */
-    ISQLConverter getTableConverter();
-
-    /**
      * Return a list of changes since the given revision.
      * <p/>
      *

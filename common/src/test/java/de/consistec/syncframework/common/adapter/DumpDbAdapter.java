@@ -49,11 +49,6 @@ public class DumpDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public ISQLConverter getTableConverter() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void getChangesForRevision(int revision, String tableName, DatabaseAdapterCallback<ResultSet> callback)
         throws DatabaseAdapterException, TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");

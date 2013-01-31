@@ -1,7 +1,6 @@
 package de.consistec.syncframework.common.data.schema;
 
 import de.consistec.syncframework.common.exception.SchemaConverterException;
-import de.consistec.syncframework.common.exception.SerializationException;
 
 /**
  * This interfaces defines the behavior for
@@ -29,13 +28,4 @@ public interface ISQLConverter<T> {
      * @throws SchemaConverterException if conversion fails.
      */
     String toSQL(T objectToConvert) throws SchemaConverterException;
-
-    /**
-     * Converts any xml document to SQL query.
-     *
-     * @param xml Change log.
-     * @return any Sql queries to execute in database.
-     * @throws SerializationException if parsing of xml document fails.
-     */
-    String fromChangelog(String xml) throws SerializationException;
 }

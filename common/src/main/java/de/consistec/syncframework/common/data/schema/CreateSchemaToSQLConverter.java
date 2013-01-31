@@ -12,13 +12,17 @@ import de.consistec.syncframework.common.util.SQLTypesUtil;
  * @date 26.07.12 14:21
  * @since 0.0.1-SNAPSHOT
  */
-public class CreateSchemaToSQLConverter extends SQLConverterAdapter<Schema> {
+public class CreateSchemaToSQLConverter implements ISQLConverter<Schema> {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
+    /**
+     * space constant.
+     */
+    protected static final char QUOTE = ' ';
+    /**
+     * sparator constant.
+     */
+    protected static final String LITERALS_COMMA = ",";
 
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
      * This method converts the passed Schema object to SQL queries which can be
