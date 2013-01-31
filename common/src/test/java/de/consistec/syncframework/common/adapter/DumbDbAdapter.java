@@ -89,7 +89,11 @@ public class DumbDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
+    }
+
+    @Override
+    public void createMDSchemaOnClient() throws DatabaseAdapterException {
     }
 
     @Override
@@ -168,8 +172,11 @@ public class DumbDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
     }
 
+    @Override
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
+    }
 //</editor-fold>
 }

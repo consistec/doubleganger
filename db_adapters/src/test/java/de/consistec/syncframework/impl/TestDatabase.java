@@ -152,19 +152,16 @@ public abstract class TestDatabase {
     }
 
     public void createSchemaOnClient(Schema schema) throws DatabaseAdapterException, SQLException {
-        createSchemaOnDB(schema, DatabaseAdapterFactory.AdapterPurpose.CLIENT, getClientConnection());
+        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
+        adapter.init(getClientConnection());
+        adapter.applySchema(schema);
+        adapter.createMDSchemaOnClient();
     }
 
     public void createSchemaOnServer(Schema schema) throws DatabaseAdapterException, SQLException {
-        createSchemaOnDB(schema, DatabaseAdapterFactory.AdapterPurpose.SERVER, getServerConnection());
-    }
-
-    private void createSchemaOnDB(Schema schema, DatabaseAdapterFactory.AdapterPurpose db, Connection conn) throws
-        DatabaseAdapterException,
-        SQLException {
-        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(db);
-        adapter.init(conn);
+        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+        adapter.init(getServerConnection());
         adapter.applySchema(schema);
-        adapter.createMDSchema();
+        adapter.createMDSchemaOnServer();
     }
 }

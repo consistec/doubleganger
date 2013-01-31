@@ -117,11 +117,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      */
     public static final String PROPS_SCHEMA = "schema";
     /**
-     * MySQL database property file.
-     * Value: {@value}
-     */
-    public static final String MYSQL_CONFIG_FILE = "/config_mysql.properties";
-    /**
      * SQLite database property file.
      * Value: {@value}
      */
@@ -167,11 +162,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <LI> columnNullableUnknown - nullability unknown
      * </UL>
      * <p/>
-     * <
-     * p/>
      * Value: {@value}.
      * <p/>
-     *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
      *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
@@ -231,6 +223,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      */
     protected static final int MDV_COLUMN_SIZE = 500;
+    /**
+     * Name of the sync user.
+     * <p/>
+     */
+    protected static final String SYNC_USER = "syncuser";
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
     private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
     private static final Config CONF = Config.getInstance();
@@ -977,16 +974,16 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void createMDSchema() throws DatabaseAdapterException {
+    public void createMDSchemaOnClient() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
             if (!existsMDTable(tableName)) {
-                createMDTable(tableName);
+                createMDTableOnClient(tableName);
             }
         }
     }
 
     @Override
-    public void createMDTable(final String tableName) throws DatabaseAdapterException {
+    public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         LOGGER.debug("creating new metadata table: {}", mdTableName);
 
@@ -1009,6 +1006,45 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         }
     }
 
+    @Override
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
+        for (String tableName : CONF.getSyncTables()) {
+            if (!existsMDTable(tableName)) {
+                createMDTableOnServer(tableName);
+            }
+        }
+    }
+
+    @Override
+    public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
+        String mdTableName = tableName + CONF.getMdTableSuffix();
+        LOGGER.debug("creating new metadata table: {}", mdTableName);
+
+        Column pkColumn = getPrimaryKeyColumn(tableName);
+        Table mdTable = new Table(mdTableName);
+        mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+        mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
+        mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
+        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+
+        Schema schema = new Schema();
+        schema.addTables(mdTable);
+
+        try {
+            String sqlTableStatement = getSchemaConverter().toSQL(schema);
+            executeSqlQuery(sqlTableStatement);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        }
+    }
+
+    /**
+     * Returns true if the corresponding metadata table exists.
+     * @param tableName the table name
+     * @return true if exists
+     * @throws DatabaseAdapterException
+     */
     @Override
     public boolean existsMDTable(final String tableName) throws DatabaseAdapterException {
         String mdTableName = tableName + CONF.getMdTableSuffix();
@@ -1039,8 +1075,31 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
             stmt = connection.createStatement();
             for (String query : queries) {
-                stmt.execute(query);
+                if (query != null && !query.startsWith("--") && !query.trim().isEmpty()) {
+                    stmt.execute(query);
+                }
             }
+        } catch (SQLException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+        } finally {
+            closeStatements(stmt);
+        }
+    }
+
+    /**
+     * Executes many SQL queries, one after the other.
+     * <p/>
+     * @param queries the queries to execute
+     * @throws DatabaseAdapterException
+     */
+    protected void executeBatch(String[] queries) throws DatabaseAdapterException {
+        Statement stmt = null; //NOSONAR
+        try {
+            stmt = connection.createStatement();
+            for (String query : queries) {
+                stmt.addBatch(query);
+            }
+            stmt.executeBatch();
         } catch (SQLException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
         } finally {

@@ -170,7 +170,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     private void createMDTableIfNotExists(String clientTable) throws SyncException, DatabaseAdapterException {
 
         IDatabaseAdapter adapter = null;
-        
+
         try {
             adapter = prepareDbAdapter();
 
@@ -186,7 +186,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             while (!adapter.existsMDTable(clientTable)) {
                 try {
                     LOGGER.warn(Warnings.COMMON_RECREATING_SERVER_META_TABLES, mdTable);
-                    adapter.createMDTable(clientTable);
+                    adapter.createMDTableOnServer(clientTable);
                 } catch (DatabaseAdapterException ex) {
 
                     if (ex instanceof UniqueConstraintException

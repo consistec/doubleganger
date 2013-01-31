@@ -142,12 +142,20 @@ public interface IDatabaseAdapter {
     Schema getSchema() throws DatabaseAdapterException;
 
     /**
-     * Create the md schema.
+     * Create the md schema on the server.
      * <p/>
      *
      * @throws DatabaseAdapterException
      */
-    void createMDSchema() throws DatabaseAdapterException;
+    void createMDSchemaOnServer() throws DatabaseAdapterException;
+
+    /**
+     * Create the md schema on the client.
+     * <p/>
+     *
+     * @throws DatabaseAdapterException
+     */
+    void createMDSchemaOnClient() throws DatabaseAdapterException;
 
     /**
      * Update a single md row.
@@ -286,9 +294,16 @@ public interface IDatabaseAdapter {
     boolean existsMDTable(String tableName) throws DatabaseAdapterException;
 
     /**
-     * Creates the meta data table for the passed db table name.
+     * Creates the meta data table for the passed db table name on the server.
      *
      * @param tableName name of db table which meta data table will be created.
      */
-    void createMDTable(String tableName) throws DatabaseAdapterException;
+    void createMDTableOnServer(String tableName) throws DatabaseAdapterException;
+
+    /**
+     * Creates the meta data table for the passed db table name on the client.
+     *
+     * @param tableName name of db table which meta data table will be created.
+     */
+    void createMDTableOnClient(String tableName) throws DatabaseAdapterException;
 }

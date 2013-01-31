@@ -30,6 +30,7 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -39,12 +40,21 @@ import org.junit.runners.Parameterized;
  * @company Consistec Engineering and Consulting GmbH
  * @date 30.01.13 11:28
  */
+@Ignore("This test should be checked for exception handling")
 @RunWith(value = Parameterized.class)
 public class ClientProviderTransactionTest {
 
     protected static String[] tableNames = new String[]{"categories", "items", "categories_md", "items_id"};
 
     private TestDatabase db;
+
+    @Parameterized.Parameters(name = "{index}: {0}")
+    public static Collection<TestDatabase[]> AllDatabases() {
+        return Arrays.asList(new TestDatabase[][]{
+                {new PostgresDatabase()},
+                {new MySqlDatabase()},
+                {new SqlLiteDatabase()},});
+    }
 
     public ClientProviderTransactionTest(TestDatabase db) {
         this.db = db;
@@ -154,9 +164,9 @@ public class ClientProviderTransactionTest {
         scenario.setDataSources(db.getServerDs(), db.getClientDs());
         scenario.setConnections(db.getServerConnection(), db.getClientConnection());
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by categoryid asc",
-            "select * from categories_md order by pk asc"
-        });
+                "select * from categories order by categoryid asc",
+                "select * from categories_md order by pk asc"
+            });
 
         scenario.saveCurrentState();
 
@@ -172,11 +182,9 @@ public class ClientProviderTransactionTest {
             SyncData clientData = clientProvider.getChanges();
             Change cachedChange = serverData.getChanges().get(0);
             SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
-            SyncData clientChangesToApply = dataHolder.getClientSyncData();
 
             // insert serverChanged again to server changeset to force Exception
             dataHolder.getServerSyncData().getChanges().add(cachedChange);
-            int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
             clientProvider.commit();
         } catch (SyncException e) {
             if (e.getCause() instanceof DatabaseAdapterException) {
@@ -218,9 +226,9 @@ public class ClientProviderTransactionTest {
         scenario.setDataSources(db.getServerDs(), db.getClientDs());
         scenario.setConnections(db.getServerConnection(), db.getClientConnection());
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by categoryid asc",
-            "select * from categories_md order by pk asc"
-        });
+                "select * from categories order by categoryid asc",
+                "select * from categories_md order by pk asc"
+            });
 
         scenario.saveCurrentState();
 
@@ -239,12 +247,5 @@ public class ClientProviderTransactionTest {
 
         scenario.assertClientIsInExpectedState();
         scenario.assertServerIsInExpectedState();
-    }
-
-    @Parameterized.Parameters(name = "{index}: {0}")
-    public static Collection<TestDatabase[]> AllDatabases() {
-        return Arrays.asList(new TestDatabase[][]{
-            {new PostgresDatabase()}, {new MySqlDatabase()}, {new SqlLiteDatabase()},
-        });
     }
 }

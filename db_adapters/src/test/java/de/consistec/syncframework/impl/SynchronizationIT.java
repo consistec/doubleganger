@@ -47,8 +47,8 @@ public class SynchronizationIT {
     protected TestScenario scenario;
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
     protected static String[] createQueries = new String[]{
-        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));",
-        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300));"};
+        "CREATE TABLE categories (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300))",
+        "CREATE TABLE items (id INTEGER NOT NULL PRIMARY KEY, name VARCHAR (300),description VARCHAR (300))"};
     protected static String[] insertQueries = new String[]{
         "INSERT INTO categories (id, name, description) VALUES (1, 'Beverages', 'Soft drinks')",
         "INSERT INTO categories (id, name, description) VALUES (2, 'Condiments', 'Sweet and ')"};
