@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception.database_adapter;
 /**
  * Exception to indicate a problem during database adapter instantiation.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.07.12 10:33
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

@@ -15,7 +15,7 @@ import org.powermock.reflect.Whitebox;
  * Tests for synchronization context.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 31.10.2012 12:39:37
  * @since 0.0.1-SNAPSHOT
  */

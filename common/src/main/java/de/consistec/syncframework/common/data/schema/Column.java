@@ -4,7 +4,7 @@ package de.consistec.syncframework.common.data.schema;
  * Representation of a database column.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.07.12 15:50
  * @since 0.0.1-SNAPSHOT
  */

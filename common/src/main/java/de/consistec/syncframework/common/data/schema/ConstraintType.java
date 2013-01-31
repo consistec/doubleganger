@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.data.schema;
 /**
  * Supported SQL constraints.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 08:26
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.conflict;
 /**
  * This enumeration represents action to undertake in case of merge conflict.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

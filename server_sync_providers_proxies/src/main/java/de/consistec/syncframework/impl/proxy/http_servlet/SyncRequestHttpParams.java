@@ -4,7 +4,7 @@ package de.consistec.syncframework.impl.proxy.http_servlet;
  * Enumeration of Http request parameters to be send with synchronization request.
  *
  * @author Piotr wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 19.11.2012 16:38:29
  * @since 0.0.1-SNAPSHOT
  */

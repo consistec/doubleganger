@@ -35,7 +35,7 @@ import org.slf4j.cal10n.LocLogger;
  * updates the md table entry with an empty hash value and marks it so as deleted.</p>
  *
  * @author Markus
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @since 0.0.1-SNAPSHOT
  */

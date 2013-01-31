@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Class Schema represents a database structure.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.04.12 10.01
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

@@ -25,7 +25,7 @@ import de.consistec.syncframework.common.i18n.Errors;
  * the several Internal Server Errors.</p>
  *
  * @author Marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 08.10.12 16:52
  * @since 0.0.1-SNAPSHOT
  */

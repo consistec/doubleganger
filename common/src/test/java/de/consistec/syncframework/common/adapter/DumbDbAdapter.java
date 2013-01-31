@@ -16,7 +16,7 @@ import java.util.Properties;
  * Dump IDatabaseAdapter implementation for mocking.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 31.10.2012 14:48:35
  * @since 0.0.1-SNAPSHOT
  */

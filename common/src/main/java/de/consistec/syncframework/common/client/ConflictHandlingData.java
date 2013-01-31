@@ -10,7 +10,7 @@ import java.util.Map;
  * from the server changeset with the same primary key which are necessary for the conflict handling.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.12.12 13:39
  */
 public class ConflictHandlingData {

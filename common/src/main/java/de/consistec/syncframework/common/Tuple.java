@@ -5,7 +5,7 @@ package de.consistec.syncframework.common;
  * a pair of two values of any type.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.12.12 16:40
  */
 public class Tuple<X, Y> {

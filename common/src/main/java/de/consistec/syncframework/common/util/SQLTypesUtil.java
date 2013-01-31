@@ -12,7 +12,7 @@ import java.sql.Types;
  * <p/>
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 13:57
  * @since 0.0.1-SNAPSHOT
  */

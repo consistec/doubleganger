@@ -137,7 +137,7 @@
                     <force>true</force>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <inceptionYear>2011</inceptionYear>
-                    <organizationName>Consistec GmbH</organizationName>
+                    <organizationName>consistec GmbH</organizationName>
                     <projectName>doppelganger</projectName>
                     <descriptionTemplate>
                         ${basedir}/src/license/consistec/description_template.ftl

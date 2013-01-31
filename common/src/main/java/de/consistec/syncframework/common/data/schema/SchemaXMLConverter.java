@@ -32,7 +32,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Sax {@link org.xml.sax.helpers.DefaultHandler handler} implementation for reading/writing
  * {@link de.consistec.syncframework.common.data.schema.Schema} to/from its xml representation.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 10:02
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

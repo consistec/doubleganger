@@ -32,7 +32,7 @@ import org.junit.rules.ExpectedException;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 24.01.13 10:27
  */
 public class SyncServiceServletTest {

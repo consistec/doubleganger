@@ -47,7 +47,7 @@ import org.slf4j.cal10n.LocLogger;
  * servlet response object and returned to client.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 23.07.12 13:15
  * @since 0.0.1-SNAPSHOT
  */

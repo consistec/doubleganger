@@ -13,7 +13,7 @@ import java.util.Scanner;
 /**
  * Utility methods to use in unit tests.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.07.12 14:28
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

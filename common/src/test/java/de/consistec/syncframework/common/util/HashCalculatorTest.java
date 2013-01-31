@@ -12,7 +12,7 @@ import org.junit.Test;
 /**
  * Tests of hash calculator.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.07.12 15:20
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

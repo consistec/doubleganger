@@ -8,7 +8,7 @@ import java.util.List;
  * Container for revision and change set data which where synchronized.
  *
  * @author thorsten
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 22.01.13 16:46
  */
 public class SyncData {

@@ -5,7 +5,7 @@ import de.consistec.syncframework.impl.TestScenario;
 
 /**
  * @author davidm
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 15.01.2013 10:24:40
  */
 public class ITSyncSqlite extends SynchronizationIT {

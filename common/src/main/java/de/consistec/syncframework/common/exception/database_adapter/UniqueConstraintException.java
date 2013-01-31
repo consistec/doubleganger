@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception.database_adapter;
 /**
  * Exception to indicate that unique constraint voliation in database occurred.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 27.11.12 13:37
  * @author marcel
  */

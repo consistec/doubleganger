@@ -3,7 +3,7 @@ package de.consistec.syncframework.common;
 /**
  * Default values for md tables columns.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.10.12 14:37
  * @author marcel
  * @since 0.0.1-SNAPSHOT

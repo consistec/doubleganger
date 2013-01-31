@@ -10,7 +10,7 @@ import de.consistec.syncframework.common.util.SQLTypesUtil;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.01.13 17:10
  */
 public class CreateSchemaToMySQLConverter implements ISQLConverter<Schema> {

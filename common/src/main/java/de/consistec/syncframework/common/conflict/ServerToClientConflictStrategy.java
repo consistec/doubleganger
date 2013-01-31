@@ -17,7 +17,7 @@ import org.slf4j.cal10n.LocLogger;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.12.12 15:22
  */
 public class ServerToClientConflictStrategy extends DefaultConflictStrategy {

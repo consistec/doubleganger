@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception.database_adapter;
 /**
  * Exception that indicates problem with closing database adapter resources (mainly the connection).
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 24.10.12 13:36
  * @author marcel
  * @since 0.0.1-SNAPSHOT

@@ -11,7 +11,7 @@ import org.junit.Test;
 /**
  * Tests for frameworks Exceptions objects.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 28.06.12 14:15
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

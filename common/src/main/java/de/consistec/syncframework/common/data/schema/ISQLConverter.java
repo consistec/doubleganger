@@ -14,7 +14,7 @@ import de.consistec.syncframework.common.exception.SchemaConverterException;
  * Implementations of this method have to convert xml structure and targets to a SQL query.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 15:25
  * @since 0.0.1-SNAPSHOT
  */

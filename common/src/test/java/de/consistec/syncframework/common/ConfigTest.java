@@ -31,7 +31,7 @@ import org.powermock.reflect.Whitebox;
  * Tests for Configuration class.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 15.10.2012 15:05:18
  * @since 0.0.1-SNAPSHOT
  */

@@ -5,7 +5,7 @@ import de.consistec.syncframework.impl.adapter.DumpDataSource;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.01.13 15:13
  */
 public class MySqlDatabase extends TestDatabase {

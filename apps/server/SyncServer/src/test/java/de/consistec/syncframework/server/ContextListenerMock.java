@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.01.13 09:56
  */
 public class ContextListenerMock implements ServletContextListener {

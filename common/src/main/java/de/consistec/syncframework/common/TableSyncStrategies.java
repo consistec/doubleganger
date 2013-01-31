@@ -22,7 +22,7 @@ import org.slf4j.cal10n.LocLogger;
  * {@code de.consistec.syncframework.common.Config} will be used.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 03.12.12 15:05
  */
 public class TableSyncStrategies {

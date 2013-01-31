@@ -13,7 +13,7 @@ import de.consistec.syncframework.common.exception.SyncException;
  * {@link de.consistec.syncframework.common.Config#setServerProxy(java.lang.Class)}
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @since 0.0.1-SNAPSHOT
  */

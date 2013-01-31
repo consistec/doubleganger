@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception;
 /**
  * Indicates problems with synchronization contexts creation.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.11.2012 10:41:36
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

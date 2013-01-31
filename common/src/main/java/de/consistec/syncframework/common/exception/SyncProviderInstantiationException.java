@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception;
 /**
  * Indicates problem with instantiation of server provider object.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.10.2012 12:40
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

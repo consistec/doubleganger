@@ -6,7 +6,7 @@ import de.consistec.syncframework.common.conflict.ConflictStrategy;
  * This class contains all constants used in {@code Config} class.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.01.13 15:59
  */
 public final class ConfigConstants {

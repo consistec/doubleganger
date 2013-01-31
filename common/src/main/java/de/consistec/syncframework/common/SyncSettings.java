@@ -6,7 +6,7 @@ import java.util.Set;
  * This class represents client settings which are validated on server side.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 15.01.13 14:46
  */
 public class SyncSettings {

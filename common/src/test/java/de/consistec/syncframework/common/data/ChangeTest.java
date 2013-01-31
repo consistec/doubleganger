@@ -16,7 +16,7 @@ import org.junit.Test;
  * Tests of Change object.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 13.07.12 10:51
  * @since 0.0.1-SNAPSHOT
  */

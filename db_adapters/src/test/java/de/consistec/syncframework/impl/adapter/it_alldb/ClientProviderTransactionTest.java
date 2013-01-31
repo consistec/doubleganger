@@ -37,7 +37,7 @@ import org.junit.runners.Parameterized;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.01.13 11:28
  */
 @Ignore("This test should be checked for exception handling")

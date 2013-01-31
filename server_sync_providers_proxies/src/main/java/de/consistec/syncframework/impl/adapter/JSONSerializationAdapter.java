@@ -5,7 +5,7 @@ package de.consistec.syncframework.impl.adapter;
  * Project - doppelganger
  * File - JSONSerializationAdapter.java
  * %%
- * Copyright (C) 2011 - 2012 Consistec GmbH
+ * Copyright (C) 2011 - 2012 consistec GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -54,7 +54,7 @@ import org.json.JSONObject;
  * This class translates data transmitted in synchronization process to and from JSON String.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.04.12 11:30
  * @since 0.0.1-SNAPSHOT
  */

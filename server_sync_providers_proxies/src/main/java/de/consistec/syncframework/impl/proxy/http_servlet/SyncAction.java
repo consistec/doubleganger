@@ -5,7 +5,7 @@ package de.consistec.syncframework.impl.proxy.http_servlet;
  * <p/>
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 02.11.2012 11:10:39
  * @since 0.0.1-SNAPSHOT
  */

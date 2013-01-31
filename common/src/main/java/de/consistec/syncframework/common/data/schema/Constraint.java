@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.data.schema;
 /**
  * Representation of SQL constraints.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.07.12 15:51
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

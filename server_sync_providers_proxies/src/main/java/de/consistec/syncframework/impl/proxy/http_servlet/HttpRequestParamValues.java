@@ -7,7 +7,7 @@ import de.consistec.syncframework.impl.adapter.ISerializationAdapter;
  * This class contains the parameter values containing in the HttpRequest.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.01.13 17:05
  */
 public class HttpRequestParamValues {

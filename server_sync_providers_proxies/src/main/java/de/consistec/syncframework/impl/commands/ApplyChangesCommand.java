@@ -19,7 +19,7 @@ import org.slf4j.cal10n.LocLogger;
  * Concrete class of RequestCommand that represents the server method call to applyChanges.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.01.13 09:28
  */
 public class ApplyChangesCommand implements RequestCommand {

@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.util;
 /**
  * String utility class.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.10.2012 09:04:56
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

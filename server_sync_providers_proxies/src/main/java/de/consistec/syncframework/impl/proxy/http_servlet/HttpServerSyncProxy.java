@@ -61,7 +61,7 @@ import org.slf4j.cal10n.LocLogger;
  *
  * @author Markus Backes
  * @version 0.0.1-SNAPSHOT
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.04.12 11:30
  */
 public class HttpServerSyncProxy implements IServerSyncProvider {

@@ -8,7 +8,7 @@ import de.consistec.syncframework.common.util.SQLTypesUtil;
  * <p/>
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 14:21
  * @since 0.0.1-SNAPSHOT
  */

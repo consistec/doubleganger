@@ -10,7 +10,7 @@ import org.junit.Test;
 /**
  * Test of string utility methods.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.10.2012 11:07
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

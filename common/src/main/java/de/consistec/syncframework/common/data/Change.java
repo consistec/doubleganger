@@ -14,7 +14,7 @@ import java.util.Map;
  * Used for internal communication between framework components
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @serial
  * @since 0.0.1-SNAPSHOT

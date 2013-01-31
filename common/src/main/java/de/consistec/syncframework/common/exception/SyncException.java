@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception;
 /**
  * This exception indicates general problem with synchronization.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

@@ -26,7 +26,7 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.01.13 14:22
  */
 public class PostgresThrowsExceptionTest {

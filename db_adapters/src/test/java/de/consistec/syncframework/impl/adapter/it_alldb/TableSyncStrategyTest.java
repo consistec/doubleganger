@@ -42,7 +42,7 @@ import org.powermock.reflect.Whitebox;
  * is really used in the resolveConflict method in the {@link ClientHashProcessor}.
  *
  * @author Marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 31.10.12 09:56
  * @since 0.0.1-SNAPSHOT
  */

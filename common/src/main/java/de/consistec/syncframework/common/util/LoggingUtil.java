@@ -11,7 +11,7 @@ import org.slf4j.cal10n.LocLoggerFactory;
 /**
  * Utility class to facilitate loggers handling.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.11.2012 09:23:10
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

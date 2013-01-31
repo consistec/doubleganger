@@ -24,7 +24,7 @@
         <db.user>syncuser</db.user>
         <db.passwd>syncuser</db.passwd>
         <postgres_schema>public</postgres_schema>
-        <!-- Option specific for PostgreSQL adapter from Consistec GmbH -->
+        <!-- Option specific for PostgreSQL adapter from consistec GmbH -->
         <db.host>localhost</db.host>
         <!--<db.pooling>false</db.pooling>-->
         <debug>false</debug>

@@ -38,7 +38,7 @@ import org.slf4j.cal10n.LocLogger;
  * </p>
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @since 0.0.1-SNAPSHOT
  */

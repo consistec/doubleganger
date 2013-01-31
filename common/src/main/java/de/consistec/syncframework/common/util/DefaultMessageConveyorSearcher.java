@@ -14,7 +14,7 @@ import java.util.Locale;
  * This class is solely for internal usage!
  * </p>
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.11.2012 13:25:20
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.01.13 17:02
  */
 public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {

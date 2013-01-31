@@ -24,7 +24,7 @@ import org.slf4j.cal10n.LocLogger;
  * be created.
  * <p/>
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.06.12 14:10
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

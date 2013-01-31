@@ -11,7 +11,7 @@ import java.util.Map;
  * the IConflict event occurs, that object's appropriate
  * method is invoked.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 03.07.12 11:36
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

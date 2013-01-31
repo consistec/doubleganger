@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.12.12 11:56
  * @todo write comment
  */

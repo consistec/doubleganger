@@ -30,7 +30,7 @@ import org.junit.Assert;
  * <p/>
  *
  * @author davidm
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.01.2013 14:50:08
  */
 public class TestScenario {

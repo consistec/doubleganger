@@ -6,7 +6,7 @@ package de.consistec.syncframework.common;
  * Synchronization direction specifies which site of synchronization has priority over the other site.
  *
  * @author Marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.10.12 15:46
  * @since 0.0.1-SNAPSHOT
  */

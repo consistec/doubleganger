@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 21.01.13 13:20
  */
 public class RepeatSyncTest {

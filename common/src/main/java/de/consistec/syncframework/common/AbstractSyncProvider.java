@@ -16,7 +16,7 @@ import org.slf4j.cal10n.LocLogger;
  * Skeleton class for server and client synchronization providers.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.12.2012 11:19:42
  * @since 0.0.1-SNAPSHOT
  */

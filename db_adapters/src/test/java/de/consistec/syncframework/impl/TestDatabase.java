@@ -16,7 +16,7 @@ import java.sql.Statement;
 
 /**
  * @author davidm
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.01.2013 11:43:45
  */
 public abstract class TestDatabase {

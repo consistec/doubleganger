@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * The Class HashCalculator.
  * <p/>
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

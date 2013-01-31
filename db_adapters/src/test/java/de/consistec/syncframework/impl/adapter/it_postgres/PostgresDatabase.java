@@ -5,7 +5,7 @@ import de.consistec.syncframework.impl.adapter.DumpDataSource;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 21.01.13 11:07
  */
 public class PostgresDatabase extends TestDatabase {

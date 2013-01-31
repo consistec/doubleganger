@@ -5,7 +5,7 @@ package de.consistec.syncframework.impl.adapter;
  * Project - doppelganger
  * File - JSONSerializationAdapterTest.java
  * %%
- * Copyright (C) 2011 - 2012 Consistec GmbH
+ * Copyright (C) 2011 - 2012 consistec GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

@@ -13,7 +13,7 @@ import org.slf4j.cal10n.LocLogger;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.01.13 16:26
  */
 public class ValidateSettingsCommand implements RequestCommand {

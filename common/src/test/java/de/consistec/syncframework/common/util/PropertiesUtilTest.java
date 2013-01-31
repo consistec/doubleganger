@@ -20,7 +20,7 @@ import org.junit.Test;
  * Tests of properties utilities.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.10.2012 09:31:49
  * @since 0.0.1-SNAPSHOT
  */

@@ -30,7 +30,7 @@ import de.consistec.syncframework.common.client.ConflictHandlingData;
  * </p>
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 21.11.2012 17:01:18
  * @since 0.0.1-SNAPSHOT
  */

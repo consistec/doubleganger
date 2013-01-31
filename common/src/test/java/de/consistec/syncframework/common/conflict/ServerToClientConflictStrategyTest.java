@@ -24,7 +24,7 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 13.12.12 16:52
  */
 public class ServerToClientConflictStrategyTest {

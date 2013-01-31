@@ -8,7 +8,7 @@ import de.consistec.syncframework.impl.proxy.http_servlet.SyncAction;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.01.13 09:59
  */
 public class HttpServletProcessorMock extends HttpServletProcessor {

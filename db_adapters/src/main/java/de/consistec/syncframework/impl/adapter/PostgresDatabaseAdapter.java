@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * A PostgreSQL specific implementation of IDatabaseAdapter.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 05.07.12 14:29
  * @since 0.0.1-SNAPSHOT
  */

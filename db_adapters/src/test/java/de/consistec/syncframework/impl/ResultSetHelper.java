@@ -14,7 +14,7 @@ import org.junit.Assert;
  * This class helps on operation with ResultSets (comparison, equality, serialization)
  *
  * @author Marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.10.12 16:42
  * @since 0.0.1-SNAPSHOT
  */

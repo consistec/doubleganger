@@ -10,7 +10,7 @@ import org.junit.Test;
 /**
  * Tests of Table object.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 26.07.12 09:56
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

@@ -25,7 +25,7 @@ import org.powermock.reflect.Whitebox;
  * All others will throw {@link UnsupportedOperationException} </p>
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.12.2012 16:11:34
  * @since 0.0.1-SNAPSHOT
  */

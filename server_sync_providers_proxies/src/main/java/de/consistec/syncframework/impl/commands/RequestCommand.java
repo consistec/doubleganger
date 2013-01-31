@@ -8,7 +8,7 @@ import de.consistec.syncframework.impl.proxy.http_servlet.HttpRequestParamValues
  * This interface represents any server method call through http requests.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 11.01.13 09:26
  */
 public interface RequestCommand {

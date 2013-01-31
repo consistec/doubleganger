@@ -12,7 +12,7 @@ import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdap
  * This interface defines the behavior of the synchronization provider on the client's side.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date unknown
  * @since 0.0.1-SNAPSHOT
  */

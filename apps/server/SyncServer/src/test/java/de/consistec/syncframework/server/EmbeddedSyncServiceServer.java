@@ -13,7 +13,7 @@ import org.mortbay.jetty.testing.ServletTester;
  * servlet container so that we can start and stop it.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.01.13 13:21
  */
 public class EmbeddedSyncServiceServer {

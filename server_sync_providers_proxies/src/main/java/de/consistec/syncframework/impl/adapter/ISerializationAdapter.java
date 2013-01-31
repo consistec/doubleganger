@@ -19,7 +19,7 @@ import java.util.List;
  *
  * @param <T>
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 12.04.12 12:57
  * @since 0.0.1-SNAPSHOT
  */

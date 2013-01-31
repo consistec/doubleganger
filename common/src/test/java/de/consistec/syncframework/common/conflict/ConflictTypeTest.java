@@ -23,7 +23,7 @@ import org.junit.Test;
  * {@link de.consistec.syncframework.common.conflict.ConflictType ConflictType} enumeration.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 20.07.12 15:09
  * @since 0.0.1-SNAPSHOT
  */

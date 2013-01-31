@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 09.01.13 11:05
  */
 public final class DBMapperUtil {

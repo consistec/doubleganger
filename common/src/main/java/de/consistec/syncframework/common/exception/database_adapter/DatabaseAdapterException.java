@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception.database_adapter;
 /**
  * This exception indicates a general problem within the database adapter.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 04.07.12 08:51
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

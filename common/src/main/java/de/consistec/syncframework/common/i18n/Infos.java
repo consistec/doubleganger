@@ -9,7 +9,7 @@ import ch.qos.cal10n.LocaleData;
  * <p/>
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.11.2012 12:16:31
  * @since 0.0.1-SNAPSHOT
  */

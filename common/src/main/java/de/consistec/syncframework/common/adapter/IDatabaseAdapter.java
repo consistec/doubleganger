@@ -28,7 +28,7 @@ import java.util.Properties;
  * keys without the {@code "framework.server.db_adapter."} prefix.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 03.07.12 11:36
  * @since 0.0.1-SNAPSHOT
  */

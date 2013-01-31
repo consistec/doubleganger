@@ -23,7 +23,7 @@ import java.io.Serializable;
  * This class is (and will be) immutable.
  *
  * @author Marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 30.10.12 15:46
  * @serial
  * @since 0.0.1-SNAPSHOT

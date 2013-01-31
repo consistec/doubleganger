@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * This class hold instances of logger, junit test watcher, and loads logging facility's configuration.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.10.2012 13:41:03
  * @since 0.0.1-SNAPSHOT
  */

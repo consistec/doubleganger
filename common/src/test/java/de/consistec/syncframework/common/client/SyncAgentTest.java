@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 23.01.13 11:08
  */
 public class SyncAgentTest {

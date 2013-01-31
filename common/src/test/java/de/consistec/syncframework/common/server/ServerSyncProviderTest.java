@@ -33,7 +33,7 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 14.01.13 09:19
  */
 public class ServerSyncProviderTest {

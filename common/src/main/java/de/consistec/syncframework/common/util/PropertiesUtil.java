@@ -18,7 +18,7 @@ import java.util.Properties;
  * Utilities to read and convert values from {@link java.util.Properties} objects.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.10.2012 09:25:43
  * @since 0.0.1-SNAPSHOT
  */

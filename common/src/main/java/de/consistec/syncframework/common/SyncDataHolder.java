@@ -4,7 +4,7 @@ package de.consistec.syncframework.common;
  * Container for sync data values. This container contains the client and server datas.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 23.01.13 08:38
  */
 public class SyncDataHolder {

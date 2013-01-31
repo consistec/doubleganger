@@ -7,7 +7,7 @@ package de.consistec.syncframework.common;
  * <code>addISyncProgressListener</code> method. <br/>
  * When the ISyncProgress event occurs, then object's appropriate method is invoked.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT
  */

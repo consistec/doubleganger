@@ -43,7 +43,7 @@ import org.mockito.stubbing.Answer;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 14.01.13 09:19
  */
 //@RunWith(PowerMockRunner.class)

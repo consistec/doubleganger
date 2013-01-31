@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Class with helper methods to operate on collections and to facilitate creation of generic collections in jdk6.
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 02.11.2012 15:07:25
  * @since 0.0.1-SNAPSHOT
  */

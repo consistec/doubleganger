@@ -21,7 +21,7 @@ import org.junit.runners.Parameterized;
  * This class tests the correct handling of getChanges for client side.
  *
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 13.12.12 12:16
  */
 @RunWith(value = Parameterized.class)

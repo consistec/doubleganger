@@ -28,7 +28,7 @@ import org.junit.rules.ExpectedException;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.01.13 15:40
  */
 public class ServerSyncProviderValidationTest {

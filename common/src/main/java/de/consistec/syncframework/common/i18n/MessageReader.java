@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 29.11.2012 10:09:04
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

@@ -6,7 +6,7 @@ import java.io.Serializable;
  * The Class MDEntry represents meta information about the state of a change (db row) entry.
  *
  * @author Markus Backes
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.07.2012 11:10
  * @serial
  * @since 0.0.1-SNAPSHOT

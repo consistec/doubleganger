@@ -14,7 +14,7 @@ import org.slf4j.cal10n.LocLogger;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.01.13 14:37
  */
 public class ConfigLoader {

@@ -31,7 +31,7 @@ import org.junit.runners.Parameterized;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 28.01.13 15:44
  */
 public class ChangesEnumeratorTest {

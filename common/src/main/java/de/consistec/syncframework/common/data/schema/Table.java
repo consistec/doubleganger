@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * Representation of database table.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 25.07.12 15.50
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT

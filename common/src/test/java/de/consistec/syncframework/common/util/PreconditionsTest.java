@@ -20,7 +20,7 @@ import org.junit.Test;
 
 /**
  * @author marcel
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 16.01.13 10:05
  */
 public class PreconditionsTest {

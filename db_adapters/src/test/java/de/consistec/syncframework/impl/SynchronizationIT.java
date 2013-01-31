@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author davidm
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 10.01.2013 15:41:50
  */
 @RunWith(value = Parameterized.class)

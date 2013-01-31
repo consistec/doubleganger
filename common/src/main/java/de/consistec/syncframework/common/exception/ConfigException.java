@@ -3,7 +3,7 @@ package de.consistec.syncframework.common.exception;
 /**
  * Exception to throw when framework configuration is broken.
  *
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 15.10.2012 14:11
  * @author Piotr Wieczorek
  * @since 0.0.1-SNAPSHOT

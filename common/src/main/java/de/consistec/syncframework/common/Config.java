@@ -53,7 +53,7 @@ import org.slf4j.cal10n.LocLogger;
  * </p>
  *
  * @author Piotr Wieczorek
- * @company Consistec Engineering and Consulting GmbH
+ * @company consistec Engineering and Consulting GmbH
  * @date 15.10.2012 11:19:22
  * @since 0.0.1-SNAPSHOT
  */
