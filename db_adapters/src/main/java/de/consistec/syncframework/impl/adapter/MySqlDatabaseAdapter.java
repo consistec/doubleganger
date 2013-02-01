@@ -9,15 +9,15 @@ package de.consistec.syncframework.impl.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -34,6 +34,7 @@ import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.data.schema.ISQLConverter;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.util.PropertiesUtil;
 import de.consistec.syncframework.common.util.StringUtil;
 import de.consistec.syncframework.impl.data.schema.CreateSchemaToMySQLConverter;
@@ -87,7 +88,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:mysql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
-    private static final String TRIGGERS_FILE_PATH = "/sql/mysql_create_triggers_%d.sql";
+    private static final String TRIGGERS_FILE_PATH = "/sql/mysql_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
     private Integer port;
     private String host;
@@ -155,32 +156,23 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      */
     protected String[] generateSqlTriggersForTable(String tableName) throws DatabaseAdapterException {
         String[] queries = new String[10];
-        queries[0] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_insert`";
-        queries[1] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_update`";
-        queries[2] = "DROP TRIGGER IF EXISTS `" + tableName + "_before_delete`";
-        queries[3] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_delete`";
-
         // we don't want any trigger on the metadata tables
         if (!tableName.endsWith(CONF.getMdTableSuffix())) {
 
             // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
             // Yes, we read these files *every time* a MD table is created... It's not optimized, but
             // we do it only once: the first sync is somewhat slower, but that's all.
-            for (int i = 1; i < 5; i++) {
-                String filePath = String.format(TRIGGERS_FILE_PATH, i);
+            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(TRIGGERS_FILE_PATH))
+                .useDelimiter("\\A").next();
 
-                String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
-                    .useDelimiter("\\A").next();
+            String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", username);
+            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
+            triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
+            triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
+            triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
+            triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
 
-                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
-                triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-                triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
-                triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
-                triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
-                triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
-
-                queries[i + 4] = triggerQuery;
-            }
+            queries = triggerQuery.split(";;");
 
         }
         LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, queries);
