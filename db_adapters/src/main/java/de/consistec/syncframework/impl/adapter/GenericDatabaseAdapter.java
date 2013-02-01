@@ -9,15 +9,15 @@ package de.consistec.syncframework.impl.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -246,11 +246,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      */
     protected static final int MDV_COLUMN_SIZE = 500;
-    /**
-     * Name of the sync user.
-     * <p/>
-     */
-    protected static final String SYNC_USER = "syncuser";
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
     private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
     private static final Config CONF = Config.getInstance();
@@ -915,7 +910,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
                 String.format("select rev, pk, mdv, f from %s left join %s on %s.pk = %s where %s is null", mdTable,
-                    tableName, mdTable, tmpPkName, tmpPkName));
+                tableName, mdTable, tmpPkName, tmpPkName));
             callback.onSuccess(deletedRows);
 
         } catch (SQLException e) {
@@ -1098,9 +1093,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         try {
             stmt = connection.createStatement();
             for (String query : queries) {
-                if (query != null && !query.startsWith("--") && !query.trim().isEmpty()) {
-                    stmt.execute(query);
-                }
+                stmt.execute(query);
             }
         } catch (SQLException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
