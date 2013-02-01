@@ -16,7 +16,6 @@
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <!-- or change "gpl_v3" to "consistec" -->
         <license.licenseResolver>file://${basedir}/../parent/src/license</license.licenseResolver>
     </properties>
 

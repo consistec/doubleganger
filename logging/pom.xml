@@ -19,7 +19,6 @@
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <!-- or change "gpl_v3" to "consistec" -->
         <license.licenseResolver>file://${basedir}/../parent/src/license</license.licenseResolver>
     </properties>
 
@@ -77,12 +76,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!--<aspectLibraries>-->
-                    <!--<aspectLibrary>-->
-                    <!--<groupId>de.consistec.syncframework</groupId>-->
-                    <!--<artifactId>logging</artifactId>-->
-                    <!--</aspectLibrary>-->
-                    <!--</aspectLibraries>-->
                     <complianceLevel>${java.version}</complianceLevel>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <outxml>true</outxml>

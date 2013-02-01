@@ -14,19 +14,15 @@
         <android.test.skip>true</android.test.skip>
         <android.emulator.name>TestDevice</android.emulator.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- license information -->
+        <license.inceptionYear>2011</license.inceptionYear>
+        <license.organizationName>consistec GmbH</license.organizationName>
+        <license.projectName>doppelganger</license.projectName>
+        <license.licenseName>gpl_v3</license.licenseName>
+        <license.licenseResolver>file://${basedir}/src/license</license.licenseResolver>
     </properties>
 
     <dependencies>
-        <!--        <dependency>
-            <groupId>com.google.android</groupId>
-            <artifactId>android</artifactId>
-            <version>2.3.3</version>
-            <scope>provided</scope>
-        </dependency>-->
-        <!--        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>-->
 
         <dependency>
             <groupId>org.slf4j</groupId>
