@@ -25,7 +25,6 @@
     <properties>
         <project_name>doppleganger</project_name>
         <license.licenseName>gpl_v3</license.licenseName>
-        <!-- or change "gpl_v3" to "consistec" -->
         <license.licenseResolver>file://${project.basedir}/../parent/src/license</license.licenseResolver>
 
         <fail_on_checkstyle_errors>true</fail_on_checkstyle_errors>
