@@ -23,11 +23,22 @@ package de.consistec.syncframework.client.it_postgres;
  * #L%
  */
 
+import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
+import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
+
 import de.consistec.syncframework.common.Config;
+import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.client.ClientSyncProvider;
+import de.consistec.syncframework.common.client.IClientSyncProvider;
+import de.consistec.syncframework.common.client.SyncAgent;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.syncframework.common.server.IServerSyncProvider;
+import de.consistec.syncframework.common.server.ServerSyncProvider;
 import de.consistec.syncframework.impl.TestDatabase;
+import de.consistec.syncframework.impl.TestScenario;
 import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
 
 import java.io.IOException;
@@ -115,42 +126,47 @@ public class RepeatSyncTest {
     public void clientUpdate() throws ContextException, SyncException, DatabaseAdapterException,
         SQLException {
 
-//        TestScenario scenario = new TestScenario("client update", BIDIRECTIONAL, SERVER_WINS)
-//            .addStep(CLIENT, updateRow1)
-//            .expectServer("CS")
-//            .expectClient("CS");
-//        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-//        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
-//
-//        scenario.setSelectQueries(new String[]{
-//            "select * from categories order by categoryid asc",
-//            "select * from categories_md order by pk asc"
-//        });
-//
-//        scenario.executeSteps();
-//
-//        scenario.saveCurrentState();
-//
-//        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
-//        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
-//        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
-//            @Override
-//            protected void doAfterGetServerChanges() {
-//
-//                // change revision from server entry to force a client not up to date exception
-//                try {
-//                    db.executeQueriesOnServer(updateMdRow2);
-//                } catch (SQLException e) {
-//                    e.printStackTrace(
-//                        System.err);  //To change body of catch statement use File | Settings | File Templates.
-//                }
-//                super.doAfterGetServerChanges();
-//            }
-//        };
-//        agent.synchronize();
-//
-//        scenario.assertServerIsInExpectedState();
-//        scenario.assertClientIsInExpectedState();
+        TestScenario scenario = new TestScenario("client update", BIDIRECTIONAL, SERVER_WINS)
+            .addStep(CLIENT, updateRow1)
+            .expectServer("CS")
+            .expectClient("CS");
+        scenario.setDataSources(db.getServerDs(), db.getClientDs());
+        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+
+        scenario.setSelectQueries(new String[]{
+            "select * from categories order by categoryid asc",
+            "select * from categories_md order by pk asc"
+        });
+
+        scenario.executeSteps();
+
+        scenario.saveCurrentState();
+
+        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
+        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
+        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
+            boolean firstSync = true;
+
+            @Override
+            protected void doAfterGetServerChanges() {
+
+                if (firstSync) {
+                    // change revision from server entry to force a client not up to date exception
+                    try {
+                        db.executeQueriesOnServer(updateMdRow2);
+                    } catch (SQLException e) {
+                        e.printStackTrace(
+                            System.err);  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                    super.doAfterGetServerChanges();
+                    firstSync = false;
+                }
+            }
+        };
+        agent.synchronize();
+
+        scenario.assertServerIsInExpectedState();
+        scenario.assertClientIsInExpectedState();
 
     }
 
@@ -158,84 +174,93 @@ public class RepeatSyncTest {
     public void clientInsert() throws ContextException, SyncException, DatabaseAdapterException,
         SQLException {
 
-//        TestScenario scenario = new TestScenario("client insert", BIDIRECTIONAL, SERVER_WINS)
-//            .addStep(CLIENT, insertRow3)
-//            .expectServer("SSC")
-//            .expectClient("SSC");
-//        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-//        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
-//
-//        scenario.setSelectQueries(new String[]{
-//            "select * from categories order by categoryid asc",
-//            "select * from categories_md order by pk asc"
-//        });
-//
-//        scenario.executeSteps();
-//
-//        scenario.saveCurrentState();
-//
-//        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
-//        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
-//        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
-//            @Override
-//            protected void doAfterGetServerChanges() {
-//
-//                // change revision from server entry to force a client not up to date exception
-//                try {
-//                    db.executeQueriesOnServer(updateMdRow2);
-//                } catch (SQLException e) {
-//                    e.printStackTrace(
-//                        System.err);  //To change body of catch statement use File | Settings | File Templates.
-//                }
-//                super.doAfterGetServerChanges();
-//            }
-//        };
-//        agent.synchronize();
-//
-//        scenario.assertServerIsInExpectedState();
-//        scenario.assertClientIsInExpectedState();
+        TestScenario scenario = new TestScenario("client insert", BIDIRECTIONAL, SERVER_WINS)
+            .addStep(CLIENT, insertRow3)
+            .expectServer("SSC")
+            .expectClient("SSC");
+        scenario.setDataSources(db.getServerDs(), db.getClientDs());
+        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
 
+        scenario.setSelectQueries(new String[]{
+            "select * from categories order by categoryid asc",
+            "select * from categories_md order by pk asc"
+        });
+
+        scenario.executeSteps();
+
+        scenario.saveCurrentState();
+
+        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
+        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
+        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
+            boolean firstSync = true;
+
+            @Override
+            protected void doAfterGetServerChanges() {
+
+                if (firstSync) {
+                    // change revision from server entry to force a client not up to date exception
+                    try {
+                        db.executeQueriesOnServer(updateMdRow2);
+                    } catch (SQLException e) {
+                        e.printStackTrace(
+                            System.err);  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                    super.doAfterGetServerChanges();
+                    firstSync = false;
+                }
+            }
+        };
+        agent.synchronize();
+
+        scenario.assertServerIsInExpectedState();
+        scenario.assertClientIsInExpectedState();
     }
 
     @Test
     public void clientDelete() throws ContextException, SyncException, DatabaseAdapterException,
         SQLException {
 
-//        TestScenario scenario = new TestScenario("client delete", BIDIRECTIONAL, SERVER_WINS)
-//            .addStep(CLIENT, deleteRow1)
-//            .expectServer("C")
-//            .expectClient("C");
-//        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-//        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
-//
-//        scenario.setSelectQueries(new String[]{
-//            "select * from categories order by categoryid asc",
-//            "select * from categories_md order by pk asc"
-//        });
-//
-//        scenario.executeSteps();
-//
-//        scenario.saveCurrentState();
-//
-//        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
-//        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
-//        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
-//            @Override
-//            protected void doAfterGetServerChanges() {
-//
-//                // change revision from server entry to force a client not up to date exception
-//                try {
-//                    db.executeQueriesOnServer(updateMdRow2);
-//                } catch (SQLException e) {
-//                    e.printStackTrace(
-//                        System.err);  //To change body of catch statement use File | Settings | File Templates.
-//                }
-//                super.doAfterGetServerChanges();
-//            }
-//        };
-//        agent.synchronize();
-//
-//        scenario.assertServerIsInExpectedState();
-//        scenario.assertClientIsInExpectedState();
+        TestScenario scenario = new TestScenario("client delete", BIDIRECTIONAL, SERVER_WINS)
+            .addStep(CLIENT, deleteRow1)
+            .expectServer("C")
+            .expectClient("C");
+        scenario.setDataSources(db.getServerDs(), db.getClientDs());
+        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+
+        scenario.setSelectQueries(new String[]{
+            "select * from categories order by categoryid asc",
+            "select * from categories_md order by pk asc"
+        });
+
+        scenario.executeSteps();
+
+        scenario.saveCurrentState();
+
+        IServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies());
+        IClientSyncProvider clientSyncProvider = new ClientSyncProvider(new TableSyncStrategies());
+        SyncAgent agent = new SyncAgent(serverSyncProvider, clientSyncProvider) {
+            boolean firstSync = true;
+
+            @Override
+            protected void doAfterGetServerChanges() {
+
+                if (firstSync) {
+                    // change revision from server entry to force a client not up to date exception
+                    try {
+                        db.executeQueriesOnServer(updateMdRow2);
+                    } catch (SQLException e) {
+                        e.printStackTrace(
+                            System.err);  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                    super.doAfterGetServerChanges();
+                    firstSync = false;
+                }
+            }
+        };
+        agent.synchronize();
+
+        scenario.assertServerIsInExpectedState();
+        scenario.assertClientIsInExpectedState();
     }
 }
