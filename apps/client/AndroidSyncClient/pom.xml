@@ -14,6 +14,7 @@
         <android.test.skip>true</android.test.skip>
         <android.emulator.name>TestDevice</android.emulator.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- license information -->
         <license.inceptionYear>2011</license.inceptionYear>
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
