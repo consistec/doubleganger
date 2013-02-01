@@ -313,9 +313,9 @@ public final class CollectionsUtil {
             Object obj = it.next();
             Integer c = (Integer) (count.get(obj));
             if (null == c) {
-                count.put(obj, new Integer(1));
+                count.put(obj, Integer.valueOf(1));
             } else {
-                count.put(obj, new Integer(c.intValue() + 1));
+                count.put(obj, Integer.valueOf(c.intValue() + 1));
             }
         }
         return count;
