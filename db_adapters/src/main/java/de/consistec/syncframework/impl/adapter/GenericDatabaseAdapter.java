@@ -1054,12 +1054,16 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         Schema schema = new Schema();
         schema.addTables(mdTable);
 
-        try {
-            String sqlTableStatement = getSchemaConverter().toSQL(schema);
-            executeSqlQuery(sqlTableStatement);
-        } catch (SchemaConverterException e) {
-            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+        if (schema.countTables() > 0) {
+            applySchema(schema);
         }
+
+//        try {
+//            String sqlTableStatement = getSchemaConverter().toSQL(schema);
+//            executeSqlQuery(sqlTableStatement);
+//        } catch (SchemaConverterException e) {
+//            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
+//        }
     }
 
     /**
