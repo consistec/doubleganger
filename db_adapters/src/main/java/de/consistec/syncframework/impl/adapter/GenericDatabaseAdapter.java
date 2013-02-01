@@ -187,6 +187,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      * Value: {@value}.
      * <p/>
+     *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
      *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
@@ -1010,13 +1011,14 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         LOGGER.debug("creating new metadata table: {}", mdTableName);
 
+        String pk = "pk";
         Column pkColumn = getPrimaryKeyColumn(tableName);
         Table mdTable = new Table(mdTableName);
-        mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+        mdTable.add(new Column(pk, pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
         mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
         mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
         mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
-        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", pk));
 
         Schema schema = new Schema();
         schema.addTables(mdTable);
@@ -1029,14 +1031,14 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         }
     }
 
-    @Override
-    public void createMDSchemaOnServer() throws DatabaseAdapterException {
-        for (String tableName : CONF.getSyncTables()) {
-            if (!existsMDTable(tableName)) {
-                createMDTableOnServer(tableName);
-            }
-        }
-    }
+//    @Override
+//    public void createMDSchemaOnServer() throws DatabaseAdapterException {
+//        for (String tableName : CONF.getSyncTables()) {
+//            if (!existsMDTable(tableName)) {
+//                createMDTableOnServer(tableName);
+//            }
+//        }
+//    }
 
     @Override
     public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
@@ -1066,8 +1068,45 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 //        }
     }
 
+    @Override
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
+
+        List<String> databaseTables = getTableNamesFromDatabase();
+        Schema schema = new Schema();
+        Table table;
+
+        for (String tableName : CONF.getSyncTables()) {
+
+            String mdTableName = tableName + CONF.getMdTableSuffix();
+
+            LOGGER.debug("searching md table for table with name: {}", tableName);
+
+            if (databaseTables.contains(tableName) && databaseTables.contains(mdTableName)) {
+                LOGGER.debug("skipping creation of table: {}. Does already exist.", tableName);
+                // skip table creation because table already exists
+                continue;
+            }
+
+            LOGGER.debug("creating new table: {}", mdTableName);
+
+            table = new Table(mdTableName);
+            Column pkColumn = getPrimaryKeyColumn(tableName);
+            table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
+            table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+            table.add(new Column("rev", Types.INTEGER, 0, 0, true));
+            table.add(new Column("f", Types.INTEGER, 0, 0, true));
+
+            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+            schema.addTables(table);
+        }
+        if (schema.countTables() > 0) {
+            applySchema(schema);
+        }
+    }
+
     /**
      * Returns true if the corresponding metadata table exists.
+     *
      * @param tableName the table name
      * @return true if exists
      * @throws DatabaseAdapterException
@@ -1116,6 +1155,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     /**
      * Executes many SQL queries, one after the other.
      * <p/>
+     *
      * @param queries the queries to execute
      * @throws DatabaseAdapterException
      */
