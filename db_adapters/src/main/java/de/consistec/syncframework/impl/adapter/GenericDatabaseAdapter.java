@@ -1034,8 +1034,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void createMDSchemaOnServer() throws DatabaseAdapterException {
         for (String tableName : CONF.getSyncTables()) {
-            String mdTableName = tableName + CONF.getMdTableSuffix();
-            if (!existsMDTable(mdTableName)) {
+            if (!existsMDTable(tableName)) {
                 createMDTableOnServer(tableName);
             }
         }

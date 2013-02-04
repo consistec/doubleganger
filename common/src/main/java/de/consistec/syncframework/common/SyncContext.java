@@ -422,6 +422,36 @@ public final class SyncContext {
         return mainCtx.new ServerContext(ds);
     }
 
+    private static void initServerContext(DataSource ds) throws ContextException {
+        IDatabaseAdapter adapter = null;
+
+        try {
+            if (ds == null) {
+                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+            } else {
+                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
+                    ds.getConnection());
+            }
+
+            adapter.getConnection().setAutoCommit(true);
+            adapter.createMDSchemaOnServer();
+            LOGGER.info(Infos.COMMON_FRAMEWORK_INITIALIZED_SERVER);
+
+        } catch (SQLException ex) {
+            throw new ContextException(read(Errors.COMMON_CANT_INIT_FRAMEWORK), ex);
+        } catch (DatabaseAdapterException ex) {
+            throw new ContextException(read(Errors.COMMON_CANT_INIT_FRAMEWORK), ex);
+        } finally {
+            if (adapter != null) {
+                try {
+                    adapter.getConnection().close();
+                } catch (SQLException ex) {
+                    throw new ContextException(read(Errors.DATA_CLOSE_CONNECTION_FAILED), ex);
+                }
+            }
+        }
+    }
+
     /**
      * Creates LocalContext object for scenario where both client and server provider use
      * their own database connection.
@@ -672,6 +702,8 @@ public final class SyncContext {
          */
         private LocalContext(DataSource serverDs, DataSource clientDs) throws ContextException, SyncException {
 
+            // just one time initialization
+            initServerContext(serverDs);
             this.serverProvider = createServer(serverDs);
 
             IClientSyncProvider clientProvider = createClient(clientDs, serverProvider);
@@ -767,6 +799,23 @@ public final class SyncContext {
          */
         public void removeProgressListener(ISyncProgressListener listener) {
             agent.removeProgressListener(listener);
+        }
+
+        private IServerSyncProvider createServer(DataSource ds) throws ContextException {
+
+            ServerSyncProvider provider = null;
+
+            try {
+                if (ds == null) {
+                    provider = new ServerSyncProvider(strategies);
+                } else {
+                    provider = new ServerSyncProvider(strategies, ds);
+                }
+            } catch (DatabaseAdapterException ex) {
+                throw new ContextException(ex);
+            }
+
+            return provider;
         }
     }
 
