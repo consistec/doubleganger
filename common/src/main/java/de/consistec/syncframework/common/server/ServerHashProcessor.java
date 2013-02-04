@@ -135,7 +135,7 @@ public class ServerHashProcessor {
             final String tableName = remoteEntry.getTableName();
             final String mdTableName = tableName + CONF.getMdTableSuffix();
             final String hash;
-            if (CONF.isSqlTriggerActivated()) {
+            if (CONF.isSqlTriggerOnServerActivated()) {
                 hash = MDV_MODIFIED_VALUE;
             } else {
                 try {

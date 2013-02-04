@@ -90,7 +90,7 @@ public class ServerTableSynchronizer {
         final int revision = adapter.getNextRevision();
 
         for (final String tableName : CONF.getSyncTables()) {
-            if (CONF.isSqlTriggerActivated()) {
+            if (CONF.isSqlTriggerOnServerActivated()) {
                 LOGGER.debug("Triggers are activated. Incrementing revision for changed rows in {}", tableName);
                 updateRevisionOnChangedRows(revision, tableName);
             } else {
