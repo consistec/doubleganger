@@ -110,6 +110,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String CREATE_LANGUAGE_FILE_PATH = "/sql/postgres_create_language.sql";
     private static final String CREATE_POSTGRES_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
+    private static final String SYNC_USER = "syncuser";
     private Integer port;
     private String host;
     private String databaseName;

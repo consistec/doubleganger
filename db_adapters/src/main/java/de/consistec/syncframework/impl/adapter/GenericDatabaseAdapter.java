@@ -251,7 +251,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Name of the sync user.
      * <p/>
      */
-    protected static final String SYNC_USER = "syncuser";
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
     private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
     private static final Config CONF = Config.getInstance();

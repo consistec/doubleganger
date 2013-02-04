@@ -81,6 +81,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      * Value: {@value}.
      */
     public static final int DEFAULT_PORT = 3306;
+    private static final String SYNC_USER = "mysql";
     private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDatabaseAdapter.class.getCanonicalName());
     private static final String HOST_REGEXP = "H_O_S_T";
     private static final String PORT_REGEXP = "P_O_R_T";
@@ -163,7 +164,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
             String triggerRawQuery = new Scanner(getClass().getResourceAsStream(TRIGGERS_FILE_PATH))
                 .useDelimiter("\\A").next();
 
-            String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", username);
+            String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
             triggerQuery = triggerQuery.replaceAll("%table%", tableName);
             triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
             triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
