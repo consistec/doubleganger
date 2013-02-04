@@ -226,10 +226,10 @@ public class SyncAgent {
             }
         } catch (DatabaseAdapterInstantiationException e) {
             throw new SyncException(e);
-        } catch (DatabaseAdapterException e) {
+        } catch (SyncException e) {
             LOGGER.warn(Warnings.COMMON_CLIENT_CAUGHT_SERVER_STATUS_EXCEPTION, e, e.getMessage());
 
-            if (e instanceof UniqueConstraintException && syncRetries > 0) {
+            if (e.getCause() instanceof UniqueConstraintException && syncRetries > 0) {
 
                 LOGGER.info(Infos.COMMON_NUMBER_OF_SYNC_RETRIES, syncRetries);
                 isSyncAgain = true;
@@ -239,8 +239,10 @@ public class SyncAgent {
                 synchronize();
 
             } else {
-                new SyncException(e);
+                throw e;
             }
+        } catch (DatabaseAdapterException e) {
+            throw new SyncException(e);
         } finally {
             if (recursionDepth > 0) {
                 recursionDepth--;
