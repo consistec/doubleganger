@@ -23,6 +23,7 @@ package de.consistec.syncframework.common.client;
  * #L%
  */
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 
@@ -178,50 +179,47 @@ public class ClientHashProcessor {
         NoSuchAlgorithmException {
 
         final MDEntry remoteEntry = serverChange.getMdEntry();
+        final Object pKey = remoteEntry.getPrimaryKey();
+        final String tableName = remoteEntry.getTableName();
+        final int rev = remoteEntry.getRevision();
         final Map<String, Object> remoteRowData = serverChange.getRowData();
 
         // SERVER ADD, MOD OR DEL
         if (remoteEntry.dataRowExists()) {
-            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
-                new DatabaseAdapterCallback<ResultSet>() {
-                    @Override
-                    public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
-                        String hash = null;
-                        try {
-                            hash = serverChange.calculateHash();
-                        } catch (NoSuchAlgorithmException e) {
-                            throw new DatabaseAdapterException(e);
-                        }
-                        if (result.next()) {
-                            // SERVER MOD
-                            adapter.updateDataRow(remoteRowData, remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                            adapter.updateMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
-                                hash, remoteEntry.getTableName());
-                        } else {
-                            // SERVER ADD
-                            // on initialization everything is a server add, but deleted items no longer need to be added
-                            adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
-                            adapter.insertMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
-                                hash, remoteEntry.getTableName());
-                        }
+            final String hash;
+            try {
+                hash = serverChange.calculateHash();
+            } catch (NoSuchAlgorithmException e) {
+                throw new DatabaseAdapterException(e);
+            }
+            adapter.getRowForPrimaryKey(pKey, tableName, new DatabaseAdapterCallback<ResultSet>() {
+                @Override
+                public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
+                    if (result.next()) {
+                        // SERVER MOD
+                        adapter.updateDataRow(remoteRowData, pKey, tableName);
+                        adapter.updateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+                    } else {
+                        // SERVER ADD
+                        // on initialization everything is a server add, but deleted items no longer need to be added
+                        adapter.insertDataRow(remoteRowData, tableName);
+                        adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
                     }
-                });
+                }
+            });
         } else {
             // SERVER DEL
-            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
-                new DatabaseAdapterCallback<ResultSet>() {
-                    @Override
-                    public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
-                        if (result.next()) {
-                            adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                            adapter.updateMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
-                                null, remoteEntry.getTableName());
-                        } else {
-                            adapter.insertMdRow(remoteEntry.getRevision(), FLAG_PROCESSED, remoteEntry.getPrimaryKey(),
-                                null, remoteEntry.getTableName());
-                        }
+            adapter.getRowForPrimaryKey(pKey, tableName, new DatabaseAdapterCallback<ResultSet>() {
+                @Override
+                public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
+                    if (result.next()) {
+                        adapter.deleteRow(pKey, tableName);
+                        adapter.updateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+                    } else {
+                        adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
                     }
-                });
+                }
+            });
         }
     }
 

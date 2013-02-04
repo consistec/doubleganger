@@ -9,21 +9,22 @@ package de.consistec.syncframework.common.server;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
 import de.consistec.syncframework.common.Config;
@@ -117,8 +118,8 @@ public class ServerHashProcessor {
         LOGGER.debug("applyChangesFromClientOnServer called");
 
         final int nextRev = adapter.getNextRevision();
-        LOGGER.info(Infos.COMMON_NEW_SERVER_REVISION, nextRev);
 
+        LOGGER.info(Infos.COMMON_NEW_SERVER_REVISION, nextRev);
         LOGGER.debug("compare client revision with current server revision {} : {}", clientRevision, (nextRev - 1));
 
         if (clientRevision != (nextRev - 1)) {
@@ -130,24 +131,34 @@ public class ServerHashProcessor {
 
             final MDEntry remoteEntry = remoteChange.getMdEntry();
             final Map<String, Object> remoteRowData = remoteChange.getRowData();
+            final Object primaryKey = remoteEntry.getPrimaryKey();
+            final String tableName = remoteEntry.getTableName();
+            final String mdTableName = tableName + CONF.getMdTableSuffix();
+            final String hash;
+            if (CONF.isSqlTriggerActivated()) {
+                hash = MDV_MODIFIED_VALUE;
+            } else {
+                try {
+                    hash = remoteChange.calculateHash();
+                } catch (NoSuchAlgorithmException ex) {
+                    throw new DatabaseAdapterException(ex);
+                }
+            }
+
             LOGGER.debug("processing: {}", remoteEntry.toString());
 
-            adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(),
-                remoteEntry.getTableName() + CONF.getMdTableSuffix(),
+            adapter.getRowForPrimaryKey(primaryKey, mdTableName,
                 new DatabaseAdapterCallback<ResultSet>() {
                     @Override
                     public void onSuccess(final ResultSet hashRst) throws DatabaseAdapterException {
-                        adapter.getRowForPrimaryKey(remoteEntry.getPrimaryKey(), remoteEntry.getTableName(),
+                        adapter.getRowForPrimaryKey(primaryKey, tableName,
                             new DatabaseAdapterCallback<ResultSet>() {
                                 @Override
                                 public void onSuccess(final ResultSet dataRst) throws DatabaseAdapterException {
                                     LOGGER.debug("call processResultSets ...");
                                     try {
-                                        processResultSets(hashRst, dataRst, nextRev, remoteChange, remoteEntry,
-                                            remoteRowData);
+                                        processResultSets(hashRst, dataRst, nextRev, hash, remoteEntry, remoteRowData);
                                     } catch (SQLException e) {
-                                        throw new DatabaseAdapterException(e);
-                                    } catch (NoSuchAlgorithmException e) {
                                         throw new DatabaseAdapterException(e);
                                     }
                                 }
@@ -160,19 +171,21 @@ public class ServerHashProcessor {
         return nextRev;
     }
 
-    private void processResultSets(ResultSet hashRst, ResultSet data, int nextRev, Change remoteChange,
-        MDEntry remoteEntry,
-        Map<String, Object> remoteRowData) throws SQLException, DatabaseAdapterException, NoSuchAlgorithmException {
+    private void processResultSets(ResultSet hashRst, ResultSet data, int nextRev, String hash, MDEntry remoteEntry,
+        Map<String, Object> remoteRowData) throws SQLException, DatabaseAdapterException {
 
         LOGGER.debug("processResultSets called");
+
+        final Object pKey = remoteEntry.getPrimaryKey();
+        final String tableName = remoteEntry.getTableName();
 
         if (hashRst.next()) {
             if (!remoteEntry.dataRowExists()) {
 
                 // CLIENT DEL
                 LOGGER.info(Infos.COMMON_CLIENT_DELETED_CASE_DETECTED);
-                adapter.deleteRow(remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
-                adapter.updateMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), null, remoteEntry.getTableName());
+                adapter.deleteRow(pKey, tableName);
+                adapter.updateMdRow(nextRev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
 
             } else {
 
@@ -180,23 +193,20 @@ public class ServerHashProcessor {
                 LOGGER.info(Infos.COMMON_CLIENT_MODIFIED_CASE_DETECTED);
 
                 if (!data.next()) {
-                    adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
+                    adapter.insertDataRow(remoteRowData, tableName);
                 } else {
-                    adapter.updateDataRow(remoteRowData, remoteEntry.getPrimaryKey(), remoteEntry.getTableName());
+                    adapter.updateDataRow(remoteRowData, pKey, tableName);
                 }
-                adapter.updateMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
-                    remoteEntry.getTableName());
+                adapter.updateMdRow(nextRev, FLAG_PROCESSED, pKey, hash, tableName);
             }
         } else {
 
             // CLIENT ADD
             LOGGER.info(Infos.COMMON_CLIENT_ADDED_CASE_DETECTED);
-            LOGGER.debug("insert md row with rev: {} and client pk: {}", nextRev, remoteEntry.getPrimaryKey());
-            // insert hash
-            adapter.insertMdRow(nextRev, FLAG_PROCESSED, remoteEntry.getPrimaryKey(), remoteChange.calculateHash(),
-                remoteEntry.getTableName());
-            // insert data
-            adapter.insertDataRow(remoteRowData, remoteEntry.getTableName());
+            LOGGER.debug("insert md row with rev: {} and client pk: {}", nextRev, pKey);
+
+            adapter.insertMdRow(nextRev, FLAG_PROCESSED, pKey, hash, tableName);
+            adapter.insertDataRow(remoteRowData, tableName);
         }
     }
 }
