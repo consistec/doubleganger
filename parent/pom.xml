@@ -34,6 +34,10 @@
         <generic_database_adapter>de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter
         </generic_database_adapter>
         <synctables>categories,items</synctables>
+        <triggers.server.postgres>false</triggers.server.postgres>
+        <triggers.client.postgres>false</triggers.client.postgres>
+        <triggers.server.mysql>false</triggers.server.mysql>
+        <triggers.client.mysql>false</triggers.client.mysql>
         <!-- postgresql-settings for tests -->
         <postgres_server>localhost</postgres_server>
         <postgres_port>5432</postgres_port>
