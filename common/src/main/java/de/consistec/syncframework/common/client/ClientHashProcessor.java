@@ -9,20 +9,19 @@ package de.consistec.syncframework.common.client;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
@@ -109,8 +108,7 @@ public class ClientHashProcessor {
      * @return a sync data holder container which contains cleaned client and server changes.
      * @throws SyncException
      */
-    public SyncDataHolder resolveConflicts(SyncData clientData, SyncData serverData) throws
-        SyncException {
+    public SyncDataHolder resolveConflicts(SyncData clientData, SyncData serverData) throws SyncException {
         LOGGER.debug("applyChangesFromServerOnClient called");
 
 
@@ -266,8 +264,7 @@ public class ClientHashProcessor {
                 dataHolder.getServerSyncData().getChanges().remove(serverChange);
                 break;
             default:
-                throw new IllegalStateException(
-                    String.format("Unknown conflict strategy %s", conflictStrategy.name()));
+                throw new IllegalStateException(String.format("Unknown conflict strategy %s", conflictStrategy.name()));
         }
     }
 
@@ -277,13 +274,11 @@ public class ClientHashProcessor {
      * @param clientData data which contains the server revision after sync and the client changes applied on server.
      * @throws DatabaseAdapterException When update fails.
      */
-    public void updateClientRevision(SyncData clientData)
-        throws DatabaseAdapterException {
+    public void updateClientRevision(SyncData clientData) throws DatabaseAdapterException {
 
         LOGGER.debug("Updating client revisions on hashtable");
-        MDEntry tmpMDEntry;
         for (Change change : clientData.getChanges()) {
-            tmpMDEntry = change.getMdEntry();
+            MDEntry tmpMDEntry = change.getMdEntry();
             int result = adapter.updateRevision(clientData.getRevision(),
                 tmpMDEntry.getTableName() + CONF.getMdTableSuffix(),
                 tmpMDEntry.getPrimaryKey());
@@ -294,8 +289,7 @@ public class ClientHashProcessor {
 
     }
 
-    private void resolveConflictsFireEvent(ConflictHandlingData data,
-        IConflictStrategy conflictHandlingStrategy)
+    private void resolveConflictsFireEvent(ConflictHandlingData data, IConflictStrategy conflictHandlingStrategy)
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {
