@@ -22,7 +22,6 @@ package de.consistec.syncframework.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
@@ -87,7 +86,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String PORT_REGEXP = "P_O_R_T";
     private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
     private static final String URL_PATTERN = "jdbc:mysql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
-    private static final String TRIGGERS_FILE_PATH = "/sql/mysql_create_triggers_%d.sql";
+    private static final String TRIGGERS_FILE_PATH = "/sql/mysql_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
     private Integer port;
     private String host;
@@ -154,33 +153,24 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      * @return sql query for the triggers
      */
     protected String[] generateSqlTriggersForTable(String tableName) throws DatabaseAdapterException {
-        String[] queries = new String[10];
-        queries[0] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_insert`";
-        queries[1] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_update`";
-        queries[2] = "DROP TRIGGER IF EXISTS `" + tableName + "_before_delete`";
-        queries[3] = "DROP TRIGGER IF EXISTS `" + tableName + "_after_delete`";
+        String[] queries = new String[4];
 
         // we don't want any trigger on the metadata tables
         if (!tableName.endsWith(CONF.getMdTableSuffix())) {
 
-            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-            // Yes, we read these files *every time* a MD table is created... It's not optimized, but
-            // we do it only once: the first sync is somewhat slower, but that's all.
-            for (int i = 1; i < 5; i++) {
-                String filePath = String.format(TRIGGERS_FILE_PATH, i);
+            // Yes, we read these files *every time* a MD table is created... It's not optimized,
+            // but we do it only once: the first sync is somewhat slower, that's all.
+            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(TRIGGERS_FILE_PATH))
+                .useDelimiter("\\A").next();
 
-                String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
-                    .useDelimiter("\\A").next();
+            String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", username);
+            triggerQuery = triggerQuery.replaceAll("%table%", tableName);
+            triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
+            triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
+            triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
+            triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
 
-                String triggerQuery = triggerRawQuery.replaceAll("%syncuser%", username);
-                triggerQuery = triggerQuery.replaceAll("%table%", tableName);
-                triggerQuery = triggerQuery.replaceAll("%md_suffix%", CONF.getMdTableSuffix());
-                triggerQuery = triggerQuery.replaceAll("%pk_data%", getPrimaryKeyColumn(tableName).getName());
-                triggerQuery = triggerQuery.replaceAll("%flag_md%", FLAG_COLUMN_NAME);
-                triggerQuery = triggerQuery.replaceAll("%pk_md%", PK_COLUMN_NAME);
-
-                queries[i + 4] = triggerQuery;
-            }
+            queries = triggerQuery.split(";;");
 
         }
         LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, queries);
