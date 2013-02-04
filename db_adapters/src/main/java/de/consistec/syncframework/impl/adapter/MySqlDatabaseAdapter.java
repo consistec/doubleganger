@@ -130,7 +130,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
         super.createMDTableOnServer(tableName);
 
-        if (CONF.isSqlTriggerActivated()) {
+        if (CONF.isSqlTriggerOnServerActivated()) {
 
             getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
                 @Override

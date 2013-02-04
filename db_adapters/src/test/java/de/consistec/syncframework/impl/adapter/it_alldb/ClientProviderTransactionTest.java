@@ -155,8 +155,8 @@ public class ClientProviderTransactionTest {
      */
     @After
     public void tearDown() throws SQLException {
-
-        db.closeConnections();
+        db.closeConnectionsOnServer();
+        db.closeConnectionsOnClient();
     }
 
     @Test(expected = DatabaseAdapterException.class)
@@ -180,8 +180,8 @@ public class ClientProviderTransactionTest {
         db.executeQueriesOnClient(insertClientQuery);
         db.executeQueriesOnServer(insertServerQuery);
 
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+        scenario.setDatabase(db);
+
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by categoryid asc",
                 "select * from categories_md order by pk asc"
@@ -244,8 +244,8 @@ public class ClientProviderTransactionTest {
         db.executeQueriesOnClient(insertClientQuery);
         db.executeQueriesOnServer(insertServerQuery);
 
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+        scenario.setDatabase(db);
+
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by categoryid asc",
                 "select * from categories_md order by pk asc"

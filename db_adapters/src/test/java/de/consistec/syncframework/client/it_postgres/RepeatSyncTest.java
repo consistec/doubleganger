@@ -9,15 +9,15 @@ package de.consistec.syncframework.client.it_postgres;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -60,9 +60,7 @@ import org.slf4j.LoggerFactory;
 public class RepeatSyncTest {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(RepeatSyncTest.class.getCanonicalName());
-
     protected static String[] tableNames = new String[]{"categories", "categories_md", "items", "items_md"};
-
     protected static String[] createQueries = new String[]{
         "CREATE TABLE categories (categoryid INTEGER NOT NULL PRIMARY KEY ,categoryname VARCHAR (300),description VARCHAR (300));",
         "CREATE TABLE categories_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0);",
@@ -72,12 +70,10 @@ public class RepeatSyncTest {
         "INSERT INTO categories (categoryid, categoryname, description) VALUES (2, 'Condiments', 'Sweet and ')",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 0)",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '75901F57520C09EB990837C7AA93F717', 2, 0)",};
-
     protected static String deleteRow1 = "DELETE FROM categories WHERE categoryid = 1";
     protected static String insertRow3 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (3, 'Cat3a', '3a')";
     protected static String[] updateMdRow2 = new String[]{"UPDATE categories_md SET rev = '4' WHERE pk = 2"};
     protected static String updateRow1 = "UPDATE categories SET categoryname = 'Cat1c', description = '1c' WHERE categoryid = 1";
-
     private TestDatabase db;
 
     public RepeatSyncTest() {
@@ -119,7 +115,8 @@ public class RepeatSyncTest {
 
     @After
     public void tearDown() throws SQLException {
-        db.closeConnections();
+        db.closeConnectionsOnServer();
+        db.closeConnectionsOnClient();
     }
 
     @Test
@@ -130,13 +127,13 @@ public class RepeatSyncTest {
             .addStep(CLIENT, updateRow1)
             .expectServer("CS")
             .expectClient("CS");
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+
+        scenario.setDatabase(db);
 
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by categoryid asc",
-            "select * from categories_md order by pk asc"
-        });
+                "select * from categories order by categoryid asc",
+                "select * from categories_md order by pk asc"
+            });
 
         scenario.executeSteps();
 
@@ -178,13 +175,13 @@ public class RepeatSyncTest {
             .addStep(CLIENT, insertRow3)
             .expectServer("SSC")
             .expectClient("SSC");
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+
+        scenario.setDatabase(db);
 
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by categoryid asc",
-            "select * from categories_md order by pk asc"
-        });
+                "select * from categories order by categoryid asc",
+                "select * from categories_md order by pk asc"
+            });
 
         scenario.executeSteps();
 
@@ -225,13 +222,13 @@ public class RepeatSyncTest {
             .addStep(CLIENT, deleteRow1)
             .expectServer("C")
             .expectClient("C");
-        scenario.setDataSources(db.getServerDs(), db.getClientDs());
-        scenario.setConnections(db.getServerConnection(), db.getClientConnection());
+
+        scenario.setDatabase(db);
 
         scenario.setSelectQueries(new String[]{
-            "select * from categories order by categoryid asc",
-            "select * from categories_md order by pk asc"
-        });
+                "select * from categories order by categoryid asc",
+                "select * from categories_md order by pk asc"
+            });
 
         scenario.executeSteps();
 

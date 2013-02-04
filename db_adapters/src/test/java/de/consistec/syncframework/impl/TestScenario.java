@@ -22,10 +22,10 @@ package de.consistec.syncframework.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
 
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncDirection;
@@ -37,9 +37,7 @@ import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.util.LoggingUtil;
 import de.consistec.syncframework.impl.adapter.ConnectionType;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -59,15 +57,15 @@ import org.slf4j.cal10n.LocLogger;
  * @date 10.01.2013 14:50:08
  */
 public class TestScenario {
-    private static final LocLogger LOGGER = LoggingUtil.createLogger(TestScenario.class.getCanonicalName());
 
+    private static final LocLogger LOGGER = LoggingUtil.createLogger(TestScenario.class.getCanonicalName());
+    private static final Config CONF = Config.getInstance();
     private final String name;
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
     private String expectedServerState, expectedClientState;
     private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
-    private DumpDataSource serverDs, clientDs;
-    private Connection serverConnection, clientConnection;
+    private TestDatabase db;
     private String[] selectTableQueries;
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
@@ -98,6 +96,10 @@ public class TestScenario {
 
     public Class getExpectedExceptionClass() {
         return expectedExceptionClass;
+    }
+
+    public void setDatabase(TestDatabase db) {
+        this.db = db;
     }
 
     /**
@@ -153,16 +155,6 @@ public class TestScenario {
         }
     }
 
-    public void setDataSources(DumpDataSource serverDs, DumpDataSource clientDs) {
-        this.serverDs = serverDs;
-        this.clientDs = clientDs;
-    }
-
-    public void setConnections(Connection serverConnection, Connection clientConnection) {
-        this.serverConnection = serverConnection;
-        this.clientConnection = clientConnection;
-    }
-
     /**
      * These queries will be used to assert the tables are in the right state.
      */
@@ -174,8 +166,14 @@ public class TestScenario {
      * Executes all queries and possible synchronization as they were inserted in the queue.
      */
     public void executeSteps() throws SQLException {
-        Statement serverStmt = serverConnection.createStatement();
-        Statement clientStmt = clientConnection.createStatement();
+        if (CONF.isSqlTriggerOnServerActivated()) {
+            db.connectWithExternalUserOnServer();
+        }
+        if (CONF.isSqlTriggerOnClientActivated()) {
+            db.connectWithExternalUserOnClient();
+        }
+        Statement serverStmt = db.getServerConnection().createStatement();
+        Statement clientStmt = db.getClientConnection().createStatement();
 
         for (Map<ConnectionType, String> step : steps) {
             // there should be exactly one entry per step
@@ -209,8 +207,8 @@ public class TestScenario {
         expectedFlatServerResultSets = new String[selectTableQueries.length];
 
         try {
-            Statement serverStmt = serverConnection.createStatement();
-            Statement clientStmt = clientConnection.createStatement();
+            Statement serverStmt = db.getServerConnection().createStatement();
+            Statement clientStmt = db.getClientConnection().createStatement();
 
             ResultSet serverRs, clientRs;
             for (int i = 0; i < selectTableQueries.length; i += 2) {
@@ -241,6 +239,8 @@ public class TestScenario {
 
     public void synchronize(String[] tableNames, IConflictListener conflictListener, SyncDirection dir) throws
         SyncException, ContextException, SQLException {
+        db.connectWithSyncUserOnServer();
+        db.connectWithSyncUserOnClient();
         TableSyncStrategies strategies = new TableSyncStrategies();
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(dir, strategy);
@@ -248,7 +248,7 @@ public class TestScenario {
             strategies.addSyncStrategyForTable(tableNames[i], tableSyncStrategy);
         }
 
-        final SyncContext.LocalContext localCtx = SyncContext.local(serverDs, clientDs, strategies);
+        final SyncContext.LocalContext localCtx = SyncContext.local(db.getServerDs(), db.getClientDs(), strategies);
 
         if (strategy == FIRE_EVENT) {
             localCtx.setConflictListener(conflictListener);
@@ -260,7 +260,7 @@ public class TestScenario {
     public void assertServerIsInExpectedState() throws SQLException {
         ResultSet serverResultSet;
 
-        Statement serverStmt = serverConnection.createStatement();
+        Statement serverStmt = db.getServerConnection().createStatement();
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
             String flatServerRs;
@@ -278,7 +278,7 @@ public class TestScenario {
     public void assertClientIsInExpectedState() throws SQLException {
         ResultSet clientResultSet;
 
-        Statement clientStmt = clientConnection.createStatement();
+        Statement clientStmt = db.getClientConnection().createStatement();
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
             String flatClientRs;

@@ -9,20 +9,19 @@ package de.consistec.syncframework.impl.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
@@ -172,61 +171,84 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     @Override
     public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
         try {
+
             super.createMDTableOnClient(tableName);
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
+            String state = sqlEx.getSQLState();
 
-            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState()) || RELATION_ALREADY_EXIST.equals(
-                sqlEx.getSQLState())) {
-                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
-                    sqlEx); //NOSONAR
+            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(state) || RELATION_ALREADY_EXIST.equals(state)) {
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName), sqlEx); //NOSONAR
             } else {
                 handleTransactionAborted(ex);
             }
+        }
+
+        if (CONF.isSqlTriggerOnClientActivated()) {
+            createTriggers(tableName);
         }
     }
 
     @Override
     public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
         try {
-            if (CONF.isSqlTriggerActivated()) {
-                String createLanguageQuery = generatePlpgsqlLanguageQuery();
-                executeSqlQuery(createLanguageQuery);
-            }
-
             super.createMDTableOnServer(tableName);
-
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
+            String state = sqlEx.getSQLState();
 
-            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(sqlEx.getSQLState()) || RELATION_ALREADY_EXIST.equals(
-                sqlEx.getSQLState())) {
-                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
-                    sqlEx); //NOSONAR
+            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(state) || RELATION_ALREADY_EXIST.equals(state)) {
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName), sqlEx); //NOSONAR
             } else {
                 handleTransactionAborted(ex);
             }
         }
 
-        if (CONF.isSqlTriggerActivated()) {
-
-            getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
-                @Override
-                public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
-                    while (result.next()) {
-                        final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
-                        insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
-                    }
-                }
-            });
-            String triggerQuery = generateSqlTriggersForTable(tableName, CREATE_POSTGRES_TRIGGERS_FILE_PATH);
-            executeSqlQuery(triggerQuery);
+        if (CONF.isSqlTriggerOnServerActivated()) {
+            createTriggers(tableName);
         }
     }
 
-    private String generatePlpgsqlLanguageQuery() {
+    /**
+     * Creates the necessary triggers for this table if triggers are activated.
+     * <p/>
+     * @param tableName the table's name
+     * @throws DatabaseAdapterException
+     */
+    private void createTriggers(String tableName) throws DatabaseAdapterException {
+        executePlpgsqlLanguageQuery();
+        insertMdRowsForDataInTable(tableName);
+        executeSqlTriggersForTable(tableName, CREATE_POSTGRES_TRIGGERS_FILE_PATH);
+    }
+
+    /**
+     * Loads the language Plpgsql in the database so it can interpret the triggers' queries.
+     * <p/>
+     * @throws DatabaseAdapterException
+     */
+    private void executePlpgsqlLanguageQuery() throws DatabaseAdapterException {
         // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-        return new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH)).useDelimiter("\\A").next();
+        String createLanguageQuery = new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH))
+            .useDelimiter("\\A").next();
+        executeSqlQuery(createLanguageQuery);
+    }
+
+    /**
+     * Creates an entry in the metadata table for every entry in the data table.
+     * <p/>
+     * @param tableName the table's name
+     * @throws DatabaseAdapterException
+     */
+    private void insertMdRowsForDataInTable(final String tableName) throws DatabaseAdapterException {
+        getAllRowsFromTable(tableName, new DatabaseAdapterCallback<ResultSet>() {
+            @Override
+            public void onSuccess(ResultSet result) throws DatabaseAdapterException, SQLException {
+                while (result.next()) {
+                    final Object primaryKey = result.getObject(getPrimaryKeyColumn(tableName).getName());
+                    insertMdRow(0, FLAG_MODIFIED, primaryKey, MDV_MODIFIED_VALUE, tableName);
+                }
+            }
+        });
     }
 
     /**
@@ -236,7 +258,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * @param filePath path to the trigger's definition file
      * @return sql query for the triggers
      */
-    protected String generateSqlTriggersForTable(String tableName, String filePath) throws DatabaseAdapterException {
+    private void executeSqlTriggersForTable(String tableName, String filePath) throws DatabaseAdapterException {
         String triggerQuery = "";
 
         // we don't want any trigger on the metadata tables
@@ -257,7 +279,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
             LOGGER.debug("Creating trigger for table '{}':\n {}", tableName, triggerQuery);
         }
-        return triggerQuery;
+        executeSqlQuery(triggerQuery);
     }
 
     @Override

@@ -9,15 +9,15 @@ package de.consistec.syncframework.impl;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -107,17 +107,12 @@ public class SynchronizationIT {
 
     @Test
     public void testWithDataBeforeFirstSync() throws SQLException, ContextException, SyncException {
+        scenario.setDatabase(db);
 
         try {
             // there has to be a sync here, to prepare the MD tables and the triggers (if needed)
             scenario.synchronize(tableNames, getServerConflictResolver(), BIDIRECTIONAL);
 
-            if (CONF.isSqlTriggerActivated()) {
-                db.connectWithExternalUser();
-            }
-
-            scenario.setDataSources(db.getServerDs(), db.getClientDs());
-            scenario.setConnections(db.getServerConnection(), db.getClientConnection());
             scenario.setSelectQueries(new String[]{
                     "select * from categories order by id asc",
                     "select * from categories_md order by pk asc"
@@ -175,7 +170,8 @@ public class SynchronizationIT {
 
     @After
     public void tearDown() throws SQLException {
-        db.closeConnections();
+        db.closeConnectionsOnServer();
+        db.closeConnectionsOnClient();
     }
 
     @Parameters(name = "{index}: {0}")

@@ -59,7 +59,8 @@ public abstract class TestDatabase {
 
     /**
      * Loads the properties, creates the datasources and connects as the syncuser by default.
-     * Call {@link connectWithExternalUser()} if you activate the triggers.
+     * Call {@link connectWithExternalUserOnServer()} if you activate the triggers on the server,
+     * and/or {@link connectWithExternalUserOnClient()} if you activate the triggers on the client.
      */
     public void init() throws SQLException, IOException {
         Config.getInstance().init(getClass().getResourceAsStream(configFile));
@@ -67,31 +68,49 @@ public abstract class TestDatabase {
         serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
         clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
 
-        connectWithSyncUser();
+        connectWithSyncUserOnServer();
+        connectWithSyncUserOnClient();
     }
 
-    public void connectWithSyncUser() throws SQLException {
-        closeConnections();
+    public void connectWithSyncUserOnServer() throws SQLException {
+        closeConnectionsOnServer();
         String dbUsername = serverDs.getSyncUserName();
         String dbPassword = serverDs.getSyncUserPassword();
         serverConnection = serverDs.getConnection(dbUsername, dbPassword);
-        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting as user {}", dbUsername);
+        LOGGER.debug("Connecting on server as user {}", dbUsername);
     }
 
-    public void connectWithExternalUser() throws SQLException {
-        closeConnections();
+    public void connectWithSyncUserOnClient() throws SQLException {
+        closeConnectionsOnClient();
+        String dbUsername = clientDs.getSyncUserName();
+        String dbPassword = clientDs.getSyncUserPassword();
+        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
+        LOGGER.debug("Connecting on client as user {}", dbUsername);
+    }
+
+    public void connectWithExternalUserOnServer() throws SQLException {
+        closeConnectionsOnServer();
         String dbUsername = serverDs.getExternUserName();
         String dbPassword = serverDs.getExternUserPassword();
         serverConnection = serverDs.getConnection(dbUsername, dbPassword);
-        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting as user {}", dbUsername);
+        LOGGER.debug("Connecting on server as user {}", dbUsername);
     }
 
-    public void closeConnections() throws SQLException {
+    public void connectWithExternalUserOnClient() throws SQLException {
+        closeConnectionsOnClient();
+        String dbUsername = clientDs.getExternUserName();
+        String dbPassword = clientDs.getExternUserPassword();
+        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
+        LOGGER.debug("Connecting on client as user {}", dbUsername);
+    }
+
+    public void closeConnectionsOnServer() throws SQLException {
         for (Connection connection : serverDs.getCreatedConnections()) {
             connection.close();
         }
+    }
+
+    public void closeConnectionsOnClient() throws SQLException {
         for (Connection connection : clientDs.getCreatedConnections()) {
             connection.close();
         }
