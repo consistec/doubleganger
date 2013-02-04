@@ -1031,14 +1031,15 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         }
     }
 
-//    @Override
-//    public void createMDSchemaOnServer() throws DatabaseAdapterException {
-//        for (String tableName : CONF.getSyncTables()) {
-//            if (!existsMDTable(tableName)) {
-//                createMDTableOnServer(tableName);
-//            }
-//        }
-//    }
+    @Override
+    public void createMDSchemaOnServer() throws DatabaseAdapterException {
+        for (String tableName : CONF.getSyncTables()) {
+            String mdTableName = tableName + CONF.getMdTableSuffix();
+            if (!existsMDTable(mdTableName)) {
+                createMDTableOnServer(tableName);
+            }
+        }
+    }
 
     @Override
     public void createMDTableOnServer(final String tableName) throws DatabaseAdapterException {
@@ -1056,51 +1057,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         Schema schema = new Schema();
         schema.addTables(mdTable);
 
-        if (schema.countTables() > 0) {
-            applySchema(schema);
-        }
-
-//        try {
-//            String sqlTableStatement = getSchemaConverter().toSQL(schema);
-//            executeSqlQuery(sqlTableStatement);
-//        } catch (SchemaConverterException e) {
-//            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
-//        }
-    }
-
-    @Override
-    public void createMDSchemaOnServer() throws DatabaseAdapterException {
-
-        List<String> databaseTables = getTableNamesFromDatabase();
-        Schema schema = new Schema();
-        Table table;
-
-        for (String tableName : CONF.getSyncTables()) {
-
-            String mdTableName = tableName + CONF.getMdTableSuffix();
-
-            LOGGER.debug("searching md table for table with name: {}", tableName);
-
-            if (databaseTables.contains(tableName) && databaseTables.contains(mdTableName)) {
-                LOGGER.debug("skipping creation of table: {}. Does already exist.", tableName);
-                // skip table creation because table already exists
-                continue;
-            }
-
-            LOGGER.debug("creating new table: {}", mdTableName);
-
-            table = new Table(mdTableName);
-            Column pkColumn = getPrimaryKeyColumn(tableName);
-            table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-            table.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-            table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-            table.add(new Column("f", Types.INTEGER, 0, 0, true));
-
-            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
-            schema.addTables(table);
-        }
-        if (schema.countTables() > 0) {
-            applySchema(schema);
+        try {
+            String sqlTableStatement = getSchemaConverter().toSQL(schema);
+            executeSqlQuery(sqlTableStatement);
+        } catch (SchemaConverterException e) {
+            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
         }
     }
 
@@ -1142,6 +1103,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             stmt = connection.createStatement();
             for (String query : queries) {
                 if (query != null && !query.startsWith("--") && !query.trim().isEmpty()) {
+                    LOGGER.debug("execute query: {}", query);
                     stmt.execute(query);
                 }
             }
