@@ -37,6 +37,7 @@ import de.consistec.syncframework.common.exception.ServerStatusException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.syncframework.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.i18n.Warnings;
@@ -225,6 +226,21 @@ public class SyncAgent {
             }
         } catch (DatabaseAdapterInstantiationException e) {
             throw new SyncException(e);
+        } catch (SyncException e) {
+            LOGGER.warn(Warnings.COMMON_CLIENT_CAUGHT_SERVER_STATUS_EXCEPTION, e, e.getMessage());
+
+            if (e.getCause() instanceof UniqueConstraintException && syncRetries > 0) {
+
+                LOGGER.info(Infos.COMMON_NUMBER_OF_SYNC_RETRIES, syncRetries);
+                isSyncAgain = true;
+                syncRetries--;
+                LOGGER.info(Infos.COMMON_REMAINING_NUMBER_OF_SYNC_RETRIES, syncRetries);
+                recursionDepth++;
+                synchronize();
+
+            } else {
+                throw e;
+            }
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
         } finally {

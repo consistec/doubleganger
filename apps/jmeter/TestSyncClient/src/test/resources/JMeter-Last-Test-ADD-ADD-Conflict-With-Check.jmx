@@ -166,7 +166,25 @@
           </RegexExtractor>
           <hashTree/>
         </hashTree>
-        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If-Controller delete table on server" enabled="true">
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If-Controller create table if not exists on server" enabled="true">
+          <stringProp name="IfController.condition">${md_server_table_exists} == 0</stringProp>
+          <boolProp name="IfController.evaluateAll">false</boolProp>
+        </IfController>
+        <hashTree>
+          <JDBCSampler guiclass="TestBeanGUI" testclass="JDBCSampler" testname="create table categories_md on server" enabled="true">
+            <stringProp name="dataSource">server-pool</stringProp>
+            <stringProp name="query">CREATE TABLE ${synctable}_md (rev integer, pk integer NOT NULL, f integer NOT NULL, mdv character varying(500), CONSTRAINT categories_md_pkey PRIMARY KEY (pk )) WITH ( OIDS=FALSE );
+
+ALTER TABLE categories OWNER TO ${postgres_sync_user};</stringProp>
+            <stringProp name="queryArguments"></stringProp>
+            <stringProp name="queryArgumentsTypes"></stringProp>
+            <stringProp name="queryType">Update Statement</stringProp>
+            <stringProp name="resultVariable"></stringProp>
+            <stringProp name="variableNames"></stringProp>
+          </JDBCSampler>
+          <hashTree/>
+        </hashTree>
+        <IfController guiclass="IfControllerPanel" testclass="IfController" testname="If-Controller delete table if exists on server" enabled="true">
           <stringProp name="IfController.condition">${md_server_table_exists} == 1</stringProp>
           <boolProp name="IfController.evaluateAll">false</boolProp>
         </IfController>
