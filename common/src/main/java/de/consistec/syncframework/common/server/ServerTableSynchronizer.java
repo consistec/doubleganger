@@ -25,6 +25,7 @@ package de.consistec.syncframework.common.server;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
+import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
@@ -185,7 +186,8 @@ public class ServerTableSynchronizer {
                             continue;
                         }
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_SERVER);
-                        adapter.updateMdRow(rev, FLAG_PROCESSED, deletedRows.getObject("pk"), MDV_DELETED_VALUE, table);
+                        adapter.updateMdRow(rev, FLAG_PROCESSED, deletedRows.getObject(PK_COLUMN_NAME),
+                            MDV_DELETED_VALUE, table);
                     }
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);

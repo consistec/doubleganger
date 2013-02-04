@@ -23,8 +23,11 @@ package de.consistec.syncframework.common.client;
  * #L%
  */
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
+import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
+import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
+import static de.consistec.syncframework.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
@@ -136,14 +139,14 @@ public class ClientTableSynchronizer {
                                     if (result.next()) {
                                         if (!DBMapperUtil.rowHasSameHash(result, hash)) {
                                             LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
-                                            adapter.updateMdRow(result.getInt("rev"), FLAG_MODIFIED, primaryKey, hash,
-                                                table);
+                                            adapter.updateMdRow(result.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
+                                                primaryKey, hash, table);
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
                                             mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
                                             change.setMdEntry(mdEntry);
                                             change.setRowData(rowData);
                                             changeList.add(change);
-                                        } else if (result.getInt("f") == FLAG_MODIFIED) {
+                                        } else if (result.getInt(FLAG_COLUMN_NAME) == FLAG_MODIFIED) {
                                             // if synchronization is repeated then previous changes or inserts are
                                             // marked with th CLIENT_FLAG
                                             MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
@@ -199,7 +202,7 @@ public class ClientTableSynchronizer {
                     while (deletedRows.next()) {
                         Change change = new Change();
                         if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
-                            if (deletedRows.getInt("f") == FLAG_MODIFIED) {
+                            if (deletedRows.getInt(FLAG_COLUMN_NAME) == FLAG_MODIFIED) {
                                 // if synchronization is repeated then previous changes or inserts are
                                 // marked with th CLIENT_FLAG
                                 MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
@@ -213,8 +216,8 @@ public class ClientTableSynchronizer {
                         }
 
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
-                        adapter.updateMdRow(deletedRows.getInt("rev"), FLAG_MODIFIED, deletedRows.getObject("pk"),
-                            MDV_DELETED_VALUE, table);
+                        adapter.updateMdRow(deletedRows.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
+                            deletedRows.getObject(PK_COLUMN_NAME), MDV_DELETED_VALUE, table);
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
                         mdEntry.setDataRowDeleted();
