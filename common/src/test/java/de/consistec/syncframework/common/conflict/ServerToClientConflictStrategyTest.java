@@ -9,20 +9,19 @@ package de.consistec.syncframework.common.conflict;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 import static org.junit.Assert.assertTrue;
 
@@ -60,9 +59,7 @@ public class ServerToClientConflictStrategyTest {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
-
     private IConflictStrategy conflictStrategy = null;
-
     @Mock
     private IDatabaseAdapter databaseAdapterMock;
 
@@ -90,8 +87,7 @@ public class ServerToClientConflictStrategyTest {
         MDEntry remoteEntry = new MDEntry(Integer.valueOf(1), false, 1, TEST_TABLE_NAME, TEST_MDV);
         Change remoteChange = new Change(remoteEntry, createRowData());
 
-        ConflictHandlingData conflictHandlingData = new ConflictHandlingData(0, 0, "34drf324324h4jkhkjhjh",
-            remoteChange);
+        ConflictHandlingData conflictHandlingData = new ConflictHandlingData(remoteChange);
         conflictStrategy.resolveByClientWinsStrategy(databaseAdapterMock, conflictHandlingData);
     }
 
@@ -104,15 +100,13 @@ public class ServerToClientConflictStrategyTest {
         MDEntry remoteEntry = new MDEntry(Integer.valueOf(1), false, 1, TEST_TABLE_NAME, TEST_MDV);
         Change remoteChange = new Change(remoteEntry, createRowData());
 
-        ConflictHandlingData conflictHandlingData = new ConflictHandlingData(0, 0, "34drf324324h4jkhkjhjh",
-            remoteChange);
+        ConflictHandlingData conflictHandlingData = new ConflictHandlingData(remoteChange);
         Map<String, Object> clientData = newHashMap();
         conflictStrategy.resolveByFireEvent(databaseAdapterMock, conflictHandlingData, clientData,
             new IConflictListener() {
                 @Override
                 public Map<String, Object> resolve(final Map<String, Object> serverData,
-                                                   final Map<String, Object> clientData
-                ) {
+                    final Map<String, Object> clientData) {
                     return null;
                 }
             });

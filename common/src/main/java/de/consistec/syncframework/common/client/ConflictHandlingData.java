@@ -9,20 +9,19 @@ package de.consistec.syncframework.common.client;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.MDEntry;
 
@@ -38,26 +37,15 @@ import java.util.Map;
  */
 public class ConflictHandlingData {
 
-    private int localRev;
-    private int localFlag;
-    private String localMdv;
     private Change remoteChange;
     private Change clientChange;
-
 
     /**
      * Constructor of the class {@code ConflictHandlingData}.
      *
-     * @param localRev - revision of any data row from client
-     * @param localFlag - flag of any data row from client
-     * @param localMdv - hash value  of any data row from client
      * @param remoteChange - server changeset from server with the same primary key as the client data row
      */
-    public ConflictHandlingData(int localRev, int localFlag, String localMdv, Change remoteChange
-    ) {
-        this.localRev = localRev;
-        this.localFlag = localFlag;
-        this.localMdv = localMdv;
+    public ConflictHandlingData(Change remoteChange) {
         this.remoteChange = remoteChange;
     }
 
@@ -67,8 +55,7 @@ public class ConflictHandlingData {
      * @param clientChange - client change from client with the same primary key as the server data row
      * @param serverChange - server change from server with the same primary key as the client data row
      */
-    public ConflictHandlingData(Change clientChange, Change serverChange
-    ) {
+    public ConflictHandlingData(Change clientChange, Change serverChange) {
         this.clientChange = clientChange;
         this.remoteChange = serverChange;
     }
