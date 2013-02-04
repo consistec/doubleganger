@@ -9,20 +9,19 @@ package de.consistec.syncframework.common;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_IS_SQL_TRIGGER_ACTIVATED;
 import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_MD_TABLE_SUFFIX;
@@ -33,7 +32,8 @@ import static de.consistec.syncframework.common.ConfigConstants.DEFAULT_SYNC_DIR
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAPTER_CLASS;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_CONFLICT_ACTION;
-import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED;
+import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_MD_TABLE_SUFFIX;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR;
 import static de.consistec.syncframework.common.ConfigConstants.OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR;
@@ -96,7 +96,8 @@ public final class Config {
     private Class<? extends IDatabaseAdapter> clientDatabaseAdapter;
     private Class<? extends IServerSyncProvider> serverProxy;
     private Set<String> syncTables = newSyncSet();
-    private boolean isSqlTriggerActivated;
+    private boolean isSqlTriggerOnServerActivated;
+    private boolean isSqlTriggerOnClientActivated;
     private int retryNumberOfApplyChangesOnTransactionError;
     private int retryNumberOfGetChangesOnTransactionError;
     private String mdTableSuffix;
@@ -109,7 +110,6 @@ public final class Config {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * It's singleton so no direct instance creation allowed.
      */
@@ -135,7 +135,6 @@ public final class Config {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Accessors" >
-
     /**
      * An proxy to remote server.
      * <p/>
@@ -421,27 +420,45 @@ public final class Config {
     }
 
     /**
-     * Returns true if the SQL triggers are activated.
+     * Returns true if the SQL triggers are activated on the server.
      *
-     * @return boolean isSqlTriggerActivated
+     * @return boolean isSqlTriggerOnServerActivated
      */
-    public boolean isSqlTriggerActivated() {
-        return isSqlTriggerActivated;
+    public boolean isSqlTriggerOnServerActivated() {
+        return isSqlTriggerOnServerActivated;
     }
 
     /**
-     * Sets the SQL triggers activation.
+     * Sets the SQL triggers activation on the server.
      * <p/>
      *
      * @param active de/activate the sql triggers
      */
-    public void setSqlTriggerActivated(boolean active) {
-        this.isSqlTriggerActivated = active;
+    public void setSqlTriggerOnServerActivated(boolean active) {
+        this.isSqlTriggerOnServerActivated = active;
+    }
+
+    /**
+     * Returns true if the SQL triggers are activated on the client.
+     *
+     * @return boolean isSqlTriggerOnServerActivated
+     */
+    public boolean isSqlTriggerOnClientActivated() {
+        return isSqlTriggerOnClientActivated;
+    }
+
+    /**
+     * Sets the SQL triggers activation on the client.
+     * <p/>
+     *
+     * @param active de/activate the sql triggers
+     */
+    public void setSqlTriggerOnClientActivated(boolean active) {
+        this.isSqlTriggerOnClientActivated = active;
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Returns a single instance of Config class.
      * If there is no instance yet, it will be created.
@@ -471,9 +488,14 @@ public final class Config {
             OPTIONS_COMMON_MD_TABLE_SUFFIX, false));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_MD_TABLE_SUFFIX, mdTableSuffix);
 
-        isSqlTriggerActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
-            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED, false));
-        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED, isSqlTriggerActivated);
+        isSqlTriggerOnServerActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
+            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED,
+            isSqlTriggerOnServerActivated);
+        isSqlTriggerOnClientActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
+            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED,
+            isSqlTriggerOnClientActivated);
 
         retryNumberOfApplyChangesOnTransactionError = PropertiesUtil.defaultIfNull(
             DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR,
@@ -641,6 +663,7 @@ public final class Config {
     private static final class InstanceHolder {
         // The initialization of fields is done only once und will be implizit
         // synchronized through the ClassLoader
+
         static final Config INSTANCE = new Config();
     }
     //</editor-fold>

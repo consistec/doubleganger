@@ -9,15 +9,15 @@ package de.consistec.syncframework.common;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -162,11 +162,17 @@ public final class ConfigConstants {
      */
     public static final String OPTIONS_COMMON_MD_TABLE_SUFFIX = OPTIONS_COMMON_PREFIX + ".md_table_suffix";
     /**
-     * Key for {@link Config.isSqlTriggerActivated() } value.
+     * Key for {@link Config.isSqlTriggerOnServerActivated()} value.
      * <p/>
      * Value: {@value}
      */
-    public static final String OPTIONS_COMMON_IS_SQL_TRGGER_ACTIVATED = OPTIONS_COMMON_PREFIX + ".use_sql_triggers";
+    public static final String OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED = OPTIONS_SERVER_PREFIX + ".use_sql_triggers";
+    /**
+     * Key for {@link Config.isSqlTriggerOnClientActivated()} value.
+     * <p/>
+     * Value: {@value}
+     */
+    public static final String OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED = OPTIONS_CLIENT_PREFIX + ".use_sql_triggers";
     /**
      * Key for options which form {@link Config.getServerProxyProviderProperties() } object.
      * <p/>
