@@ -34,10 +34,6 @@
         <generic_database_adapter>de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter
         </generic_database_adapter>
         <synctables>categories,items</synctables>
-        <triggers.server.postgres>false</triggers.server.postgres>
-        <triggers.client.postgres>false</triggers.client.postgres>
-        <triggers.server.mysql>false</triggers.server.mysql>
-        <triggers.client.mysql>false</triggers.client.mysql>
         <!-- postgresql-settings for tests -->
         <postgres_server>localhost</postgres_server>
         <postgres_port>5432</postgres_port>
@@ -53,6 +49,8 @@
         <postgres_driver>org.postgresql.Driver</postgres_driver>
         <postgres_database_adapter>de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter
         </postgres_database_adapter>
+        <postgres_triggers_server>false</postgres_triggers_server>
+        <postgres_triggers_client>false</postgres_triggers_client>
         <!-- mySql-settings for tests -->
         <mysql_server>localhost</mysql_server>
         <mysql_port>3306</mysql_port>
@@ -68,8 +66,12 @@
         <mysql_driver>com.mysql.jdbc.Driver</mysql_driver>
         <mysql_database_adapter>de.consistec.syncframework.impl.adapter.MySqlDatabaseAdapter
         </mysql_database_adapter>
+        <mysql_triggers_server>false</mysql_triggers_server>
+        <mysql_triggers_client>false</mysql_triggers_client>
         <sqlite_extern_user></sqlite_extern_user>
         <sqlite_extern_pwd></sqlite_extern_pwd>
+        <sqlite_triggers_server>false</sqlite_triggers_server>
+        <sqlite_triggers_client>false</sqlite_triggers_client>
         <!-- Sonar Properties -->
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
