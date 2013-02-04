@@ -9,22 +9,22 @@ package de.consistec.syncframework.common.client;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
+import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
@@ -213,8 +213,8 @@ public class ClientTableSynchronizer {
                         }
 
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
-                        adapter.updateMdRow(deletedRows.getInt("rev"), FLAG_MODIFIED, deletedRows.getObject("pk"), "",
-                            table);
+                        adapter.updateMdRow(deletedRows.getInt("rev"), FLAG_MODIFIED, deletedRows.getObject("pk"),
+                            MDV_DELETED_VALUE, table);
 
                         MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
                         mdEntry.setDataRowDeleted();
