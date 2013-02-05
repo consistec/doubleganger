@@ -28,7 +28,6 @@ import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFI
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.REV_COLUMN_NAME;
-import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
@@ -81,17 +80,14 @@ public class ClientTableSynchronizer {
     }
 
     /**
-     * Synchronize client tables.
+     * Synchronize client tables and marks new, modified or deleted rows in the database.
      *
-     * @return List<Change> the client changes.
      * @throws DatabaseAdapterException
      * @throws SQLException
      */
     public void synchronizeClientTables() throws DatabaseAdapterException {
 
         LOGGER.debug("synchronizeClientTables called");
-
-        final List<Change> changeList = newArrayList();
 
         LOGGER.debug("Searching for modifications and updating metadata accordingly.");
 
