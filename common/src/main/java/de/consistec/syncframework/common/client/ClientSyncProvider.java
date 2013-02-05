@@ -27,13 +27,13 @@ import static de.consistec.syncframework.common.i18n.MessageReader.read;
 import static de.consistec.syncframework.common.util.Preconditions.checkSyncDirectionOfServerChanges;
 
 import de.consistec.syncframework.common.AbstractSyncProvider;
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.IConflictListener;
 import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
-import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
@@ -42,7 +42,6 @@ import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.util.LoggingUtil;
 
 import java.sql.SQLException;
-import java.util.List;
 import javax.sql.DataSource;
 import org.slf4j.cal10n.LocLogger;
 
@@ -174,9 +173,9 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
 
         try {
 
-            if (!isTriggerSupported()) {
-                List<Change> detectedChanges = synchronizeClientTables();
-                return new SyncData(0, detectedChanges);
+            if (!Config.getInstance().isSqlTriggerOnClientActivated()) {
+                ClientTableSynchronizer synchronizer = new ClientTableSynchronizer(adapter);
+                synchronizer.synchronizeClientTables();
             }
 
             ClientChangesEnumerator changesEnumerator = new ClientChangesEnumerator(adapter, getStrategies());
@@ -318,34 +317,34 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         return false;
     }
 
-    /**
-     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
-     * and deleted rows in all client data tables.
-     *
-     * @return List<Change> the list of client changes.
-     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
-     * and therefore throws an more specific exception.
-     */
-    private List<Change> synchronizeClientTables() throws SyncException {
-
-        if (adapter == null) {
-            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
-        }
-
-        try {
-            ClientTableSynchronizer tableSynchronizer = new ClientTableSynchronizer(adapter);
-            List<Change> clientChanges = tableSynchronizer.synchronizeClientTables();
-            return clientChanges;
-        } catch (DatabaseAdapterException e) {
-
-            rollback(adapter);
-            throw new SyncException(read(Errors.COMMON_SYNCHRONIZE_CLIENT_TABLE_FAILED), e);
-        } catch (RuntimeException ex) {
-            // No matter what, do rollback.
-            rollback(adapter);
-            throw ex;
-        }
-    }
+//    /**
+//     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
+//     * and deleted rows in all client data tables.
+//     *
+//     * @return List<Change> the list of client changes.
+//     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
+//     * and therefore throws an more specific exception.
+//     */
+//    private List<Change> synchronizeClientTables() throws SyncException {
+//
+//        if (adapter == null) {
+//            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
+//        }
+//
+//        try {
+//            ClientTableSynchronizer tableSynchronizer = new ClientTableSynchronizer(adapter);
+//            List<Change> clientChanges = tableSynchronizer.synchronizeClientTables();
+//            return clientChanges;
+//        } catch (DatabaseAdapterException e) {
+//
+//            rollback(adapter);
+//            throw new SyncException(read(Errors.COMMON_SYNCHRONIZE_CLIENT_TABLE_FAILED), e);
+//        } catch (RuntimeException ex) {
+//            // No matter what, do rollback.
+//            rollback(adapter);
+//            throw ex;
+//        }
+//    }
 
     /**
      * To improve readability, call {@link prepareAdapterWithAutoCommit()} or {@link prepareAdapterNoAutoCommit()}.
