@@ -22,7 +22,6 @@ package de.consistec.syncframework.client.it_postgres;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
@@ -120,8 +119,7 @@ public class RepeatSyncTest {
     }
 
     @Test
-    public void clientUpdate() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException {
+    public void clientUpdate() throws ContextException, SyncException, DatabaseAdapterException, SQLException {
 
         TestScenario scenario = new TestScenario("client update", BIDIRECTIONAL, SERVER_WINS)
             .addStep(CLIENT, updateRow1)
@@ -168,8 +166,7 @@ public class RepeatSyncTest {
     }
 
     @Test
-    public void clientInsert() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException {
+    public void clientInsert() throws ContextException, SyncException, DatabaseAdapterException, SQLException {
 
         TestScenario scenario = new TestScenario("client insert", BIDIRECTIONAL, SERVER_WINS)
             .addStep(CLIENT, insertRow3)
@@ -215,8 +212,7 @@ public class RepeatSyncTest {
     }
 
     @Test
-    public void clientDelete() throws ContextException, SyncException, DatabaseAdapterException,
-        SQLException {
+    public void clientDelete() throws ContextException, SyncException, DatabaseAdapterException, SQLException {
 
         TestScenario scenario = new TestScenario("client delete", BIDIRECTIONAL, SERVER_WINS)
             .addStep(CLIENT, deleteRow1)
