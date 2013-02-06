@@ -22,6 +22,7 @@ package de.consistec.syncframework.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
@@ -160,7 +161,8 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
     @Override
     public void getRowForPrimaryKey(final Object primaryKey, final String tableName,
-        final DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
+                                    final DatabaseAdapterCallback<ResultSet> callback
+    ) throws DatabaseAdapterException {
         try {
             super.getRowForPrimaryKey(primaryKey, tableName, callback);
         } catch (DatabaseAdapterException ex) {
@@ -179,7 +181,8 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             String state = sqlEx.getSQLState();
 
             if (UNIQUE_CONSTRAINT_EXCEPTION.equals(state) || RELATION_ALREADY_EXIST.equals(state)) {
-                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName), sqlEx); //NOSONAR
+                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
+                    sqlEx); //NOSONAR
             } else {
                 handleTransactionAborted(ex);
             }
@@ -196,12 +199,17 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
             super.createMDTableOnServer(tableName);
         } catch (DatabaseAdapterException ex) {
             SQLException sqlEx = (SQLException) ex.getCause();
-            String state = sqlEx.getSQLState();
+            if (sqlEx != null) {
+                String state = sqlEx.getSQLState();
 
-            if (UNIQUE_CONSTRAINT_EXCEPTION.equals(state) || RELATION_ALREADY_EXIST.equals(state)) {
-                throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName), sqlEx); //NOSONAR
+                if (UNIQUE_CONSTRAINT_EXCEPTION.equals(state) || RELATION_ALREADY_EXIST.equals(state)) {
+                    throw new UniqueConstraintException(read(DBAdapterErrors.CANT_CREATE_MD_TABLE, tableName),
+                        sqlEx); //NOSONAR
+                } else {
+                    handleTransactionAborted(ex);
+                }
             } else {
-                handleTransactionAborted(ex);
+                throw ex;
             }
         }
 
@@ -213,6 +221,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Creates the necessary triggers for this table if triggers are activated.
      * <p/>
+     *
      * @param tableName the table's name
      * @throws DatabaseAdapterException
      */
@@ -225,6 +234,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Loads the language Plpgsql in the database so it can interpret the triggers' queries.
      * <p/>
+     *
      * @throws DatabaseAdapterException
      */
     private void executePlpgsqlLanguageQuery() throws DatabaseAdapterException {
@@ -237,6 +247,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Creates an entry in the metadata table for every entry in the data table.
      * <p/>
+     *
      * @param tableName the table's name
      * @throws DatabaseAdapterException
      */
@@ -255,6 +266,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Creates a trigger to update the F flag in the metadata on every change in the data table ON THE SERVER.
      * <p/>
+     *
      * @param tableName the table's name
      * @param filePath path to the trigger's definition file
      * @return sql query for the triggers
