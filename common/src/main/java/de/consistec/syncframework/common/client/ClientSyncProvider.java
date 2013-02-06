@@ -96,13 +96,41 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
     }
 
     /**
+     * Creates provider which will be using given data source for provide database adapters instances with
+     * {@link java.sql.Connection connections}.
+     *
+     * @param strategies Special synchronization strategies for tables.
+     * @param dbAdapter the used databaseadatper
+     * @throws DatabaseAdapterInstantiationException
+     */
+    public ClientSyncProvider(TableSyncStrategies strategies, IDatabaseAdapter dbAdapter) throws
+        DatabaseAdapterInstantiationException {
+        super(strategies, dbAdapter);
+    }
+
+
+    /**
+     * Creates provider which will be using given data source for provide database adapters instances with
+     * {@link java.sql.Connection connections}.
+     *
+     * @param strategies Special synchronization strategies for tables.
+     * @param ds External data source.
+     * @param dbAdapter the used databaseadatper
+     * @throws DatabaseAdapterInstantiationException
+     */
+    public ClientSyncProvider(TableSyncStrategies strategies, DataSource ds, IDatabaseAdapter dbAdapter) throws
+        DatabaseAdapterInstantiationException {
+        super(strategies, ds, dbAdapter);
+    }
+
+    /**
      * Create a new adapter instance with autocommit disabled for the underlying connection.
      *
      * @return Database adapter instance.
      * @throws DatabaseAdapterInstantiationException
      */
     private IDatabaseAdapter prepareAdapterNoAutoCommit() throws DatabaseAdapterInstantiationException {
-        return prepareAdapter(false);
+        return prepareClientAdapter(false);
     }
 
     /**
@@ -112,7 +140,11 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
      * @throws DatabaseAdapterInstantiationException
      */
     private IDatabaseAdapter prepareAdapterWithAutoCommit() throws DatabaseAdapterInstantiationException {
-        return prepareAdapter(true);
+        return prepareClientAdapter(true);
+    }
+
+    private IDatabaseAdapter prepareClientAdapter(boolean autocommit) throws DatabaseAdapterInstantiationException {
+        return prepareDbAdapter(DatabaseAdapterFactory.AdapterPurpose.CLIENT, autocommit);
     }
 
     @Override
@@ -354,6 +386,11 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
      * @throws DatabaseAdapterInstantiationException
      */
     private IDatabaseAdapter prepareAdapter(boolean autocommit) throws DatabaseAdapterInstantiationException {
+
+        if (dbAdapter != null) {
+            return dbAdapter;
+        }
+
         try {
             if (getDs() == null) {
                 adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
