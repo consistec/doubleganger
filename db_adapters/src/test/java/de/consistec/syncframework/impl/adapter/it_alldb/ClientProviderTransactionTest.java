@@ -39,29 +39,27 @@ import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.data.schema.Table;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
-import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.syncframework.common.server.ServerSyncProvider;
 import de.consistec.syncframework.impl.TestDatabase;
 import de.consistec.syncframework.impl.TestScenario;
-import de.consistec.syncframework.impl.adapter.ConnectionType;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
 import de.consistec.syncframework.impl.adapter.MySqlDatabaseAdapter;
 import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 import de.consistec.syncframework.impl.adapter.it_mysql.MySqlDatabase;
 import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.sql.DataSource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.postgresql.jdbc2.optional.PoolingDataSource;
 
 /**
  * @author marcel
@@ -76,6 +74,12 @@ public class ClientProviderTransactionTest {
     private static boolean isApplyingChange = false;
     private IDatabaseAdapter dbAdapter;
 
+    private static DataSource pooledDataSource;
+
+    static {
+        pooledDataSource = createDatasource();
+    }
+
     @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection<TestDatabaseWithAdapter[]> AllDatabases() {
         return Arrays.asList(new TestDatabaseWithAdapter[][]{
@@ -87,6 +91,11 @@ public class ClientProviderTransactionTest {
         this.db = dbWithAdapter.getDB();
         this.dbAdapter = dbWithAdapter.getDatabaseAdatper();
     }
+
+//    @BeforeClass
+//    public static void setUpClass() {
+//        pooledDataSource = createDatasource();
+//    }
 
     @Before
     public void setUp() throws IOException, SQLException, DatabaseAdapterException {
@@ -198,20 +207,19 @@ public class ClientProviderTransactionTest {
 
         scenario.saveCurrentState();
 
-        ClientSyncProvider clientProvider = new ClientSyncProvider(new TableSyncStrategies(), db.getClientDs(),
-            dbAdapter);
+        ClientSyncProvider clientProvider = new ClientSyncProvider(new TableSyncStrategies(), dbAdapter);
 
         ServerSyncProvider serverProvider = new ServerSyncProvider(new TableSyncStrategies(), db.getServerDs());
 
-        createAndSetNewConnection(dbAdapter, true);
+//        createAndSetNewConnection(dbAdapter, true);
 
         int clientRevision = clientProvider.getLastRevision();
 
-        createAndSetNewConnection(dbAdapter, true);
+//        createAndSetNewConnection(dbAdapter, true);
         SyncData serverData = serverProvider.getChanges(clientRevision);
 
         try {
-            createAndSetNewConnection(dbAdapter, false);
+//            createAndSetNewConnection(dbAdapter, false);
             clientProvider.beginTransaction();
             SyncData clientData = clientProvider.getChanges();
             Change cachedChange = serverData.getChanges().get(0);
@@ -239,13 +247,13 @@ public class ClientProviderTransactionTest {
         Assert.fail("Test should throw UniqueConstraintException!");
     }
 
-    private void createAndSetNewConnection(IDatabaseAdapter dbAdapter, boolean autocommit) throws SQLException,
-        DatabaseAdapterInstantiationException {
-        DumpDataSource ds = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL, ConnectionType.CLIENT);
-        Connection connection = ds.getConnection();
-        connection.setAutoCommit(autocommit);
-        dbAdapter.init(connection);
-    }
+//    private void createAndSetNewConnection(IDatabaseAdapter dbAdapter, boolean autocommit) throws SQLException,
+//        DatabaseAdapterInstantiationException {
+//        DumpDataSource ds = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL, ConnectionType.CLIENT);
+//        Connection connection = ds.getConnection();
+//        connection.setAutoCommit(autocommit);
+//        dbAdapter.init(connection);
+//    }
 
     @Test
     public void transactionCommitted() throws DatabaseAdapterException, SQLException, SyncException {
@@ -295,12 +303,25 @@ public class ClientProviderTransactionTest {
         scenario.assertServerIsInExpectedState();
     }
 
+    private static DataSource createDatasource() {
+        PoolingDataSource source = new PoolingDataSource();
+        source.setDataSourceName("datasource for pooling db connections");
+        source.setServerName("localhost");
+        source.setPortNumber(5432);
+        source.setDatabaseName("client");
+        source.setUser("syncuser");
+        source.setPassword("syncuser");
+        source.setMaxConnections(10);
+
+        return source;
+    }
+
     private static class PostgresDatabaseWithAdapter extends TestDatabaseWithAdapter {
         public PostgresDatabaseWithAdapter() {
             super(new PostgresDatabase());
             MockClientPostgresDatabaseAdapter dbAdapter = new MockClientPostgresDatabaseAdapter();
             try {
-                dbAdapter.init(getDB().getClientConnection());
+                dbAdapter.init(pooledDataSource.getConnection());
             } catch (SQLException e) {
                 e.printStackTrace(
                     System.err);  //To change body of catch statement use File | Settings | File Templates.
@@ -330,7 +351,7 @@ public class ClientProviderTransactionTest {
             super(new MySqlDatabase());
             MockClientMySqlDatabaseAdapter dbAdapter = new MockClientMySqlDatabaseAdapter();
             try {
-                dbAdapter.init(getDB().getClientConnection());
+                dbAdapter.init(pooledDataSource.getConnection());
             } catch (SQLException e) {
                 e.printStackTrace(
                     System.err);  //To change body of catch statement use File | Settings | File Templates.
