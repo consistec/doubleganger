@@ -43,6 +43,7 @@ import de.consistec.syncframework.common.server.ServerSyncProvider;
 import de.consistec.syncframework.impl.TestDatabase;
 import de.consistec.syncframework.impl.TestScenario;
 import de.consistec.syncframework.impl.adapter.MySqlDatabaseAdapter;
+import de.consistec.syncframework.impl.adapter.PooledTestDatabase;
 import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 import de.consistec.syncframework.impl.adapter.it_mysql.MySqlDatabase;
 import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
@@ -70,15 +71,10 @@ import org.postgresql.jdbc2.optional.PoolingDataSource;
 public class ClientProviderTransactionTest {
 
     protected static String[] tableNames = new String[]{"categories", "items", "categories_md", "items_id"};
-    private TestDatabase db;
+    private static TestDatabase db;
     private static boolean isApplyingChange = false;
     private IDatabaseAdapter dbAdapter;
 
-    private static DataSource pooledDataSource;
-
-    static {
-        pooledDataSource = createDatasource();
-    }
 
     @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection<TestDatabaseWithAdapter[]> AllDatabases() {
@@ -91,11 +87,6 @@ public class ClientProviderTransactionTest {
         this.db = dbWithAdapter.getDB();
         this.dbAdapter = dbWithAdapter.getDatabaseAdatper();
     }
-
-//    @BeforeClass
-//    public static void setUpClass() {
-//        pooledDataSource = createDatasource();
-//    }
 
     @Before
     public void setUp() throws IOException, SQLException, DatabaseAdapterException {
@@ -211,15 +202,11 @@ public class ClientProviderTransactionTest {
 
         ServerSyncProvider serverProvider = new ServerSyncProvider(new TableSyncStrategies(), db.getServerDs());
 
-//        createAndSetNewConnection(dbAdapter, true);
-
         int clientRevision = clientProvider.getLastRevision();
 
-//        createAndSetNewConnection(dbAdapter, true);
         SyncData serverData = serverProvider.getChanges(clientRevision);
 
         try {
-//            createAndSetNewConnection(dbAdapter, false);
             clientProvider.beginTransaction();
             SyncData clientData = clientProvider.getChanges();
             Change cachedChange = serverData.getChanges().get(0);
@@ -246,14 +233,6 @@ public class ClientProviderTransactionTest {
 
         Assert.fail("Test should throw UniqueConstraintException!");
     }
-
-//    private void createAndSetNewConnection(IDatabaseAdapter dbAdapter, boolean autocommit) throws SQLException,
-//        DatabaseAdapterInstantiationException {
-//        DumpDataSource ds = new DumpDataSource(DumpDataSource.SupportedDatabases.POSTGRESQL, ConnectionType.CLIENT);
-//        Connection connection = ds.getConnection();
-//        connection.setAutoCommit(autocommit);
-//        dbAdapter.init(connection);
-//    }
 
     @Test
     public void transactionCommitted() throws DatabaseAdapterException, SQLException, SyncException {
@@ -318,11 +297,16 @@ public class ClientProviderTransactionTest {
 
     private static class PostgresDatabaseWithAdapter extends TestDatabaseWithAdapter {
         public PostgresDatabaseWithAdapter() {
-            super(new PostgresDatabase());
+            super(new PooledTestDatabase(new PostgresDatabase()));
             MockClientPostgresDatabaseAdapter dbAdapter = new MockClientPostgresDatabaseAdapter();
             try {
-                dbAdapter.init(pooledDataSource.getConnection());
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new PostgresDatabase());
+                pooledDatabase.initPooledDB();
+                dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
             } catch (SQLException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
                 e.printStackTrace(
                     System.err);  //To change body of catch statement use File | Settings | File Templates.
             }
@@ -348,11 +332,16 @@ public class ClientProviderTransactionTest {
     private static class MySqlDatabaseWithAdapter extends TestDatabaseWithAdapter {
 
         public MySqlDatabaseWithAdapter() {
-            super(new MySqlDatabase());
+            super(new PooledTestDatabase(new MySqlDatabase()));
             MockClientMySqlDatabaseAdapter dbAdapter = new MockClientMySqlDatabaseAdapter();
             try {
-                dbAdapter.init(pooledDataSource.getConnection());
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new MySqlDatabase());
+                pooledDatabase.initPooledDB();
+                dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
             } catch (SQLException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
                 e.printStackTrace(
                     System.err);  //To change body of catch statement use File | Settings | File Templates.
             }
