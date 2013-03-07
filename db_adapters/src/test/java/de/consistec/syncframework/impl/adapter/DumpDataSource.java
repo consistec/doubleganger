@@ -238,7 +238,6 @@ public class DumpDataSource implements DataSource {
     }
 
     //<editor-fold defaultstate="collapsed" desc=" -------- Not implemented methods -------- " >
-    @Override
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
