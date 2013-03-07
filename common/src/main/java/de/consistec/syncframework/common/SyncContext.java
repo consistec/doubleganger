@@ -703,7 +703,7 @@ public final class SyncContext {
         private LocalContext(DataSource serverDs, DataSource clientDs) throws ContextException, SyncException {
 
             // just one time initialization
-            initServerContext(serverDs);
+//            initServerContext(serverDs);
             this.serverProvider = createServer(serverDs);
 
             IClientSyncProvider clientProvider = createClient(clientDs, serverProvider);

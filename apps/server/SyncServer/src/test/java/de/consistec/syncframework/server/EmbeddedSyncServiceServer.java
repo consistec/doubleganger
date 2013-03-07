@@ -51,6 +51,7 @@ public class EmbeddedSyncServiceServer {
     public void init() throws Exception {
         tester = new ServletTester();
         tester.setContextPath("/");
+//        tester.setResourceBase("./apps/server/SyncServer/target/test-classes/server-tests");
         tester.setResourceBase("./target/test-classes/server-tests");
         System.out.println("+++++++++++++++++++++++");
         System.out.println(tester.getResourceBase());

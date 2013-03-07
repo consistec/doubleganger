@@ -27,6 +27,7 @@ import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdap
 import de.consistec.syncframework.impl.proxy.http_servlet.HttpServletProcessor;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -52,6 +53,8 @@ public class SyncServiceServlet extends HttpServlet {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SyncServiceServlet.class.getCanonicalName());
 
+    private static AtomicInteger requestNumber = new AtomicInteger(1);
+
     /**
      * Processes requests for both HTTP
      * <code>GET</code> and
@@ -68,7 +71,9 @@ public class SyncServiceServlet extends HttpServlet {
         try {
 
             HttpSession session = req.getSession();
-            MDC.put("session-id", session.getId());
+            requestNumber.compareAndSet(1000, 1);
+            int requestId = requestNumber.getAndIncrement();
+            MDC.put("session-id", Integer.valueOf(requestId).toString());
 
             ServletContext ctx = session.getServletContext();
             HttpServletProcessor processor = (HttpServletProcessor) ctx.getAttribute(
@@ -108,5 +113,22 @@ public class SyncServiceServlet extends HttpServlet {
     public String getServletInfo() {
         return "Syncronisation Servlet";
     }
+
+    private static class UniqueThreadIdGenerator {
+
+        private static final AtomicInteger UNIQUE_ID = new AtomicInteger(0);
+
+        private static final ThreadLocal<Integer> UNIQUE_NUM =
+            new ThreadLocal<Integer>() {
+                @Override
+                protected Integer initialValue() {
+                    return UNIQUE_ID.getAndIncrement();
+                }
+            };
+
+        public static int getCurrentThreadId() {
+            return UNIQUE_ID.get();
+        }
+    } // UniqueThreadIdGenerator
     //</editor-fold>
 }

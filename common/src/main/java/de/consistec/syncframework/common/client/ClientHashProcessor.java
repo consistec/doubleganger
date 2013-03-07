@@ -22,6 +22,7 @@ package de.consistec.syncframework.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.i18n.MessageReader.read;
@@ -83,6 +84,7 @@ public class ClientHashProcessor {
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
+
     /**
      * Instantiates a new client hash processor.
      *
@@ -92,7 +94,8 @@ public class ClientHashProcessor {
      * {@link de.consistec.syncframework.common.conflict.ConflictStrategy ConflictStrategy} is FIRE_EVENT.
      */
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
-        IConflictListener conflictListener) {
+                               IConflictListener conflictListener
+    ) {
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
@@ -101,6 +104,7 @@ public class ClientHashProcessor {
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods " >
+
     /**
      * Resolves the conflicts between the client changes and the server changes.
      *
@@ -203,7 +207,19 @@ public class ClientHashProcessor {
                         // SERVER ADD
                         // on initialization everything is a server add, but deleted items no longer need to be added
                         adapter.insertDataRow(remoteRowData, tableName);
-                        adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+
+                        String mdTableName = tableName + CONF.getMdTableSuffix();
+                        adapter.getRowForPrimaryKey(pKey, mdTableName, new DatabaseAdapterCallback<ResultSet>() {
+                            @Override
+                            public void onSuccess(final ResultSet result) throws DatabaseAdapterException,
+                                SQLException {
+                                if (result.next()) {
+                                    adapter.updateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+                                } else {
+                                    adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+                                }
+                            }
+                        });
                     }
                 }
             });
@@ -216,7 +232,18 @@ public class ClientHashProcessor {
                         adapter.deleteRow(pKey, tableName);
                         adapter.updateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
                     } else {
-                        adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+                        String mdTableName = tableName + CONF.getMdTableSuffix();
+                        adapter.getRowForPrimaryKey(pKey, mdTableName, new DatabaseAdapterCallback<ResultSet>() {
+                            @Override
+                            public void onSuccess(final ResultSet result) throws DatabaseAdapterException,
+                                SQLException {
+                                if (result.next()) {
+                                    adapter.updateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+                                } else {
+                                    adapter.insertMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+                                }
+                            }
+                        });
                     }
                 }
             });

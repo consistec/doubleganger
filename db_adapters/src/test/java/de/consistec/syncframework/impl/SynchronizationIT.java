@@ -29,7 +29,6 @@ import static de.consistec.syncframework.common.SyncDirection.SERVER_TO_CLIENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.CLIENT_WINS;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
-import static de.consistec.syncframework.common.i18n.Errors.COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE;
 import static de.consistec.syncframework.common.i18n.Errors.NOT_SUPPORTED_CONFLICT_STRATEGY;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
 import static de.consistec.syncframework.impl.adapter.ConnectionType.SERVER;
@@ -114,9 +113,9 @@ public class SynchronizationIT {
             scenario.synchronize(tableNames, getServerConflictResolver(), BIDIRECTIONAL);
 
             scenario.setSelectQueries(new String[]{
-                    "select * from categories order by id asc",
-                    "select * from categories_md order by pk asc"
-                });
+                "select * from categories order by id asc",
+                "select * from categories_md order by pk asc"
+            });
 
             scenario.executeSteps();
 
@@ -178,515 +177,513 @@ public class SynchronizationIT {
     public static Collection<Object[]> AllScenarii() {
 
         return Arrays.asList(new Object[][]{
-                // Creates a scenario  [name]            [direction]   [strategy]
-                {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
-                    // and sets the expected state after a sync:
-                    // - 'S' codes a row that originates from the server
-                    // - 'C' a row from the client
-                    // - ' ' a blank space counts as a deleted row:
-                    //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
-                    .expectServer("SS") // expected rows on server
-                    .expectClient("CC")}, // expected rows on client
-                {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, CLIENT_WINS)
-                    .expectServer("SS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .expectServer("SS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
-                    .expectServer("SS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, FIRE_EVENT)
-                    .expectServer("SS")
-                    .expectClient("CC")},
-                {new TestScenario("* ServerUc ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerUc ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerUc ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerUc ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("* ServerUc ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerUc ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerUc ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CC")
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("* ServerUc ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerUc ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerUc ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerUc ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("C")
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("* ServerUc ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerUc ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerAdd ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("* ServerAdd ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerAdd ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerAdd ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerAdd ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCC")},
-                {new TestScenario("* ServerAdd ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerAdd ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SCS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SCS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerAdd ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SCS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerAdd ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SSS")
-                    .expectClient("CCS")
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SCS")
-                    .expectClient("CCS")},
-                {new TestScenario("* ServerAdd ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerAdd ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S S")
-                    .expectClient("C S")},
-                {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S S")
-                    .expectClient("C S")},
-                {new TestScenario("ServerAdd ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S S")
-                    .expectClient("C")},
-                {new TestScenario("ServerAdd ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("SSS")
-                    .expectClient("C S")
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S S")
-                    .expectClient("C S")},
-                {new TestScenario("* ServerAdd ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerAdd ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CC")},
-                {new TestScenario("ServerMod ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("* ServerMod ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerMod ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerMod ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerMod ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSS")
-                    .expectClient("CCS")},
-                {new TestScenario("* ServerMod ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerMod ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, updateRow3b)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerMod ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerMod ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("* ServerMod ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerMod ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, updateRow2c)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerMod ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerMod ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("SS")
-                    .expectClient("CS")},
-                {new TestScenario("* ServerMod ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerMod ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, updateRow2b)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("CC")},
-                {new TestScenario("ServerDel ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("* ServerDel ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerDel ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerDel ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("ServerDel ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(SyncException.class, COMMON_NO_CLIENTCHANGES_ALLOWED_TO_SYNC_FOR_TABLE)},
-                {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectServer("SSC")
-                    .expectClient("CCC")},
-                {new TestScenario("* ServerDel ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerDel ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, insertRow3a)
-                    .addStep(SERVER, deleteRow3)
-                    .addStep(CLIENT, insertRow3a)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerDel ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("SC")
-                    .expectClient("CC")},
-                {new TestScenario("ServerDel ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("* ServerDel ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerDel ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, updateRow2b)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                //
-                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, FIRE_EVENT)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectServer("S")
-                    .expectClient("C")},
-                {new TestScenario("* ServerDel ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
-                {new TestScenario("* ServerDel ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
-                    .addStep(SERVER, deleteRow2)
-                    .addStep(CLIENT, deleteRow2)
-                    .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)}
-            });
+            // Creates a scenario  [name]            [direction]   [strategy]
+            {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                // and sets the expected state after a sync:
+                // - 'S' codes a row that originates from the server
+                // - 'C' a row from the client
+                // - ' ' a blank space counts as a deleted row:
+                //    "C S" = 1st row is from the client, the 2nd row was deleted and replaced by the server's 3rd row
+                .expectServer("SS") // expected rows on server
+                .expectClient("CC")}, // expected rows on client
+            {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("* ServerUc ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerUc ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerUc ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerUc ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SS")
+                .expectClient("CCC")},
+            {new TestScenario("ServerUc ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("* ServerUc ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerUc ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("ServerUc ClientMod", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("* ServerUc ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerUc ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerUc ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerUc ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("SS")
+                .expectClient("C")},
+            {new TestScenario("ServerUc ClientDel", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("* ServerUc ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerUc ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CC")},
+            {new TestScenario("ServerAdd ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("* ServerAdd ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerAdd ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerAdd ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerAdd ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCC")},
+            {new TestScenario("* ServerAdd ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerAdd ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SCS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SCS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SCS")
+                .expectClient("CC")},
+            {new TestScenario("ServerAdd ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerAdd ClientMod", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SCS")
+                .expectClient("CCS")},
+            {new TestScenario("* ServerAdd ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerAdd ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S S")
+                .expectClient("C S")},
+            {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S S")
+                .expectClient("C S")},
+            {new TestScenario("ServerAdd ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S S")
+                .expectClient("C")},
+            {new TestScenario("ServerAdd ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("SSS")
+                .expectClient("C S")},
+            {new TestScenario("ServerAdd ClientDel", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S S")
+                .expectClient("C S")},
+            {new TestScenario("* ServerAdd ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerAdd ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CC")},
+            {new TestScenario("ServerMod ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("* ServerMod ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerMod ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerMod ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerMod ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("ServerMod ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSS")
+                .expectClient("CCS")},
+            {new TestScenario("* ServerMod ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerMod ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, updateRow3b)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerMod ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerMod ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientMod", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("* ServerMod ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerMod ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, updateRow2c)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerMod ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerMod ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("ServerMod ClientDel", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("SS")
+                .expectClient("CS")},
+            {new TestScenario("* ServerMod ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerMod ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, updateRow2b)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientUc", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectServer("S")
+                .expectClient("CC")},
+            {new TestScenario("ServerDel ClientUc", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientUc", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("* ServerDel ClientUc invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerDel ClientUc invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerDel ClientAdd", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("ServerDel ClientAdd", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SS")
+                .expectClient("CCC")},
+            {new TestScenario("ServerDel ClientAdd", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectServer("SSC")
+                .expectClient("CCC")},
+            {new TestScenario("* ServerDel ClientAdd invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerDel ClientAdd invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, insertRow3a)
+                .addStep(SERVER, deleteRow3)
+                .addStep(CLIENT, insertRow3a)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            //
+            {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerDel ClientMod", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("SC")
+                .expectClient("CC")},
+            {new TestScenario("ServerDel ClientMod", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientMod", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("* ServerDel ClientMod invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerDel ClientMod invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, updateRow2b)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+
+            {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientDel", CLIENT_TO_SERVER, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientDel", SERVER_TO_CLIENT, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("ServerDel ClientDel", BIDIRECTIONAL, FIRE_EVENT)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectServer("S")
+                .expectClient("C")},
+            {new TestScenario("* ServerDel ClientDel invalid", SERVER_TO_CLIENT, CLIENT_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)},
+            {new TestScenario("* ServerDel ClientDel invalid", CLIENT_TO_SERVER, SERVER_WINS)
+                .addStep(SERVER, deleteRow2)
+                .addStep(CLIENT, deleteRow2)
+                .expectException(IllegalStateException.class, NOT_SUPPORTED_CONFLICT_STRATEGY)}
+        });
     }
 }

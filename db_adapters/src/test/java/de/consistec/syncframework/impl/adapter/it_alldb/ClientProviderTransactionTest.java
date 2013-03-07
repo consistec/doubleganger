@@ -22,12 +22,14 @@ package de.consistec.syncframework.impl.adapter.it_alldb;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 
 import de.consistec.syncframework.common.SyncData;
 import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.TableSyncStrategies;
+import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientSyncProvider;
 import de.consistec.syncframework.common.data.Change;
 import de.consistec.syncframework.common.data.schema.Column;
@@ -40,21 +42,25 @@ import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdap
 import de.consistec.syncframework.common.server.ServerSyncProvider;
 import de.consistec.syncframework.impl.TestDatabase;
 import de.consistec.syncframework.impl.TestScenario;
+import de.consistec.syncframework.impl.adapter.MySqlDatabaseAdapter;
+import de.consistec.syncframework.impl.adapter.PooledTestDatabase;
+import de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter;
 import de.consistec.syncframework.impl.adapter.it_mysql.MySqlDatabase;
 import de.consistec.syncframework.impl.adapter.it_postgres.PostgresDatabase;
-import de.consistec.syncframework.impl.adapter.it_sqlite.SqlLiteDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
+import javax.sql.DataSource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.postgresql.jdbc2.optional.PoolingDataSource;
 
 /**
  * @author marcel
@@ -65,18 +71,21 @@ import org.junit.runners.Parameterized;
 public class ClientProviderTransactionTest {
 
     protected static String[] tableNames = new String[]{"categories", "items", "categories_md", "items_id"};
-    private TestDatabase db;
+    private static TestDatabase db;
+    private static boolean isApplyingChange = false;
+    private IDatabaseAdapter dbAdapter;
+
 
     @Parameterized.Parameters(name = "{index}: {0}")
-    public static Collection<TestDatabase[]> AllDatabases() {
-        return Arrays.asList(new TestDatabase[][]{
-                {new PostgresDatabase()},
-                {new MySqlDatabase()},
-                {new SqlLiteDatabase()},});
+    public static Collection<TestDatabaseWithAdapter[]> AllDatabases() {
+        return Arrays.asList(new TestDatabaseWithAdapter[][]{
+            {new PostgresDatabaseWithAdapter()},
+            {new MySqlDatabaseWithAdapter()},});
     }
 
-    public ClientProviderTransactionTest(TestDatabase db) {
-        this.db = db;
+    public ClientProviderTransactionTest(TestDatabaseWithAdapter dbWithAdapter) {
+        this.db = dbWithAdapter.getDB();
+        this.dbAdapter = dbWithAdapter.getDatabaseAdatper();
     }
 
     @Before
@@ -160,7 +169,7 @@ public class ClientProviderTransactionTest {
     }
 
     @Test(expected = DatabaseAdapterException.class)
-    public void transactionFailed() throws DatabaseAdapterException, SQLException, SyncException {
+    public void transactionFailed() throws DatabaseAdapterException, SQLException, SyncException, IOException {
 
         TestScenario scenario = new TestScenario("transaction failed", BIDIRECTIONAL, SERVER_WINS)
             .expectServer("S")
@@ -183,13 +192,14 @@ public class ClientProviderTransactionTest {
         scenario.setDatabase(db);
 
         scenario.setSelectQueries(new String[]{
-                "select * from categories order by categoryid asc",
-                "select * from categories_md order by pk asc"
-            });
+            "select * from categories order by categoryid asc",
+            "select * from categories_md order by pk asc"
+        });
 
         scenario.saveCurrentState();
 
-        ClientSyncProvider clientProvider = new ClientSyncProvider(new TableSyncStrategies(), db.getClientDs());
+        ClientSyncProvider clientProvider = new ClientSyncProvider(new TableSyncStrategies(), dbAdapter);
+
         ServerSyncProvider serverProvider = new ServerSyncProvider(new TableSyncStrategies(), db.getServerDs());
 
         int clientRevision = clientProvider.getLastRevision();
@@ -205,10 +215,12 @@ public class ClientProviderTransactionTest {
 
             // insert serverChanged again to server changeset to force Exception
             dataHolder.getServerSyncData().getChanges().add(cachedChange);
+            isApplyingChange = true;
             int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
             clientProvider.commit();
         } catch (SyncException e) {
             if (e.getCause() instanceof DatabaseAdapterException) {
+                db.init();
                 // compare db content and test rollback
                 scenario.assertClientIsInExpectedState();
                 scenario.assertServerIsInExpectedState();
@@ -247,9 +259,9 @@ public class ClientProviderTransactionTest {
         scenario.setDatabase(db);
 
         scenario.setSelectQueries(new String[]{
-                "select * from categories order by categoryid asc",
-                "select * from categories_md order by pk asc"
-            });
+            "select * from categories order by categoryid asc",
+            "select * from categories_md order by pk asc"
+        });
 
         scenario.saveCurrentState();
 
@@ -268,5 +280,109 @@ public class ClientProviderTransactionTest {
 
         scenario.assertClientIsInExpectedState();
         scenario.assertServerIsInExpectedState();
+    }
+
+    private static DataSource createDatasource() {
+        PoolingDataSource source = new PoolingDataSource();
+        source.setDataSourceName("datasource for pooling db connections");
+        source.setServerName("localhost");
+        source.setPortNumber(5432);
+        source.setDatabaseName("client");
+        source.setUser("syncuser");
+        source.setPassword("syncuser");
+        source.setMaxConnections(10);
+
+        return source;
+    }
+
+    private static class PostgresDatabaseWithAdapter extends TestDatabaseWithAdapter {
+        public PostgresDatabaseWithAdapter() {
+            super(new PooledTestDatabase(new PostgresDatabase()));
+            MockClientPostgresDatabaseAdapter dbAdapter = new MockClientPostgresDatabaseAdapter();
+            try {
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new PostgresDatabase());
+                pooledDatabase.initPooledDB();
+                dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
+            } catch (SQLException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            }
+            setDatabaseAdapter(dbAdapter);
+        }
+
+        private class MockClientPostgresDatabaseAdapter extends PostgresDatabaseAdapter {
+            @Override
+            public void updateMdRow(final int rev, final int flag, final Object pk, final String mdv,
+                                    final String tableName
+            ) throws
+                DatabaseAdapterException {
+                if (isApplyingChange) {
+                    // to force an exception we just exchange the update method with insert
+                    super.insertMdRow(rev, flag, pk, mdv, tableName);
+                } else {
+                    super.updateMdRow(rev, flag, pk, mdv, tableName);
+                }
+            }
+        }
+    }
+
+    private static class MySqlDatabaseWithAdapter extends TestDatabaseWithAdapter {
+
+        public MySqlDatabaseWithAdapter() {
+            super(new PooledTestDatabase(new MySqlDatabase()));
+            MockClientMySqlDatabaseAdapter dbAdapter = new MockClientMySqlDatabaseAdapter();
+            try {
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new MySqlDatabase());
+                pooledDatabase.initPooledDB();
+                dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
+            } catch (SQLException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            } catch (IOException e) {
+                e.printStackTrace(
+                    System.err);  //To change body of catch statement use File | Settings | File Templates.
+            }
+            setDatabaseAdapter(dbAdapter);
+        }
+
+        private class MockClientMySqlDatabaseAdapter extends MySqlDatabaseAdapter {
+            @Override
+            public void updateMdRow(final int rev, final int flag, final Object pk, final String mdv,
+                                    final String tableName
+            ) throws
+                DatabaseAdapterException {
+                if (isApplyingChange) {
+                    // to force an exception we just exchange the update method with insert
+                    super.insertMdRow(rev, flag, pk, mdv, tableName);
+                } else {
+                    super.updateMdRow(rev, flag, pk, mdv, tableName);
+                }
+            }
+        }
+    }
+
+    private static class TestDatabaseWithAdapter {
+        private IDatabaseAdapter adapter;
+        private TestDatabase db;
+
+        public TestDatabaseWithAdapter(final TestDatabase db) {
+            this.db = db;
+            this.adapter = adapter;
+        }
+
+        public void setDatabaseAdapter(IDatabaseAdapter adapter) {
+            this.adapter = adapter;
+        }
+
+        public IDatabaseAdapter getDatabaseAdatper() {
+            return adapter;
+        }
+
+        public TestDatabase getDB() {
+            return db;
+        }
     }
 }

@@ -22,20 +22,18 @@ package de.consistec.syncframework.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
-import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.syncframework.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.syncframework.common.MdTableDefaultValues.REV_COLUMN_NAME;
-import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.syncframework.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterCallback;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.Change;
-import de.consistec.syncframework.common.data.MDEntry;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.i18n.Infos;
 import de.consistec.syncframework.common.util.DBMapperUtil;
@@ -82,34 +80,28 @@ public class ClientTableSynchronizer {
     }
 
     /**
-     * Synchronize client tables.
+     * Synchronize client tables and marks new, modified or deleted rows in the database.
      *
-     * @return List<Change> the client changes.
      * @throws DatabaseAdapterException
      * @throws SQLException
      */
-    public List<Change> synchronizeClientTables() throws DatabaseAdapterException {
+    public void synchronizeClientTables() throws DatabaseAdapterException {
 
         LOGGER.debug("synchronizeClientTables called");
-
-        final List<Change> changeList = newArrayList();
 
         LOGGER.debug("Searching for modifications and updating metadata accordingly.");
 
         for (final String table : CONF.getSyncTables()) {
             LOGGER.debug("Processing table {}", table);
-            changeList.addAll(searchAndProcessChangedRows(table));
-            changeList.addAll(searchAndProcessDeletedRows(table));
+            searchAndProcessChangedRows(table);
+            searchAndProcessDeletedRows(table);
         }
 
         LOGGER.debug("synchronizeClientTables finished");
-
-        return changeList;
     }
 
-    private List<Change> searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
+    private void searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
 
-        final List<Change> changeList = newArrayList();
         final List<String> columns = adapter.getColumnNamesFromTable(table);
         Collections.sort(columns);
 
@@ -141,32 +133,12 @@ public class ClientTableSynchronizer {
                                             LOGGER.info(Infos.COMMON_UPDATING_CLIENT_HASH_ENTRY);
                                             adapter.updateMdRow(result.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
                                                 primaryKey, hash, table);
-                                            MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
-                                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
-                                            change.setMdEntry(mdEntry);
-                                            change.setRowData(rowData);
-                                            changeList.add(change);
-                                        } else if (result.getInt(FLAG_COLUMN_NAME) == FLAG_MODIFIED) {
-                                            // if synchronization is repeated then previous changes or inserts are
-                                            // marked with th CLIENT_FLAG
-                                            MDEntry mdEntry = DBMapperUtil.getMetadata(result, table);
-                                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
-                                            change.setMdEntry(mdEntry);
-                                            change.setRowData(rowData);
-                                            changeList.add(change);
                                         }
                                     } else {
                                         // create new entry
                                         LOGGER.info(Infos.COMMON_CREATING_NEW_CLIENT_HASH_ENTRY);
                                         adapter.insertMdRow(CLIENT_INIT_REVISION, FLAG_MODIFIED, primaryKey, hash,
                                             table);
-
-                                        MDEntry mdEntry = new MDEntry(primaryKey, true, CLIENT_INIT_REVISION, table,
-                                            hash);
-                                        mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
-                                        change.setMdEntry(mdEntry);
-                                        change.setRowData(rowData);
-                                        changeList.add(change);
                                     }
 
                                 } catch (SQLException e) {
@@ -184,15 +156,12 @@ public class ClientTableSynchronizer {
                 }
             }
         });
-
-        return changeList;
     }
 
-    private List<Change> searchAndProcessDeletedRows(final String table) throws DatabaseAdapterException {
+    private void searchAndProcessDeletedRows(final String table) throws DatabaseAdapterException {
 
         LOGGER.debug("searching for deleted rows");
 
-        final List<Change> changeList = newArrayList();
         // Update deleted rows
         // http://www.cryer.co.uk/brian/sql/sql_crib_sheet.htm
         adapter.getDeletedRowsForTable(table, new DatabaseAdapterCallback<ResultSet>() {
@@ -200,35 +169,18 @@ public class ClientTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        Change change = new Change();
                         if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
-                            if (deletedRows.getInt(FLAG_COLUMN_NAME) == FLAG_MODIFIED) {
-                                // if synchronization is repeated then previous changes or inserts are
-                                // marked with th CLIENT_FLAG
-                                MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
-                                change.setMdEntry(mdEntry);
-                                Map<String, Object> rowData = newHashMap();
-                                change.setRowData(rowData);
-                                changeList.add(change);
-                            } else {
-                                continue;
-                            }
+                            continue;
                         }
 
                         LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
                         adapter.updateMdRow(deletedRows.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
                             deletedRows.getObject(PK_COLUMN_NAME), MDV_DELETED_VALUE, table);
-
-                        MDEntry mdEntry = DBMapperUtil.getMetadata(deletedRows, table);
-                        mdEntry.setDataRowDeleted();
-                        change.setMdEntry(mdEntry);
-                        changeList.add(change);
                     }
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);
                 }
             }
         });
-        return changeList;
     }
 }

@@ -93,11 +93,10 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     private static final Config CONF = Config.getInstance();
     private static final int NUMBER_OF_SYNC_RETRIES = 3;
 
-    // database adapter only for test classes
-    private IDatabaseAdapter dbAdapter;
 
     //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
+
     /**
      * Creates provider with its own database connection.
      *
@@ -129,41 +128,55 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
      */
     public ServerSyncProvider(TableSyncStrategies strategies, IDatabaseAdapter dbAdapter) throws
         DatabaseAdapterException {
-        super(strategies);
-        this.dbAdapter = dbAdapter;
+        super(strategies, dbAdapter);
+    }
+
+    /**
+     * Creates provider which will be using given data source for provide database adapters instances with
+     * {@link java.sql.Connection connections}.
+     *
+     * @param strategies Special synchronization strategies for tables.
+     * @param ds External data source.
+     * @param dbAdapter external db adapter
+     * @throws DatabaseAdapterException
+     */
+    public ServerSyncProvider(TableSyncStrategies strategies, DataSource ds, IDatabaseAdapter dbAdapter) throws
+        DatabaseAdapterException {
+        super(strategies, ds, dbAdapter);
     }
 
     //</editor-fold>
     //<editor-fold defaultstate="expanded" desc=" Class methods" >
-    /**
-     * Creates database adapter object (no autocommit).
-     *
-     * @return Adapter object.
-     */
-    private IDatabaseAdapter prepareDbAdapter() throws
-        DatabaseAdapterInstantiationException {
 
-        if (dbAdapter != null) {
-            return dbAdapter;
-        }
-
-        IDatabaseAdapter adapter;
-        try {
-            if (getDs() == null) {
-                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
-            } else {
-                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
-                    getDs().getConnection());
-            }
-
-            adapter.getConnection().setAutoCommit(false);
-            return adapter;
-
-        } catch (SQLException ex) {
-            throw new DatabaseAdapterInstantiationException(ex);
-        }
-
-    }
+//    /**
+//     * Creates database adapter object (no autocommit).
+//     *
+//     * @return Adapter object.
+//     */
+//    private IDatabaseAdapter prepareDbAdapter() throws
+//        DatabaseAdapterInstantiationException {
+//
+//        if (dbAdapter != null) {
+//            return dbAdapter;
+//        }
+//
+//        IDatabaseAdapter adapter;
+//        try {
+//            if (getDs() == null) {
+//                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+//            } else {
+//                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
+//                    getDs().getConnection());
+//            }
+//
+//            adapter.getConnection().setAutoCommit(false);
+//            return adapter;
+//
+//        } catch (SQLException ex) {
+//            throw new DatabaseAdapterInstantiationException(ex);
+//        }
+//
+//    }
 
     @Override
     public void validate(final SyncSettings clientSettings) throws SyncException {
@@ -180,7 +193,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 if (!clientSyncStrategy.equals(serverSyncStrategy)) {
                     throw new SyncException(
                         MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
-                        serverSyncStrategy));
+                            serverSyncStrategy));
                 }
 
                 createMDTableIfNotExists(clientTable);
@@ -190,12 +203,16 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         }
     }
 
+    private IDatabaseAdapter prepareServerDbAdapter() throws DatabaseAdapterInstantiationException {
+        return prepareDbAdapter(DatabaseAdapterFactory.AdapterPurpose.SERVER, false);
+    }
+
     private void createMDTableIfNotExists(String clientTable) throws SyncException, DatabaseAdapterException {
 
         IDatabaseAdapter adapter = null;
 
         try {
-            adapter = prepareDbAdapter();
+            adapter = prepareServerDbAdapter();
 
             // prepareDbAdapter sets autocommit to false but here we need it set to true
             adapter.getConnection().setAutoCommit(true);
@@ -246,13 +263,14 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
         try {
 
-            adapter = prepareDbAdapter();
+            adapter = prepareServerDbAdapter();
             ServerTableSynchronizer tableSynchronizer = new ServerTableSynchronizer(adapter);
             ServerHashProcessor hashProcessor = new ServerHashProcessor(adapter);
             validateChangeList(clientData.getChanges());
             tableSynchronizer.synchronizeServerTables();
 
-            int result = hashProcessor.applyChangesFromClientOnServer(clientData.getChanges(), clientData.getRevision());
+            int result = hashProcessor.applyChangesFromClientOnServer(clientData.getChanges(),
+                clientData.getRevision());
             adapter.commit();
             LOGGER.info(Infos.COMMON_SENDING_NEW_REVISION_TO_CLIENT, result);
 
@@ -311,7 +329,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
         try {
 
-            adapter = prepareDbAdapter();
+            adapter = prepareServerDbAdapter();
 
             for (Change change : changes) {
 
@@ -322,7 +340,8 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 }
                 try {
                     if (!tableColumnMappingPositive.containsKey(tableName)) {
-                        tableColumnMappingPositive.put(tableName, newHashSet(adapter.getColumnNamesFromTable(tableName)));
+                        tableColumnMappingPositive.put(tableName,
+                            newHashSet(adapter.getColumnNamesFromTable(tableName)));
                     }
                 } catch (DatabaseAdapterException e) {
                     throw new SyncException(read(Errors.DATA_CANT_LOAD_COLUMNS_FOR_TABLE, tableName), e);
@@ -348,7 +367,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
 
         try {
 
-            adapter = prepareDbAdapter();
+            adapter = prepareServerDbAdapter();
             ServerChangesEnumerator changesEnumerator = new ServerChangesEnumerator(adapter, getStrategies());
             ServerTableSynchronizer tableSynchronizer = new ServerTableSynchronizer(adapter);
             tableSynchronizer.synchronizeServerTables();
@@ -388,7 +407,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
     public Schema getSchema() throws SyncException {
         IDatabaseAdapter adapter = null;
         try {
-            adapter = prepareDbAdapter();
+            adapter = prepareServerDbAdapter();
             return adapter.getSchema();
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
