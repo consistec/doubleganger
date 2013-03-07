@@ -8,20 +8,20 @@ package de.consistec.syncframework.android.test;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter;
@@ -53,14 +53,17 @@ import org.slf4j.LoggerFactory;
  * @author Markus Backes
  * @since 0.0.1-SNAPSHOT
  */
-public class SyncTestImpl extends DefaultSyncTest {
+public class SyncTestImpl {
 
     // The buffer size to read database file
     public static final String PROPS_CLIENT_DB_PATH = "clientDatabasePath";
     private static final int READ_BUFFER_SIZE = 4096;
     private static final Logger LOG;
+    private static final Config CONF = Config.getInstance();
     private AssetManager assetManager;
     private String clientDbPath;
+    private Connection clientConnection;
+    private Connection serverConnection;
 
     // configuring log4j logger
     static {
@@ -102,7 +105,7 @@ public class SyncTestImpl extends DefaultSyncTest {
             } else {
                 throw new UnsupportedOperationException("Platform not supported");
             }
-            CONF.loadFromFile(in);
+            CONF.init(in);
 
         } catch (IOException e) {
             LOG.error("Error while loading settings", e);
@@ -121,17 +124,6 @@ public class SyncTestImpl extends DefaultSyncTest {
         throw new SyncException(e);
     }
 
-//    @Override
-//    public Connection getExternalClientConnection() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-//
-//    @Override
-//    public Connection getExternalServerConnection() {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
-
-    @Override
     public Connection getClientConnection() {
         try {
             if (clientConnection != null && !clientConnection.isClosed()) {
@@ -171,7 +163,6 @@ public class SyncTestImpl extends DefaultSyncTest {
         return null;
     }
 
-    @Override
     public Connection getServerConnection() {
         try {
             if (serverConnection != null && !serverConnection.isClosed()) {
@@ -183,9 +174,9 @@ public class SyncTestImpl extends DefaultSyncTest {
                 "org.postgresql.Driver"));
             serverConnection = DriverManager.getConnection(
                 CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_URL,
-                    "jdbc:postgresql://10.0.2.2/server"),
-                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_USERNAME, "syncuser"),
-                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_PASSWORD, "syncuser"));
+                "jdbc:postgresql://10.0.2.2/server"),
+                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_SYNC_USERNAME, "syncuser"),
+                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_SYNC_PASSWORD, "syncuser"));
 
             return serverConnection;
 
@@ -197,7 +188,6 @@ public class SyncTestImpl extends DefaultSyncTest {
         return null;
     }
 
-    @Override
     public InputStream getResourceAsStream(String resourceName) {
         try {
             return assetManager.open(resourceName);
@@ -207,7 +197,6 @@ public class SyncTestImpl extends DefaultSyncTest {
         return null;
     }
 
-    @Override
     public void resetClientAndServerDatabase() throws SyncException, ContextException {
         OutputStream os = null;
         InputStream is = null;
@@ -235,14 +224,15 @@ public class SyncTestImpl extends DefaultSyncTest {
             Statement stmt = getServerConnection().createStatement();
             stmt.execute(
                 "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" "
-                    + "VARCHAR (30000),\"description\" VARCHAR (30000))");
+                + "VARCHAR (30000),\"description\" VARCHAR (30000))");
             stmt.close();
             stmt = getServerConnection().createStatement();
             stmt.execute(
                 "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" "
-                    + "VARCHAR (30000),\"description\" VARCHAR (30000))");
+                + "VARCHAR (30000),\"description\" VARCHAR (30000))");
             stmt.close();
-            sync();
+            // TODO: replace sync() with the current synchronization method
+            // sync();
 
         } catch (IOException e) {
             handleException(e);

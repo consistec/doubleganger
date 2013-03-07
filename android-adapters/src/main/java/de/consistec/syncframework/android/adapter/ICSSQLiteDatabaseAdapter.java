@@ -8,20 +8,19 @@ package de.consistec.syncframework.android.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.syncframework.common.Config;
@@ -64,7 +63,7 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
     public boolean hasSchema() throws DatabaseAdapterException {
         if (this.getTableNamesFromDatabase().containsAll(CONF.getSyncTables())) {
             // check if all configured tables exist
-            createMDSchema(false);
+            createMDSchemaOnClient();
             return true;
         }
         return false;
@@ -99,7 +98,8 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
         }
     }
 
-    private void removeExistentTablesFromSchema(Schema s) throws DatabaseAdapterException {
+    @Override
+    protected void removeExistentTablesFromSchema(Schema s) throws DatabaseAdapterException {
         List<String> databaseTables = getTableNamesFromDatabase();
         for (Iterator<Table> itr = s.getTables().iterator(); itr.hasNext();) {
             Table table = itr.next();
@@ -128,7 +128,7 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public void createMDSchema(boolean isServerSchema) throws DatabaseAdapterException {
+    public void createMDSchemaOnClient() throws DatabaseAdapterException {
         List<String> databaseTables = getTableNamesFromDatabase();
         Schema schema = new Schema();
         Table table;
@@ -151,10 +151,7 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
             table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
             table.add(new Column("mdv", Types.VARCHAR, 500, 0, true));
             table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-
-            if (!isServerSchema) {
-                table.add(new Column("f", Types.INTEGER, 0, 0, true));
-            }
+            table.add(new Column("f", Types.INTEGER, 0, 0, true));
 
             table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
             schema.addTables(table);
@@ -200,7 +197,7 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     @Override
-    public List<String> getColumns(String tableName) throws DatabaseAdapterException {
+    public List<String> getColumnNamesFromTable(String tableName) throws DatabaseAdapterException {
 
         LOG.debug("Reading columns for table {}", tableName);
         ResultSet columns = null; //NOSONAR

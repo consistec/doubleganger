@@ -8,15 +8,15 @@ package de.consistec.syncframework.android.test;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -24,7 +24,6 @@ package de.consistec.syncframework.android.test;
 
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.adapter.ISyncTests;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -33,14 +32,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * The Class de.consistec.syncframework.android.test.AllDatabaseOperationsSQLite.
  * <p/>
  * @author Markus Backes
  */
-public class AllDatabaseOperationsSQLite extends InstrumentationTestCase implements ISyncTests {
+public class AllDatabaseOperationsSQLite extends InstrumentationTestCase {
 
     /**
      * The client database path.
@@ -80,113 +78,20 @@ public class AllDatabaseOperationsSQLite extends InstrumentationTestCase impleme
         }
     }
 
-    @Override
     public Connection getClientConnection() {
         return syncTest.getClientConnection();
     }
 
-    @Override
     public Connection getServerConnection() {
         return syncTest.getServerConnection();
     }
 
-    @Override
     public InputStream getResourceAsStream(String resourceName) {
         return syncTest.getResourceAsStream(resourceName);
     }
 
-    @Override
     public void resetClientAndServerDatabase() throws SyncException, ContextException {
         syncTest.resetClientAndServerDatabase();
     }
 
-    @Override
-    public void testUcUc() throws SyncException, SQLException, ContextException {
-        syncTest.testUcUc();
-    }
-
-    @Override
-    public void testAddUc() throws SyncException, SQLException, ContextException {
-        syncTest.testAddUc();
-    }
-
-    @Override
-    public void testModUc() throws SyncException, SQLException, ContextException {
-        syncTest.testModUc();
-    }
-
-    @Override
-    public void testDelUc() throws SyncException, SQLException, ContextException {
-        syncTest.testDelUc();
-    }
-
-    @Override
-    public void testUcAdd() throws SyncException, SQLException, ContextException {
-        syncTest.testUcAdd();
-    }
-
-    @Override
-    public void testAddAdd() throws SyncException, SQLException, ContextException {
-        syncTest.testAddAdd();
-    }
-
-    @Override
-    public void testModAdd() throws SyncException, SQLException, ContextException {
-        syncTest.testModAdd();
-    }
-
-    @Override
-    public void testDelAdd() throws SyncException, SQLException, ContextException {
-        syncTest.testDelAdd();
-    }
-
-    @Override
-    public void testUcMod() throws SyncException, SQLException, ContextException {
-        syncTest.testUcMod();
-    }
-
-    @Override
-    public void testAddMod() throws SyncException, SQLException, ContextException {
-        syncTest.testAddMod();
-    }
-
-    @Override
-    public void testModMod() throws SyncException, SQLException, ContextException {
-        syncTest.testModMod();
-    }
-
-    @Override
-    public void testDelMod() throws SyncException, SQLException, ContextException {
-        syncTest.testDelMod();
-    }
-
-    @Override
-    public void testUcDel() throws SyncException, SQLException, ContextException {
-        syncTest.testUcDel();
-    }
-
-    @Override
-    public void testAddDel() throws SyncException, SQLException, ContextException {
-        syncTest.testAddDel();
-    }
-
-    @Override
-    public void testModDel() throws SyncException, SQLException, ContextException {
-        syncTest.testModDel();
-    }
-
-    @Override
-    public void testDelDel() throws SyncException, SQLException, ContextException {
-        syncTest.testDelDel();
-    }
-
-    @Override
-    public Connection getExternalClientConnection() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Connection getExternalServerConnection() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 }

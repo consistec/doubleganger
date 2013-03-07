@@ -8,15 +8,15 @@ package de.consistec.syncframework.android;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -57,8 +57,8 @@ public class HelloAndroidActivity extends Activity {
 
     private static final Logger LOG;
     private static final Config CONF = Config.getInstance();
-    private TextView tv;
-    private EditText et;
+    private TextView textView;
+    private EditText editText;
 
     // configuring log4j logger
     static {
@@ -88,14 +88,9 @@ public class HelloAndroidActivity extends Activity {
         LOG.debug("onCreate");
         setContentView(R.layout.main);
         Button syncButton = (Button) findViewById(R.id.syncButton);
-        tv = (TextView) findViewById(R.id.statusTextView);
-        et = (EditText) findViewById(R.id.urlEditText);
+        textView = (TextView) findViewById(R.id.statusTextView);
+        editText = (EditText) findViewById(R.id.urlEditText);
         syncButton.setOnClickListener(new SyncButtonClickListener());
-    }
-
-    private void logAndShowErrorToast(Exception e) {
-        Toast.makeText(getBaseContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        LOG.error(e.getLocalizedMessage(), e);
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {
@@ -105,7 +100,7 @@ public class HelloAndroidActivity extends Activity {
             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tv.setText("Sync finished!");
+                    textView.setText("Sync finished!");
                 }
             });
         }
@@ -115,7 +110,7 @@ public class HelloAndroidActivity extends Activity {
             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tv.setText(message);
+                    textView.setText(message);
                 }
             });
         }
@@ -152,7 +147,7 @@ public class HelloAndroidActivity extends Activity {
             }
 
             try {
-                final SyncContext.ClientContext clientCtx = SyncContext.ClientContext.create();
+                final SyncContext.ClientContext clientCtx = SyncContext.client();
                 clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
 
                 AsyncTask t = new AsyncTask<Object, Object, Object>() {
@@ -164,7 +159,7 @@ public class HelloAndroidActivity extends Activity {
                             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    tv.setText(ex.getLocalizedMessage());
+                                    textView.setText(ex.getLocalizedMessage());
                                 }
                             });
                         }
@@ -173,8 +168,10 @@ public class HelloAndroidActivity extends Activity {
                 };
                 t.execute(new Object());
 
+            } catch (SyncException ex) {
+                LOG.error("Unable to create SyncContext.client()", ex);
             } catch (ContextException ex) {
-                tv.setText(ex.getLocalizedMessage());
+                textView.setText(ex.getLocalizedMessage());
             }
         }
     }
