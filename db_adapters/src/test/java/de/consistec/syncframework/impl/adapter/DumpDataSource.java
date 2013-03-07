@@ -35,9 +35,11 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.powermock.reflect.Whitebox;
 
@@ -236,6 +238,11 @@ public class DumpDataSource implements DataSource {
     }
 
     //<editor-fold defaultstate="collapsed" desc=" -------- Not implemented methods -------- " >
+    @Override
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     @Override
     public PrintWriter getLogWriter() throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");

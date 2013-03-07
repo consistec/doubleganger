@@ -22,7 +22,6 @@ package de.consistec.syncframework.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.syncframework.common.MdTableDefaultValues.CLIENT_INIT_REVISION;
 import static de.consistec.syncframework.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.syncframework.common.MdTableDefaultValues.MDV_DELETED_VALUE;
