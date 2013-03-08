@@ -44,6 +44,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.mindpipe.android.logging.log4j.LogConfigurator;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
@@ -75,8 +77,8 @@ public class HelloAndroidActivity extends Activity {
     /**
      * Called when the activity is first created.
      * <p/>
-     * @param savedInstanceState
-     * If the activity is being re-initialized after previously being
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
      * shut down then this Bundle contains the data it most recently
      * supplied in onSaveInstanceState(Bundle). <b>Note: Otherwise it
      * is null.</b>
@@ -134,12 +136,12 @@ public class HelloAndroidActivity extends Activity {
             p.setProperty(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:/mnt/sdcard/client.sl3");
 
             if (icsRb.isChecked()) {
-
+                initializeConfig("ics.properties");
                 p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqldroid.SQLDroidDriver");
                 CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
 
             } else if (gingerbreadRb.isChecked()) {
-
+                initializeConfig("gingerbread.properties");
                 p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "SQLite.JDBCDriver");
                 CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
             } else {
@@ -147,6 +149,7 @@ public class HelloAndroidActivity extends Activity {
             }
 
             try {
+
                 final SyncContext.ClientContext clientCtx = SyncContext.client();
                 clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
 
@@ -155,6 +158,14 @@ public class HelloAndroidActivity extends Activity {
                     protected Object doInBackground(Object... params) {
                         try {
                             clientCtx.synchronize();
+
+                            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textView.setText("Synchronization finished!");
+                                }
+                            });
+
                         } catch (final SyncException ex) {
                             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                                 @Override
@@ -172,6 +183,24 @@ public class HelloAndroidActivity extends Activity {
                 LOG.error("Unable to create SyncContext.client()", ex);
             } catch (ContextException ex) {
                 textView.setText(ex.getLocalizedMessage());
+            }
+        }
+
+        private void initializeConfig(String properties) {
+            InputStream in = null;
+            try {
+                in = getAssets().open(properties);
+                CONF.init(in);
+            } catch (IOException e) {
+                LOG.warn("Could not read " + properties + " in!", e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        LOG.warn("Unable to close input stream");
+                    }
+                }
             }
         }
     }

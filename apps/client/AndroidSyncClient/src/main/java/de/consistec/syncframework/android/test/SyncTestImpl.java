@@ -231,7 +231,8 @@ public class SyncTestImpl {
                 "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" "
                 + "VARCHAR (30000),\"description\" VARCHAR (30000))");
             stmt.close();
-            // TODO: replace sync() with the current synchronization method
+
+            // todo: replace sync() with the current synchronization method
             // sync();
 
         } catch (IOException e) {
