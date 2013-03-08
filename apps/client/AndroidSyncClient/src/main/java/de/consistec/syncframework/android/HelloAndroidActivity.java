@@ -21,7 +21,6 @@ package de.consistec.syncframework.android;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.syncframework.android.adapter.GingerbreadSQLiteDatabaseAdapter;
 import de.consistec.syncframework.android.adapter.ICSSQLiteDatabaseAdapter;
 import de.consistec.syncframework.common.Config;
@@ -29,12 +28,10 @@ import de.consistec.syncframework.common.ISyncProgressListener;
 import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
-import de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter;
 
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -42,12 +39,8 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-import de.mindpipe.android.logging.log4j.LogConfigurator;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
-import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,13 +57,6 @@ public class HelloAndroidActivity extends Activity {
 
     // configuring log4j logger
     static {
-        final LogConfigurator logConfigurator = new LogConfigurator();
-
-        logConfigurator.setFileName(Environment.getExternalStorageDirectory() + File.separator + "syncframework.log");
-        logConfigurator.setRootLevel(Level.DEBUG);
-        // Set log level of a specific logger
-        logConfigurator.setLevel("syncframework", Level.ALL);
-        logConfigurator.configure();
         LOG = LoggerFactory.getLogger("syncframework");
     }
 
@@ -122,32 +108,52 @@ public class HelloAndroidActivity extends Activity {
 
         @Override
         public void onClick(View arg0) {
-
+            textView.setText("");
             RadioButton gingerbreadRb = (RadioButton) findViewById(R.id.osGingerbreadRadioButton);
             RadioButton icsRb = (RadioButton) findViewById(R.id.osICSRadioButton);
-            if (!gingerbreadRb.isChecked() && !icsRb.isChecked()) {
+
+            if (icsRb.isChecked()) {
+                initializeConfigICS();
+            } else if (gingerbreadRb.isChecked()) {
+                initializeConfigGingerbread();
+            } else {
                 Toast.makeText(HelloAndroidActivity.this, "Please choose an OS", Toast.LENGTH_LONG).show();
                 return;
             }
 
-            CONF.addSyncTable("categories", "items");
+            synchronize();
+        }
 
-            Properties p = new Properties();
-            p.setProperty(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:/mnt/sdcard/client.sl3");
+        private void initializeConfigICS() {
+            readConfigFile("ics.properties");
+            CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
 
-            if (icsRb.isChecked()) {
-                initializeConfig("ics.properties");
-                p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqldroid.SQLDroidDriver");
-                CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
+        }
 
-            } else if (gingerbreadRb.isChecked()) {
-                initializeConfig("gingerbread.properties");
-                p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "SQLite.JDBCDriver");
-                CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
-            } else {
-                CONF.setClientDatabaseAdapter(GenericDatabaseAdapter.class);
+        private void initializeConfigGingerbread() {
+            readConfigFile("gingerbread.properties");
+            CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
+        }
+
+        private void readConfigFile(String propFile) {
+            InputStream in = null;
+            try {
+                in = getAssets().open(propFile);
+                CONF.init(in);
+            } catch (IOException e) {
+                LOG.warn("Could not read " + propFile + " in!", e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        LOG.warn("Unable to close input stream");
+                    }
+                }
             }
+        }
 
+        private void synchronize() {
             try {
 
                 final SyncContext.ClientContext clientCtx = SyncContext.client();
@@ -181,26 +187,10 @@ public class HelloAndroidActivity extends Activity {
 
             } catch (SyncException ex) {
                 LOG.error("Unable to create SyncContext.client()", ex);
+                Toast.makeText(HelloAndroidActivity.this, "Synchronization failed: please check the logs for details",
+                    Toast.LENGTH_LONG).show();
             } catch (ContextException ex) {
                 textView.setText(ex.getLocalizedMessage());
-            }
-        }
-
-        private void initializeConfig(String properties) {
-            InputStream in = null;
-            try {
-                in = getAssets().open(properties);
-                CONF.init(in);
-            } catch (IOException e) {
-                LOG.warn("Could not read " + properties + " in!", e);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        LOG.warn("Unable to close input stream");
-                    }
-                }
             }
         }
     }
