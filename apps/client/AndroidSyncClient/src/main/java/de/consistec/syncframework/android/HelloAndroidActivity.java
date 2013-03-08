@@ -148,15 +148,17 @@ public class HelloAndroidActivity extends Activity {
                 CONF.setClientDatabaseAdapter(GenericDatabaseAdapter.class);
             }
 
-            try {
+//            try {
 
-                final SyncContext.ClientContext clientCtx = SyncContext.client();
-                clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
+//                clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
+
 
                 AsyncTask t = new AsyncTask<Object, Object, Object>() {
                     @Override
                     protected Object doInBackground(Object... params) {
                         try {
+                            final SyncContext.ClientContext clientCtx = SyncContext.client();
+                            clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
                             clientCtx.synchronize();
 
                             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
@@ -173,17 +175,25 @@ public class HelloAndroidActivity extends Activity {
                                     textView.setText(ex.getLocalizedMessage());
                                 }
                             });
+                        } catch (final ContextException e) {
+                            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textView.setText(e.getLocalizedMessage());
+                                }
+                            });
                         }
                         return new Object();
                     }
                 };
                 t.execute(new Object());
 
-            } catch (SyncException ex) {
-                LOG.error("Unable to create SyncContext.client()", ex);
-            } catch (ContextException ex) {
-                textView.setText(ex.getLocalizedMessage());
-            }
+//            }
+//            catch (SyncException ex) {
+//                LOG.error("Unable to create SyncContext.client()", ex);
+//            } catch (ContextException ex) {
+//                textView.setText(ex.getLocalizedMessage());
+//            }
         }
 
         private void initializeConfig(String properties) {
