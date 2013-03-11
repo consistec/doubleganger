@@ -25,15 +25,30 @@ doubleganger is a software *library*, not a complete application. This means tha
 
 ## Features
 
-* Support for different databases (SQLite, MySQL, PostgreSQL)
-* Filter
-* Trigger support for high performance
-* Network layer is transparent to the core: currently, JSON serialization over http(s) is supported
-* Implemented in Java, but due to its flexible architecture, could be easily implemented in other languages (e.g., .Net) as well
-* Little dependencies: works well in minimal environments (e.g., Android phones)
-* Conflict detection per database row
-* Sync-direction (bi-directional, client to server, or server to client) can be configured per database table
-* Conflict resolution strategy can be configured per table (ask "user", server wins, client wins)
+* Support for different databases
+   * Standard SQL databases
+   * special support for: SQLite, MySQL, PostgreSQL
+   * adaptations easily possible through database adapters
+* Transparent network layer
+   * network transfer can be easily adapted with proxy modules
+   * standard transport layer: JSON serialization over http(s)
+* Implemented in Java
+   * platform independant: Linux, Windows, Android, ...
+   * flexible architecture facilitates implementations in other languages as well
+* Little dependencies
+   * works well in minimal environments (e.g., Android phones)
+* Automatic conflict detection
+   * per database row
+* Configurable conflict resolution strategies
+   * ask user, server wins, client wins
+   * configurable per table
+* Sync-direction
+   * bi-directional, client to server, server to client
+   * can be configured per database table
+* Good scalability
+   * Server-side database memory requirement is independent of number of clients
+   * Supports usage of triggers for efficient detection of server side changes
+      * for PostgreSQL and MySQL
 
 ## How does it work?
 
