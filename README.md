@@ -58,3 +58,7 @@ TODO: maven & friends
 ## License
 
 doubleganger is licensed under [GPL Version 3](http://www.gnu.org/licenses/gpl.html). Commercial licenses are available upon [request](swd@consistec.de).
+
+## Thanks
+
+TODO: thank funding agency
