@@ -71,27 +71,19 @@ public class HelloAndroidActivity extends Activity {
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
         LOG.debug("onCreate");
+
         setContentView(R.layout.main);
         Button syncButton = (Button) findViewById(R.id.syncButton);
         textView = (TextView) findViewById(R.id.statusTextView);
         editText = (EditText) findViewById(R.id.urlEditText);
+        
         syncButton.setOnClickListener(new SyncButtonClickListener());
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {
-
-        @Override
-        public void syncFinished() {
-            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    textView.setText("Sync finished!");
-                }
-            });
-        }
 
         @Override
         public void progressUpdate(final String message) {
@@ -99,6 +91,16 @@ public class HelloAndroidActivity extends Activity {
                 @Override
                 public void run() {
                     textView.setText(message);
+                }
+            });
+        }
+
+        @Override
+        public void syncFinished() {
+            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    textView.setText("Sync finished!");
                 }
             });
         }
@@ -154,44 +156,43 @@ public class HelloAndroidActivity extends Activity {
         }
 
         private void synchronize() {
-            try {
+            AsyncTask t = new AsyncTask<Object, Object, Object>() {
+                @Override
+                protected Object doInBackground(Object... params) {
+                    try {
+                        final SyncContext.ClientContext clientCtx = SyncContext.client();
+                        clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
+                        clientCtx.synchronize();
 
-                final SyncContext.ClientContext clientCtx = SyncContext.client();
-                clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
+                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText("Synchronization finished!");
+                            }
+                        });
 
-                AsyncTask t = new AsyncTask<Object, Object, Object>() {
-                    @Override
-                    protected Object doInBackground(Object... params) {
-                        try {
-                            clientCtx.synchronize();
-
-                            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    textView.setText("Synchronization finished!");
-                                }
-                            });
-
-                        } catch (final SyncException ex) {
-                            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    textView.setText(ex.getLocalizedMessage());
-                                }
-                            });
-                        }
-                        return new Object();
+                    } catch (final SyncException ex) {
+                        LOG.error(null, ex);
+                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText(ex.getLocalizedMessage());
+                            }
+                        });
+                    } catch (final ContextException ex) {
+                        LOG.error(null, ex);
+                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textView.setText(ex.getLocalizedMessage());
+                            }
+                        });
                     }
-                };
-                t.execute(new Object());
+                    return new Object();
+                }
+            };
+            t.execute(new Object());
 
-            } catch (SyncException ex) {
-                LOG.error("Unable to create SyncContext.client()", ex);
-                Toast.makeText(HelloAndroidActivity.this, "Synchronization failed: please check the logs for details",
-                    Toast.LENGTH_LONG).show();
-            } catch (ContextException ex) {
-                textView.setText(ex.getLocalizedMessage());
-            }
         }
     }
 }
