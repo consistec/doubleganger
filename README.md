@@ -52,7 +52,17 @@ doubleganger is a software *library*, not a complete application. This means tha
 
 ## How does it work?
 
-TODO: very brief description with link to tutorial and other stuff
+For each synchronized table, doubleganger adds a meta table. These meta tables exist on client *and* server, though the format is not exactly the same.
+
+TODO Revision numbers
+
+TODO Client:
+
+
+The server has two ways for detecting changes:
+
+1. If trigger support is enabled, a database trigger is installed which automatically sets a flag in the meta data tables for each row which is being updated.
+1. If trigger support is disabled, doubleganger scans all tables during a synchronization and computes a hash values for each row. That hash value is compared with the original hash value in the meta tables; if they differ, the row has been changed meanwhile.
 
 ## Documentation and Usage
 
