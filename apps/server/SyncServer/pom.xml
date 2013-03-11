@@ -36,7 +36,7 @@
         <deploy.name>SyncServer</deploy.name>
         <display_build>${maven.build.timestamp}</display_build>
         <!-- license information -->
-        <license.inceptionYear>2011</license.inceptionYear>
+        <license.inceptionYear>2012</license.inceptionYear>
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>

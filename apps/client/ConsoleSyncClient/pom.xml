@@ -136,7 +136,7 @@
                     <excludedScopes>test</excludedScopes>
                     <force>true</force>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <inceptionYear>2011</inceptionYear>
+                    <inceptionYear>2012</inceptionYear>
                     <organizationName>consistec GmbH</organizationName>
                     <projectName>doppelganger</projectName>
                     <descriptionTemplate>
