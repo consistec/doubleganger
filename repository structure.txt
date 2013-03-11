@@ -1,0 +1,14 @@
+The project repository is split into several (maven) modules:
+
+* common: contains sources and interfaces of the synchronization framework
+* android-adapters: contains database adapters for Android
+* android-clientlib: contains a reference to the SQLDroid library which is used as a JDBC interface to Android's sqlite databases
+* apps: contains example applications which use the synchronization framework
+   * jmeter: plugin and syncclient for JMeter based performance and load tests
+   * server: example implementation of a Java sync server; can be deployed on Tomcat and configured for several database backends
+   * client/AndroidSyncClient: example synchronization client for Android
+   * client/ConsoleSyncClient: console based synchronization client (e.g., for automated tests)
+* db_adapters: contains implementations of the database adapter interface for several data bases, in particular for MySQL and PostgreSQL
+* logging: uses AspectJ for generating verbose logging when needed
+* parent: empty maven project; most other maven projects inherit basic settings from here
+* server_sync_providers_proxies: example implementation of the proxy interface for http based data transmission using JSON for serialization
