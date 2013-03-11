@@ -62,9 +62,13 @@ TODO: cf. tutorial
 
 Currently, we don't offer pre-build download. However, it's very easy to compile the code for yourself.
 
-## Building
+## How to Build doubleganger
 
-TODO: maven & friends
+doubleganger's build process is based on [Apache Maven](http://maven.apache.org/).
+
+The library can be built via the usual steps (mvn clean && mvn compile) and can be integrated easily into other Maven projects. Besides that, the generated JAR-File can also be used in non-Maven projects.
+
+For details about the usage of doubleganger in your project see the [doubleganger tutorial](TODO:link to tutorial).
 
 ## License
 
