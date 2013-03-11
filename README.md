@@ -54,17 +54,13 @@ doubleganger is a software *library*, not a complete application. This means tha
 
 TODO: very brief description with link to tutorial and other stuff
 
-## Community
-
-TODO
-
-## Download
-
-TODO
-
 ## Usage
 
 TODO: cf. tutorial
+
+## Download
+
+Currently, we don't offer pre-build download. However, it's very easy to compile the code for yourself.
 
 ## Building
 
