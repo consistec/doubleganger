@@ -19,7 +19,9 @@ A typical use case will look as follows
    * client sends its changes to the server
    * if no new conflict occurs, client and server database are identical now
 
-TODO
+## Target Audience
+
+doubleganger is a software *library*, not a complete application. This means that doubleganger is intended to be used by software developers to add synchronization features to their applications.
 
 ## Features
 
