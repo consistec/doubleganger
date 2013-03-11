@@ -76,4 +76,4 @@ doubleganger is licensed under [GPL Version 3](http://www.gnu.org/licenses/gpl.h
 
 ## Thanks
 
-TODO: thank funding agency
+The initial development of doubleganger has been funded by Saarland's Ministry of Economic Affairs and Science within the program **Technologieprogramm Saar**.
