@@ -54,9 +54,12 @@ doubleganger is a software *library*, not a complete application. This means tha
 
 TODO: very brief description with link to tutorial and other stuff
 
-## Usage
+## Documentation and Usage
 
-TODO: cf. tutorial
+* A good starting point to get information about basic ideas and some details about the synchronization algorithm is the [doubleganger wiki](TODO).
+* An example for the integration of doubleganger into your own code is given in the [doubleganger tutorial](TODO:link to tutorial).
+* There's is [JavaDoc](TODO:link) available.
+* If you have questions or sugestions that are not covered by these documents, you're very welcome to contact us via the [mailing list](TODO:link)
 
 ## Download
 
