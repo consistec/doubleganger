@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+
+    <New id="sync" class="org.eclipse.jetty.plus.jndi.Resource">
+        <Arg>jdbc/sync</Arg>
+        <Arg>
+            <New class="org.postgresql.ds.PGSimpleDataSource">
+                <!--<Set name="Url">jdbc:postgresql://${db.host}:${db.port}/${db.name}</Set>-->
+                <Set name="User">${db.user}</Set>
+                <Set name="Password">${db.passwd}</Set>
+                <Set name="DatabaseName">${db.name}</Set>
+                <Set name="ServerName">${db.host}</Set>
+                <Set name="PortNumber">${db.port}</Set>
+            </New>
+        </Arg>
+    </New>
+</Configure>

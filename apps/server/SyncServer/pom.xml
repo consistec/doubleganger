@@ -74,6 +74,7 @@
                             <includes>
                                 <include>META-INF/context.xml</include>
                                 <include>WEB-INF/web.xml</include>
+                                <include>META-INF/jetty-env.xml</include>
                                 <include>WEB-INF/syncframework.properties</include>
                                 <include>WEB-INF/server.properties</include>
                             </includes>

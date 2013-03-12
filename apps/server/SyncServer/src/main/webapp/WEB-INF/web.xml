@@ -55,7 +55,8 @@
 	<resource-ref>
         <description>Connection Pool</description>
         <res-ref-name>jdbc/sync</res-ref-name>
-        <res-type>javax.sql.Datasource</res-type>
+        <!--<res-type>javax.sql.Datasource</res-type>-->
         <res-auth>Container</res-auth>
+        <res-type>org.postgresql.ds.PGSimpleDataSource</res-type>
     </resource-ref>
 </web-app>
