@@ -132,7 +132,7 @@
                     </sdk>
                     <emulator>
                         <avd>${android.emulator.name}</avd>
-                        <wait>60000</wait>
+                        <wait>600</wait>
                         <options>-no-window</options>
                     </emulator>
                     <undeployBeforeDeploy>true</undeployBeforeDeploy>
@@ -140,16 +140,21 @@
             </plugin>
             <plugin>
                 <groupId>org.mortbay.jetty</groupId>
-                <artifactId>maven-jetty-plugin</artifactId>
-                <version>6.1.26</version>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>8.1.4.v20120524</version>
                 <configuration>
-                    <contextPath>/SyncServer</contextPath>
+                    <war>../../server/SyncServer/target/SyncServer.war</war>
+                    <webApp>
+                        <contextPath>/SyncServer</contextPath>
+                        <descriptor>../../server/SyncServer/target/SyncServer/WEB-INF/web.xml</descriptor>
+                        <jettyEnvXml>../../server/SyncServer/target/SyncServer/META-INF/jetty-env.xml</jettyEnvXml>
+                    </webApp>
                     <stopKey>foo</stopKey>
                     <stopPort>9090</stopPort>
-                    <webApp>../SyncServer/target/SyncServer.war</webApp>
-                    <webAppSourceDirectory>../SyncServer/src/main/webapp</webAppSourceDirectory>
+
+
                     <connectors>
-                        <connector implementation="org.mortbay.jetty.nio.SelectChannelConnector">
+                        <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
                             <port>8085</port>
                             <maxIdleTime>60000</maxIdleTime>
                         </connector>
@@ -162,6 +167,13 @@
                         </systemProperty>
                     </systemProperties>
                 </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>9.1-901-1.jdbc4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -180,14 +192,14 @@
                     <excludedScopes>test</excludedScopes>
                     <force>true</force>
                 </configuration>
-                <executions>
+                <!--<executions>
                     <execution>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>add-third-party</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions> -->
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -231,8 +243,8 @@
                 <plugins>
                     <plugin>
                         <groupId>org.mortbay.jetty</groupId>
-                        <artifactId>maven-jetty-plugin</artifactId>
-                        <version>6.1.26</version>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>8.1.4.v20120524</version>
                         <executions>
                             <execution>
                                 <id>start-jetty</id>
