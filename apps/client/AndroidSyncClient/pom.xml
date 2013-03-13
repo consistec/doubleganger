@@ -11,6 +11,8 @@
     <name>AndroidSyncClient</name>
 
     <properties>
+        <android.compile.version>4.0.1.2</android.compile.version>
+        <android.sdk.version>15</android.sdk.version>
         <android.test.skip>true</android.test.skip>
         <android.emulator.name>TestDevice</android.emulator.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -50,7 +52,7 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android-test</artifactId>
-            <version>2.3.3</version>
+            <version>${android.compile.version}</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
@@ -78,6 +80,13 @@
             <groupId>emma</groupId>
             <artifactId>emma</artifactId>
             <version>2.1.5320</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+
         </dependency>
     </dependencies>
 
@@ -110,6 +119,12 @@
                 <version>3.3.2</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <dex>
+                        <jvmArguments>
+                            <jvmArgument>-Xms1024m</jvmArgument>
+                            <jvmArgument>-Xmx2048m</jvmArgument>
+                        </jvmArguments>
+                    </dex>
                     <emma>
                         <enable>true</enable>
                         <classFolders>${project.basedir}/target/classes/</classFolders>
@@ -128,7 +143,7 @@
                     <resourceDirectory>${project.basedir}/res</resourceDirectory>
                     <nativeLibrariesDirectory>${project.basedir}/src/main/native</nativeLibrariesDirectory>
                     <sdk>
-                        <platform>10</platform>
+                        <platform>${android.sdk.version}</platform>
                     </sdk>
                     <emulator>
                         <avd>${android.emulator.name}</avd>
