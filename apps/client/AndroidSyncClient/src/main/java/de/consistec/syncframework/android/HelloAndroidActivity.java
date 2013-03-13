@@ -79,30 +79,29 @@ public class HelloAndroidActivity extends Activity {
         Button syncButton = (Button) findViewById(R.id.syncButton);
         textView = (TextView) findViewById(R.id.statusTextView);
         editText = (EditText) findViewById(R.id.urlEditText);
-        
+
         syncButton.setOnClickListener(new SyncButtonClickListener());
+    }
+
+    private void displayText(final String message) {
+        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textView.setText(message);
+            }
+        });
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {
 
         @Override
         public void progressUpdate(final String message) {
-            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    textView.setText(message);
-                }
-            });
+            displayText(message);
         }
 
         @Override
         public void syncFinished() {
-            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    textView.setText("Sync finished!");
-                }
-            });
+            displayText("Synchronization finished!");
         }
     }
 
@@ -164,29 +163,12 @@ public class HelloAndroidActivity extends Activity {
                         clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
                         clientCtx.synchronize();
 
-                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textView.setText("Synchronization finished!");
-                            }
-                        });
-
                     } catch (final SyncException ex) {
                         LOG.error(null, ex);
-                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textView.setText(ex.getLocalizedMessage());
-                            }
-                        });
+                        displayText(ex.getLocalizedMessage());
                     } catch (final ContextException ex) {
                         LOG.error(null, ex);
-                        HelloAndroidActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                textView.setText(ex.getLocalizedMessage());
-                            }
-                        });
+                        displayText(ex.getLocalizedMessage());
                     }
                     return new Object();
                 }
