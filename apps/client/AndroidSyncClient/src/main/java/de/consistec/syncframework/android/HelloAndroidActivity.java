@@ -8,15 +8,15 @@ package de.consistec.syncframework.android;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -44,6 +44,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import de.mindpipe.android.logging.log4j.LogConfigurator;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
@@ -57,8 +59,8 @@ public class HelloAndroidActivity extends Activity {
 
     private static final Logger LOG;
     private static final Config CONF = Config.getInstance();
-    private TextView tv;
-    private EditText et;
+    private TextView textView;
+    private EditText editText;
 
     // configuring log4j logger
     static {
@@ -75,8 +77,8 @@ public class HelloAndroidActivity extends Activity {
     /**
      * Called when the activity is first created.
      * <p/>
-     * @param savedInstanceState
-     * If the activity is being re-initialized after previously being
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being
      * shut down then this Bundle contains the data it most recently
      * supplied in onSaveInstanceState(Bundle). <b>Note: Otherwise it
      * is null.</b>
@@ -88,14 +90,9 @@ public class HelloAndroidActivity extends Activity {
         LOG.debug("onCreate");
         setContentView(R.layout.main);
         Button syncButton = (Button) findViewById(R.id.syncButton);
-        tv = (TextView) findViewById(R.id.statusTextView);
-        et = (EditText) findViewById(R.id.urlEditText);
+        textView = (TextView) findViewById(R.id.statusTextView);
+        editText = (EditText) findViewById(R.id.urlEditText);
         syncButton.setOnClickListener(new SyncButtonClickListener());
-    }
-
-    private void logAndShowErrorToast(Exception e) {
-        Toast.makeText(getBaseContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        LOG.error(e.getLocalizedMessage(), e);
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {
@@ -105,7 +102,7 @@ public class HelloAndroidActivity extends Activity {
             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tv.setText("Sync finished!");
+                    textView.setText("Sync finished!");
                 }
             });
         }
@@ -115,7 +112,7 @@ public class HelloAndroidActivity extends Activity {
             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tv.setText(message);
+                    textView.setText(message);
                 }
             });
         }
@@ -139,12 +136,12 @@ public class HelloAndroidActivity extends Activity {
             p.setProperty(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:/mnt/sdcard/client.sl3");
 
             if (icsRb.isChecked()) {
-
+                initializeConfig("ics.properties");
                 p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqldroid.SQLDroidDriver");
                 CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
 
             } else if (gingerbreadRb.isChecked()) {
-
+                initializeConfig("gingerbread.properties");
                 p.setProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "SQLite.JDBCDriver");
                 CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
             } else {
@@ -152,7 +149,8 @@ public class HelloAndroidActivity extends Activity {
             }
 
             try {
-                final SyncContext.ClientContext clientCtx = SyncContext.ClientContext.create();
+
+                final SyncContext.ClientContext clientCtx = SyncContext.client();
                 clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
 
                 AsyncTask t = new AsyncTask<Object, Object, Object>() {
@@ -160,11 +158,19 @@ public class HelloAndroidActivity extends Activity {
                     protected Object doInBackground(Object... params) {
                         try {
                             clientCtx.synchronize();
+
+                            HelloAndroidActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textView.setText("Synchronization finished!");
+                                }
+                            });
+
                         } catch (final SyncException ex) {
                             HelloAndroidActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    tv.setText(ex.getLocalizedMessage());
+                                    textView.setText(ex.getLocalizedMessage());
                                 }
                             });
                         }
@@ -173,8 +179,28 @@ public class HelloAndroidActivity extends Activity {
                 };
                 t.execute(new Object());
 
+            } catch (SyncException ex) {
+                LOG.error("Unable to create SyncContext.client()", ex);
             } catch (ContextException ex) {
-                tv.setText(ex.getLocalizedMessage());
+                textView.setText(ex.getLocalizedMessage());
+            }
+        }
+
+        private void initializeConfig(String properties) {
+            InputStream in = null;
+            try {
+                in = getAssets().open(properties);
+                CONF.init(in);
+            } catch (IOException e) {
+                LOG.warn("Could not read " + properties + " in!", e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        LOG.warn("Unable to close input stream");
+                    }
+                }
             }
         }
     }

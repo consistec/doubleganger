@@ -265,6 +265,27 @@ public enum Infos {
     /**
      * Information that recreation of server meta is retried.
      */
-    COMMON_RETRYING_RECREATE_SERVER_META_TABLES;
+    COMMON_RETRYING_RECREATE_SERVER_META_TABLES,
+
+    /**
+     * Information of config creation.
+     */
+    COMMON_CREATING_CONFIG,
+
+    /**
+     * Information about requesting changes from server is finished.
+     */
+    COMMON_REQUESTING_CHANGES_FROM_SERVER_FINISHED,
+
+    /**
+     * Information about applying changes from client on server.
+     */
+    COMMON_APPLYING_CHANGES_FROM_CLIENT,
+
+    /**
+     * Information about applying changes from client on server is finished.
+     */
+    COMMON_APPLYING_CHANGES_FROM_CLIENT_FINISHED;
+
     //</editor-fold>
 }

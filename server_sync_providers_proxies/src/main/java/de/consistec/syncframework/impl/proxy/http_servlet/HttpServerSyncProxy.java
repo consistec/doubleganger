@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
@@ -188,7 +187,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public int applyChanges(SyncData clientData) throws SyncException {
 
-        threadId = ManagementFactory.getRuntimeMXBean().getName();
+//        threadId = ManagementFactory.getRuntimeMXBean().getName();
+        threadId = "1";
 
         try {
             List<NameValuePair> data = newArrayList();
@@ -207,7 +207,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     public SyncData getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
 
-        threadId = ManagementFactory.getRuntimeMXBean().getName();
+//        threadId = ManagementFactory.getRuntimeMXBean().getName();
+        threadId = "1";
 
         try {
             List<NameValuePair> data = newArrayList();
@@ -224,7 +225,8 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Schema getSchema() throws SyncException {
 
-        threadId = ManagementFactory.getRuntimeMXBean().getName();
+//        threadId = ManagementFactory.getRuntimeMXBean().getName();
+        threadId = "1";
 
         try {
             List<NameValuePair> data = newArrayList();

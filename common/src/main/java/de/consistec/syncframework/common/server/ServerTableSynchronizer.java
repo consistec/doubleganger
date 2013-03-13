@@ -131,7 +131,8 @@ public class ServerTableSynchronizer {
             @Override
             public void onSuccess(ResultSet allRows) throws DatabaseAdapterException {
                 try {
-                    Map<String, Object> rowData = newHashMap();
+//                    final Map<String, Object> rowData = DBMapperUtil.getRowData(allRows);
+                    final Map<String, Object> rowData = newHashMap();
                     while (allRows.next()) {
                         for (String s : columns) {
                             rowData.put(s, allRows.getObject(s));
