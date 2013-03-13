@@ -77,7 +77,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>2.5.1</version>
+                        <version>3.0</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <source>1.6</source>
@@ -110,7 +110,7 @@
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
                     <!-- Third party licenses not allowed to use in syncframework project separated by | -->
-                    <excludedLicenses>The GNU General Public License, Version 2 </excludedLicenses>
+                    <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
                     <excludedScopes>test</excludedScopes>
