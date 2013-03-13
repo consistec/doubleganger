@@ -208,6 +208,8 @@ public class SyncAgent {
             // transaction phase 2 client
             clientProvider.updateClientRevision(clientChangesToApply);
 
+            updateProgress(read(Infos.COMMON_SYNCHRONIZATION_FINISHED));
+
         } catch (ServerStatusException ex) {
             LOGGER.warn(Warnings.COMMON_CLIENT_CAUGHT_SERVER_STATUS_EXCEPTION, ex.getStatus().name(), ex.getMessage());
 
@@ -267,6 +269,7 @@ public class SyncAgent {
     protected void doAfterGetServerChanges() {
         phaseTime = System.currentTimeMillis() - phaseTime;
         LOGGER.debug("phase process -server-changes duration: {}ms", phaseTime);
+        updateProgress(read(Infos.COMMON_REQUESTING_CHANGES_FROM_SERVER_FINISHED));
     }
 
     /**
@@ -275,6 +278,7 @@ public class SyncAgent {
     protected void doBeforeApplyClientChanges() {
         LOGGER.info(Infos.COMMON_REQUESTING_CHANGES_FROM_CLIENT);
         phaseTime = System.currentTimeMillis();
+        updateProgress(read(Infos.COMMON_APPLYING_CHANGES_FROM_CLIENT));
     }
 
     /**
@@ -283,6 +287,7 @@ public class SyncAgent {
     protected void doAfterApplyClientChanges() {
         phaseTime = System.currentTimeMillis() - phaseTime;
         LOGGER.debug("phase process-client-changes duration: {}ms", phaseTime);
+        updateProgress(read(Infos.COMMON_APPLYING_CHANGES_FROM_CLIENT_FINISHED));
     }
 
     private void logInfo(int clientRevision, List<Change> serverChanges) {
