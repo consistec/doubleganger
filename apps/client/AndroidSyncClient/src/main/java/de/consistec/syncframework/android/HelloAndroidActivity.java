@@ -21,6 +21,7 @@ package de.consistec.syncframework.android;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import de.consistec.syncframework.android.adapter.GingerbreadSQLiteDatabaseAdapter;
 import de.consistec.syncframework.android.adapter.ICSSQLiteDatabaseAdapter;
 import de.consistec.syncframework.common.Config;
@@ -39,8 +40,10 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +53,8 @@ import org.slf4j.LoggerFactory;
  */
 public class HelloAndroidActivity extends Activity {
 
+    private static final String GINGERBREAD_PROPERTIES_FILE = "gingerbread.properties";
+    private static final String ICS_PROPERTIES_FILE = "ics.properties";
     private static final Logger LOG;
     private static final Config CONF = Config.getInstance();
     private TextView textView;
@@ -113,10 +118,10 @@ public class HelloAndroidActivity extends Activity {
             RadioButton gingerbreadRb = (RadioButton) findViewById(R.id.osGingerbreadRadioButton);
             RadioButton icsRb = (RadioButton) findViewById(R.id.osICSRadioButton);
 
-            if (icsRb.isChecked()) {
-                initializeConfigICS();
-            } else if (gingerbreadRb.isChecked()) {
+            if (gingerbreadRb.isChecked()) {
                 initializeConfigGingerbread();
+            } else if (icsRb.isChecked()) {
+                initializeConfigICS();
             } else {
                 Toast.makeText(HelloAndroidActivity.this, "Please choose an OS", Toast.LENGTH_LONG).show();
                 return;
@@ -125,15 +130,14 @@ public class HelloAndroidActivity extends Activity {
             synchronize();
         }
 
-        private void initializeConfigICS() {
-            readConfigFile("ics.properties");
-            CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
-
+        private void initializeConfigGingerbread() {
+            readConfigFile(GINGERBREAD_PROPERTIES_FILE);
+            CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
         }
 
-        private void initializeConfigGingerbread() {
-            readConfigFile("gingerbread.properties");
-            CONF.setClientDatabaseAdapter(GingerbreadSQLiteDatabaseAdapter.class);
+        private void initializeConfigICS() {
+            readConfigFile(ICS_PROPERTIES_FILE);
+            CONF.setClientDatabaseAdapter(ICSSQLiteDatabaseAdapter.class);
         }
 
         private void readConfigFile(String propFile) {
