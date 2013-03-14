@@ -10,7 +10,7 @@
     <name>android adapters</name>
 
     <properties>
-        <android.platfrom></android.platfrom>
+        <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- license information -->
         <license.inceptionYear>2012</license.inceptionYear>
@@ -39,14 +39,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${compiler.plugin.version}</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <source>1.6</source>
                             <target>1.6</target>
-                            <excludes>
-                                <!--<exclude>**/GingerbreadSQLiteDatabaseAdapter.java</exclude>-->
-                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -56,10 +53,6 @@
         <profile>
             <id>android-10</id>
             <activation>
-                <property>
-                    <name>android.platform</name>
-                    <value></value>
-                </property>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
@@ -80,14 +73,13 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>2.5.1</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <source>1.6</source>
                             <target>1.6</target>
                             <excludes>
                                 <exclude>**/org/sqldroid/**</exclude>
-                                <!--<exclude>**/ICSSQLiteDatabaseAdapter.java</exclude>-->
                             </excludes>
                         </configuration>
                     </plugin>
@@ -136,7 +128,7 @@
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
                     <!-- Third party licenses not allowed to use in syncframework project separated by | -->
-                    <excludedLicenses>The GNU General Public License, Version 2 </excludedLicenses>
+                    <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
                     <excludedScopes>test</excludedScopes>

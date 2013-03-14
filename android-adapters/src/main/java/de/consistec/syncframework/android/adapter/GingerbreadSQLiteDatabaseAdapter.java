@@ -60,10 +60,8 @@ public class GingerbreadSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
         username = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_USERNAME, false);
         password = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
 
-        LOGGER.debug("driverName= \"{}\"", driverName);
-        LOGGER.debug("connectionUrl= \"{}\"", connectionUrl);
-        LOGGER.debug("username= \"{}\"", username);
-        LOGGER.debug("password= \"{}\"", password);
+        LOGGER.debug("driverName= '{0}', connectionUrl= '{1}', username= '{2}',password= '{3}'",
+            driverName, connectionUrl, username, password);
 
         try {
 
