@@ -10,7 +10,7 @@
     <name>android adapters</name>
 
     <properties>
-        <android.platfrom></android.platfrom>
+        <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- license information -->
         <license.inceptionYear>2011</license.inceptionYear>
@@ -39,7 +39,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>${compiler.plugin.version}</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <source>1.6</source>
@@ -53,10 +53,6 @@
         <profile>
             <id>android-10</id>
             <activation>
-                <property>
-                    <name>android.platform</name>
-                    <value></value>
-                </property>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
@@ -77,11 +73,14 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-compiler-plugin</artifactId>
-                        <version>3.0</version>
+                        <version>${maven.compiler.plugin.version}</version>
                         <configuration>
                             <encoding>${project.build.sourceEncoding}</encoding>
                             <source>1.6</source>
                             <target>1.6</target>
+                            <excludes>
+                                <exclude>**/org/sqldroid/**</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -99,6 +98,25 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>add-sqldroid-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>sqldroid/src/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
