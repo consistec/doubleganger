@@ -23,21 +23,17 @@ package de.consistec.syncframework.impl.adapter.it_mysql;
  * #L%
  */
 
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 
-import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.impl.SynchronizationIT;
 import de.consistec.syncframework.impl.TestScenario;
 
-/**
- * @author davidm
- * @company consistec Engineering and Consulting GmbH
- * @date 15.01.2013 10:23:35
- */
 public class ITSyncMySql extends SynchronizationIT {
 
     public ITSyncMySql(TestScenario scenario) {
         super(scenario);
-        clientDb = new MySqlDatabase(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-        serverDb = new MySqlDatabase(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+        clientDb = new MySqlDatabase(CLIENT);
+        serverDb = new MySqlDatabase(SERVER);
     }
 }

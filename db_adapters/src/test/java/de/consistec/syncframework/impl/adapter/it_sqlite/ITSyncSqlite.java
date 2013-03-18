@@ -23,7 +23,9 @@ package de.consistec.syncframework.impl.adapter.it_sqlite;
  * #L%
  */
 
-import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
+
 import de.consistec.syncframework.impl.SynchronizationIT;
 import de.consistec.syncframework.impl.TestScenario;
 
@@ -36,7 +38,7 @@ public class ITSyncSqlite extends SynchronizationIT {
 
     public ITSyncSqlite(TestScenario scenario) {
         super(scenario);
-        clientDb = new SqlLiteDatabase(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-        serverDb = new SqlLiteDatabase(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+        clientDb = new SqlLiteDatabase(CLIENT);
+        serverDb = new SqlLiteDatabase(SERVER);
     }
 }

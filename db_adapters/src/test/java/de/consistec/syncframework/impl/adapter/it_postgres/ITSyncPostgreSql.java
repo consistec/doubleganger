@@ -23,20 +23,17 @@ package de.consistec.syncframework.impl.adapter.it_postgres;
  * #L%
  */
 
-import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
+
 import de.consistec.syncframework.impl.SynchronizationIT;
 import de.consistec.syncframework.impl.TestScenario;
 
-/**
- * @author davidm
- * @company consistec Engineering and Consulting GmbH
- * @date 15.01.2013 10:18:59
- */
 public class ITSyncPostgreSql extends SynchronizationIT {
 
     public ITSyncPostgreSql(TestScenario scenario) {
         super(scenario);
-        clientDb = new PostgresDatabase(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-        serverDb = new PostgresDatabase(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+        clientDb = new PostgresDatabase(CLIENT);
+        serverDb = new PostgresDatabase(SERVER);
     }
 }
