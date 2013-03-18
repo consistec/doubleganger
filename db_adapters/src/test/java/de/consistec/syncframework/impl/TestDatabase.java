@@ -22,16 +22,14 @@ package de.consistec.syncframework.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.data.schema.Schema;
 import de.consistec.syncframework.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.impl.adapter.ConnectionType;
-import de.consistec.syncframework.impl.adapter.DumpDataSource;
-import de.consistec.syncframework.impl.adapter.DumpDataSource.SupportedDatabases;
+import de.consistec.syncframework.impl.adapter.DummyDataSource;
+import de.consistec.syncframework.impl.adapter.DummyDataSource.SupportedDatabases;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -39,22 +37,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import org.slf4j.cal10n.LocLogger;
 
-/**
- * @author davidm
- * @company consistec Engineering and Consulting GmbH
- * @date 11.01.2013 11:43:45
- */
 public abstract class TestDatabase {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(TestDatabase.class.getCanonicalName());
     private final SupportedDatabases supportedDb;
     private final String configFile;
-    private DumpDataSource serverDs, clientDs;
-    private Connection serverConnection, clientConnection;
+    private DummyDataSource dataSource;
+    private Connection connection;
+    private DatabaseAdapterFactory.AdapterPurpose side;
 
-    public TestDatabase(String configFile, DumpDataSource.SupportedDatabases supportedDb) {
+    public TestDatabase(String configFile, DummyDataSource.SupportedDatabases supportedDb, DatabaseAdapterFactory.AdapterPurpose side) {
         this.configFile = configFile;
         this.supportedDb = supportedDb;
+        this.side = side;
     }
 
     /**
@@ -65,63 +60,33 @@ public abstract class TestDatabase {
     public void init() throws SQLException, IOException {
         Config.getInstance().init(getClass().getResourceAsStream(configFile));
 
-        serverDs = new DumpDataSource(supportedDb, ConnectionType.SERVER);
-        clientDs = new DumpDataSource(supportedDb, ConnectionType.CLIENT);
+        dataSource = new DummyDataSource(supportedDb, side);
 
-        connectWithSyncUserOnServer();
-        connectWithSyncUserOnClient();
+        connectWithSyncUser();
     }
 
-    public void connectWithSyncUserOnServer() throws SQLException {
-        closeConnectionsOnServer();
-        String dbUsername = serverDs.getSyncUserName();
-        String dbPassword = serverDs.getSyncUserPassword();
-        serverConnection = serverDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting on server as user {}", dbUsername);
+    public void connectWithSyncUser() throws SQLException {
+        connectWithUser(dataSource.getSyncUserName(),dataSource.getSyncUserPassword());
     }
 
-    public void connectWithSyncUserOnClient() throws SQLException {
-        closeConnectionsOnClient();
-        String dbUsername = clientDs.getSyncUserName();
-        String dbPassword = clientDs.getSyncUserPassword();
-        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting on client as user {}", dbUsername);
+    public void connectWithExternalUser() throws SQLException {
+        connectWithUser(dataSource.getExternUserName(),dataSource.getExternUserPassword());
     }
 
-    public void connectWithExternalUserOnServer() throws SQLException {
-        closeConnectionsOnServer();
-        String dbUsername = serverDs.getExternUserName();
-        String dbPassword = serverDs.getExternUserPassword();
-        serverConnection = serverDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting on server as user {}", dbUsername);
+    private void connectWithUser(String dbUsername, String dbPassword) throws SQLException {
+        closeConnections();
+        connection = dataSource.getConnection(dbUsername, dbPassword);
+        LOGGER.debug("Connecting on " + side + " as user " + dbUsername);
     }
 
-    public void connectWithExternalUserOnClient() throws SQLException {
-        closeConnectionsOnClient();
-        String dbUsername = clientDs.getExternUserName();
-        String dbPassword = clientDs.getExternUserPassword();
-        clientConnection = clientDs.getConnection(dbUsername, dbPassword);
-        LOGGER.debug("Connecting on client as user {}", dbUsername);
-    }
-
-    public void closeConnectionsOnServer() throws SQLException {
-        for (Connection connection : serverDs.getCreatedConnections()) {
-            connection.close();
+    public void closeConnections() throws SQLException {
+        for (Connection cx : dataSource.getCreatedConnections()) {
+            cx.close();
         }
     }
 
-    public void closeConnectionsOnClient() throws SQLException {
-        for (Connection connection : clientDs.getCreatedConnections()) {
-            connection.close();
-        }
-    }
-
-    public Connection getServerConnection() throws SQLException {
-        return serverConnection;
-    }
-
-    public Connection getClientConnection() throws SQLException {
-        return clientConnection;
+    public Connection getConnection() throws SQLException {
+        return connection;
     }
 
     public String getConfigFile() {
@@ -132,48 +97,27 @@ public abstract class TestDatabase {
         return supportedDb;
     }
 
-    public DumpDataSource getServerDs() {
-        return serverDs;
+    public DummyDataSource getDataSource() {
+        return dataSource;
     }
 
-    public DumpDataSource getClientDs() {
-        return clientDs;
+    public DatabaseAdapterFactory.AdapterPurpose getAdapterPurpose() {
+        return side;
     }
 
-    public int[] dropTablesOnServer(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.SERVER, tables);
-    }
-
-    public int[] dropTablesOnClient(String[] tables) throws SQLException {
-        return dropTables(ConnectionType.CLIENT, tables);
-    }
-
-    private int[] dropTables(final ConnectionType type, String[] tables) throws SQLException {
+    public int[] dropTables(String[] tables) throws SQLException {
         String[] queries = new String[tables.length];
         for (int i = 0; i < tables.length; i++) {
             queries[i] = String.format("drop table if exists %s", tables[i]);
         }
-        return executeQueries(type, queries);
+        return executeQueries(queries);
     }
 
-    public int executeUpdateOnServer(String query) throws SQLException {
-        return executeQueriesOnServer(new String[]{query})[0];
+    public int executeUpdate(String query) throws SQLException {
+        return executeQueries(new String[]{query})[0];
     }
 
-    public int executeUpdateOnClient(String query) throws SQLException {
-        return executeQueriesOnClient(new String[]{query})[0];
-    }
-
-    public int[] executeQueriesOnServer(String[] queries) throws SQLException {
-        return executeQueries(ConnectionType.SERVER, queries);
-    }
-
-    public int[] executeQueriesOnClient(String[] queries) throws SQLException {
-        return executeQueries(ConnectionType.CLIENT, queries);
-    }
-
-    private int[] executeQueries(final ConnectionType type, String[] queries) throws SQLException {
-        final Connection connection = getConnectionFromType(type);
+    public int[] executeQueries(String[] queries) throws SQLException {
         final Statement statement = connection.createStatement();
         for (String query : queries) {
             statement.addBatch(query);
@@ -181,34 +125,24 @@ public abstract class TestDatabase {
         return statement.executeBatch();
     }
 
-    private Connection getConnectionFromType(ConnectionType type) {
-        switch (type) {
-            case CLIENT:
-                return clientConnection;
-            case SERVER:
-                return serverConnection;
-            default:
-                throw new IllegalArgumentException("Unknown connection type: " + ConnectionType.class
-                    .getSimpleName());
-        }
-    }
-
     @Override
     public String toString() {
         return "TestDatabase: " + supportedDb + ", " + configFile;
     }
 
-    public void createSchemaOnClient(Schema schema) throws DatabaseAdapterException, SQLException {
-        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.CLIENT);
-        adapter.init(getClientConnection());
+    public void createSchema(Schema schema) throws DatabaseAdapterException, SQLException {
+        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(side);
+        adapter.init(getConnection());
         adapter.applySchema(schema);
-        adapter.createMDSchemaOnClient();
-    }
-
-    public void createSchemaOnServer(Schema schema) throws DatabaseAdapterException, SQLException {
-        IDatabaseAdapter adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
-        adapter.init(getServerConnection());
-        adapter.applySchema(schema);
-        adapter.createMDSchemaOnServer();
+        switch (side) {
+            case CLIENT:
+                adapter.createMDSchemaOnClient();
+                break;
+            case SERVER:
+                adapter.createMDSchemaOnServer();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown adapter purpose: " + side);
+        }
     }
 }

@@ -66,20 +66,20 @@ public class ChangesEnumeratorTest {
         "CREATE TABLE items_md (pk INTEGER NOT NULL PRIMARY KEY, mdv VARCHAR (300), rev INTEGER DEFAULT 1, f INTEGER DEFAULT 0)"};
     private static ConflictStrategy savedConflictStrategy;
     private static SyncDirection savedSyncDirection;
-    protected TestDatabase db;
+    protected TestDatabase serverDb, clientDb;
 
     @Parameterized.Parameters(name = "{index}: {0}")
     public static Collection<Object[]> AllScenarii() {
 
         return Arrays.asList(new Object[][]{
-                {new SqlLiteDatabase()},
-                {new MySqlDatabase()},
-                {new PostgresDatabase()}});
-
+                {new SqlLiteDatabase(SERVER), new SqlLiteDatabase(CLIENT)},
+                {new MySqlDatabase(SERVER), new MySqlDatabase(CLIENT)},
+                {new PostgresDatabase(SERVER), new PostgresDatabase(CLIENT)}});
     }
 
-    public ChangesEnumeratorTest(TestDatabase db) {
-        this.db = db;
+    public ChangesEnumeratorTest(TestDatabase serverDb, TestDatabase clientDb) {
+        this.serverDb = serverDb;
+        this.clientDb = clientDb;
     }
 
     @BeforeClass
@@ -90,13 +90,15 @@ public class ChangesEnumeratorTest {
 
     @Before
     public void setUp() throws IOException, SQLException {
-        db.init();
+        clientDb.init();
+        clientDb.dropTables(tableNames);
+        clientDb.executeQueries(createQueries);
 
-        db.dropTablesOnServer(tableNames);
-        db.dropTablesOnClient(tableNames);
+        serverDb.init();
+        serverDb.dropTables(tableNames);
+        serverDb.executeQueries(createQueries);
 
-        db.executeQueriesOnClient(createQueries);
-        db.executeQueriesOnServer(createQueries);
+
 
         Config.getInstance().setGlobalConflictStrategy(savedConflictStrategy);
         Config.getInstance().setGlobalSyncDirection(savedSyncDirection);
@@ -172,7 +174,7 @@ public class ChangesEnumeratorTest {
      */
     @After
     public void tearDownClass() throws SQLException {
-        db.closeConnectionsOnServer();
-        db.closeConnectionsOnClient();
+        serverDb.closeConnections();
+        clientDb.closeConnections();
     }
 }

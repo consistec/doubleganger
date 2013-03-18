@@ -9,15 +9,15 @@ package de.consistec.syncframework.impl.adapter.it_alldb;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -37,6 +37,7 @@ import de.consistec.syncframework.common.SyncDataHolder;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.adapter.IDatabaseAdapter;
 import de.consistec.syncframework.common.client.ClientHashProcessor;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
@@ -79,7 +80,7 @@ public class TableSyncStrategyTest {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
-    private TestDatabase db = new PostgresDatabase();
+    private TestDatabase db = new PostgresDatabase(DatabaseAdapterFactory.AdapterPurpose.SERVER);
     @Mock
     private ResultSet localDataResultSet;
     @Mock

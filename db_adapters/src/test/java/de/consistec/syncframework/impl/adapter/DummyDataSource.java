@@ -3,7 +3,7 @@ package de.consistec.syncframework.impl.adapter;
 /*
  * #%L
  * Project - doppelganger
- * File - DumpDataSource.java
+ * File - DummyDataSource.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH
  * %%
@@ -27,6 +27,7 @@ import static de.consistec.syncframework.common.util.PropertiesUtil.readString;
 import static de.consistec.syncframework.common.util.StringUtil.isNullOrEmpty;
 
 import de.consistec.syncframework.common.ConfigConstants;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.util.StringUtil;
 
 import java.io.IOException;
@@ -53,23 +54,23 @@ import org.powermock.reflect.Whitebox;
  * @date 10.12.2012 16:11:34
  * @since 0.0.1-SNAPSHOT
  */
-public class DumpDataSource implements DataSource {
+public class DummyDataSource implements DataSource {
 
     //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private SupportedDatabases dbType;
-    private ConnectionType conType;
+    private DatabaseAdapterFactory.AdapterPurpose conType;
     private List<Connection> createdConnections;
     private String propertiesPrefix;
     private Properties properties;
 //</editor-fold>
 
     //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-    public DumpDataSource(SupportedDatabases dbType, ConnectionType conType) {
+    public DummyDataSource(SupportedDatabases dbType, DatabaseAdapterFactory.AdapterPurpose conType) {
         this.dbType = dbType;
         this.conType = conType;
         createdConnections = newArrayList();
         try {
-            if (conType == ConnectionType.CLIENT) {
+            if (conType == DatabaseAdapterFactory.AdapterPurpose.CLIENT) {
                 propertiesPrefix = String.valueOf(
                     Whitebox.getField(ConfigConstants.class, "OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP").get(null));
             } else {
@@ -94,7 +95,7 @@ public class DumpDataSource implements DataSource {
         return dbType;
     }
 
-    public ConnectionType getConType() {
+    public DatabaseAdapterFactory.AdapterPurpose getConType() {
         return conType;
     }
 //</editor-fold>

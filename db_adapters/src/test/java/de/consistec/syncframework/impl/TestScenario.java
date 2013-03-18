@@ -31,12 +31,12 @@ import de.consistec.syncframework.common.SyncContext;
 import de.consistec.syncframework.common.SyncDirection;
 import de.consistec.syncframework.common.TableSyncStrategies;
 import de.consistec.syncframework.common.TableSyncStrategy;
+import de.consistec.syncframework.common.adapter.DatabaseAdapterFactory;
 import de.consistec.syncframework.common.conflict.ConflictStrategy;
 import de.consistec.syncframework.common.exception.ContextException;
 import de.consistec.syncframework.common.exception.SyncException;
 import de.consistec.syncframework.common.i18n.Errors;
 import de.consistec.syncframework.common.util.LoggingUtil;
-import de.consistec.syncframework.impl.adapter.ConnectionType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,8 +64,8 @@ public class TestScenario {
     private final SyncDirection direction;
     private final ConflictStrategy strategy;
     private String expectedServerState, expectedClientState;
-    private List<Map<ConnectionType, String>> steps = new LinkedList<Map<ConnectionType, String>>();
-    private TestDatabase db;
+    private List<Map<DatabaseAdapterFactory.AdapterPurpose, String>> steps = new LinkedList<Map<DatabaseAdapterFactory.AdapterPurpose, String>>();
+    private TestDatabase clientDb, serverDb;
     private String[] selectTableQueries;
     // expected result sets are stored as text to avoid "ResultSet already closed" exceptions
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
@@ -98,15 +98,20 @@ public class TestScenario {
         return expectedExceptionClass;
     }
 
-    public void setDatabase(TestDatabase db) {
-        this.db = db;
+    public void setClientDatabase(TestDatabase db) {
+        this.clientDb = db;
+    }
+
+    public void setServerDatabase(TestDatabase db) {
+        this.serverDb = db;
     }
 
     /**
      * Adds a step to the scenario, like a query to be executed on the client/server or a sync in between.
      */
-    public TestScenario addStep(ConnectionType side, String query) {
-        Map<ConnectionType, String> step = new EnumMap<ConnectionType, String>(ConnectionType.class);
+    public TestScenario addStep(DatabaseAdapterFactory.AdapterPurpose side, String query) {
+        Map<DatabaseAdapterFactory.AdapterPurpose, String> step = new EnumMap<DatabaseAdapterFactory.AdapterPurpose, String>(
+            DatabaseAdapterFactory.AdapterPurpose.class);
         step.put(side, query);
         steps.add(step);
         return this;
@@ -167,17 +172,17 @@ public class TestScenario {
      */
     public void executeSteps() throws SQLException {
         if (CONF.isSqlTriggerOnServerActivated()) {
-            db.connectWithExternalUserOnServer();
+            serverDb.connectWithExternalUser();
         }
         if (CONF.isSqlTriggerOnClientActivated()) {
-            db.connectWithExternalUserOnClient();
+            clientDb.connectWithExternalUser();
         }
-        Statement serverStmt = db.getServerConnection().createStatement();
-        Statement clientStmt = db.getClientConnection().createStatement();
+        Statement serverStmt = serverDb.getConnection().createStatement();
+        Statement clientStmt = clientDb.getConnection().createStatement();
 
-        for (Map<ConnectionType, String> step : steps) {
+        for (Map<DatabaseAdapterFactory.AdapterPurpose, String> step : steps) {
             // there should be exactly one entry per step
-            ConnectionType side = step.keySet().iterator().next();
+            DatabaseAdapterFactory.AdapterPurpose side = step.keySet().iterator().next();
             String query = step.get(side);
 
             switch (side) {
@@ -207,8 +212,8 @@ public class TestScenario {
         expectedFlatServerResultSets = new String[selectTableQueries.length];
 
         try {
-            Statement serverStmt = db.getServerConnection().createStatement();
-            Statement clientStmt = db.getClientConnection().createStatement();
+            Statement serverStmt = serverDb.getConnection().createStatement();
+            Statement clientStmt = clientDb.getConnection().createStatement();
 
             ResultSet serverRs, clientRs;
             for (int i = 0; i < selectTableQueries.length; i += 2) {
@@ -239,8 +244,8 @@ public class TestScenario {
 
     public void synchronize(String[] tableNames, IConflictListener conflictListener, SyncDirection dir) throws
         SyncException, ContextException, SQLException {
-        db.connectWithSyncUserOnServer();
-        db.connectWithSyncUserOnClient();
+        serverDb.connectWithSyncUser();
+        clientDb.connectWithSyncUser();
         TableSyncStrategies strategies = new TableSyncStrategies();
 
         TableSyncStrategy tableSyncStrategy = new TableSyncStrategy(dir, strategy);
@@ -248,7 +253,8 @@ public class TestScenario {
             strategies.addSyncStrategyForTable(tableNames[i], tableSyncStrategy);
         }
 
-        final SyncContext.LocalContext localCtx = SyncContext.local(db.getServerDs(), db.getClientDs(), strategies);
+        final SyncContext.LocalContext localCtx = SyncContext.local(serverDb.getDataSource(), clientDb.getDataSource(),
+            strategies);
 
         if (strategy == FIRE_EVENT) {
             localCtx.setConflictListener(conflictListener);
@@ -260,7 +266,7 @@ public class TestScenario {
     public void assertServerIsInExpectedState() throws SQLException {
         ResultSet serverResultSet;
 
-        Statement serverStmt = db.getServerConnection().createStatement();
+        Statement serverStmt = serverDb.getConnection().createStatement();
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
             String flatServerRs;
@@ -278,7 +284,7 @@ public class TestScenario {
     public void assertClientIsInExpectedState() throws SQLException {
         ResultSet clientResultSet;
 
-        Statement clientStmt = db.getClientConnection().createStatement();
+        Statement clientStmt = clientDb.getConnection().createStatement();
 
         for (int i = 0; i < selectTableQueries.length; i += 2) {
             String flatClientRs;
@@ -300,9 +306,9 @@ public class TestScenario {
 
     public String getLongDescription() {
         String result = "TestScenario '" + name + "': \n\tsteps= ";
-        for (Map<ConnectionType, String> step : steps) {
+        for (Map<DatabaseAdapterFactory.AdapterPurpose, String> step : steps) {
             // there should be exactly one entry per step
-            ConnectionType side = step.keySet().iterator().next();
+            DatabaseAdapterFactory.AdapterPurpose side = step.keySet().iterator().next();
             String query = step.get(side);
             result += "\n\t - side=" + side + ", query=" + query;
         }

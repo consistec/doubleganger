@@ -9,15 +9,15 @@ package de.consistec.syncframework.impl.adapter.it_postgres;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -58,15 +58,15 @@ public class ServerChangesEnumeratorTest extends ChangesEnumeratorTest {
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (1, '8F3CCBD3FE5C9106253D472F6E36F0E1', 1, 0)",
         "INSERT INTO categories_md (rev, mdv, pk, f) VALUES (2, '75901F57520C09EB990837C7AA93F717', 2, 0)",};
 
-    public ServerChangesEnumeratorTest(TestDatabase db) {
-        super(db);
+    public ServerChangesEnumeratorTest(TestDatabase serverDb, TestDatabase clientDb) {
+        super(serverDb, clientDb);
     }
 
     @Before
     public void init() throws IOException, SQLException {
         super.setUp();
 
-        db.executeQueriesOnServer(serverInsertQueries);
+        serverDb.executeQueries(serverInsertQueries);
     }
 
     @Test

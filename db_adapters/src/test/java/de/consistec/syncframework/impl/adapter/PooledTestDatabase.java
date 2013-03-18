@@ -17,15 +17,14 @@ public class PooledTestDatabase extends TestDatabase {
 
     private DataSource pooledClientDataSource;
 
-    public PooledTestDatabase(TestDatabase db
-    ) {
-        super(db.getConfigFile(), db.getSupportedDb());
+    public PooledTestDatabase(TestDatabase db) {
+        super(db.getConfigFile(), db.getSupportedDb(), db.getAdapterPurpose());
     }
 
     public void initPooledDB() throws SQLException, IOException {
-        if (getSupportedDb() == DumpDataSource.SupportedDatabases.POSTGRESQL) {
+        if (getSupportedDb() == DummyDataSource.SupportedDatabases.POSTGRESQL) {
             pooledClientDataSource = createPostgresDataSource();
-        } else if (getSupportedDb() == DumpDataSource.SupportedDatabases.MYSQL) {
+        } else if (getSupportedDb() == DummyDataSource.SupportedDatabases.MYSQL) {
             pooledClientDataSource = createMySqlDataSource();
         }
     }

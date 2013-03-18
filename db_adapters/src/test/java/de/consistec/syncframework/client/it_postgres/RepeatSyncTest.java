@@ -23,8 +23,9 @@ package de.consistec.syncframework.client.it_postgres;
  * #L%
  */
 import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
-import static de.consistec.syncframework.impl.adapter.ConnectionType.CLIENT;
 
 import de.consistec.syncframework.common.Config;
 import de.consistec.syncframework.common.TableSyncStrategies;
@@ -73,10 +74,11 @@ public class RepeatSyncTest {
     protected static String insertRow3 = "INSERT INTO categories (categoryid, categoryname, description) VALUES (3, 'Cat3a', '3a')";
     protected static String[] updateMdRow2 = new String[]{"UPDATE categories_md SET rev = '4' WHERE pk = 2"};
     protected static String updateRow1 = "UPDATE categories SET categoryname = 'Cat1c', description = '1c' WHERE categoryid = 1";
-    private TestDatabase db;
+    private TestDatabase clientDb, serverDb;
 
     public RepeatSyncTest() {
-        db = new PostgresDatabase();
+        serverDb = new PostgresDatabase(SERVER);
+        clientDb = new PostgresDatabase(CLIENT);
     }
 
     @BeforeClass
@@ -87,7 +89,7 @@ public class RepeatSyncTest {
 
     @Before
     public void setUp() throws IOException, SQLException {
-        Config.getInstance().init(getClass().getResourceAsStream(db.getConfigFile()));
+        Config.getInstance().init(getClass().getResourceAsStream(clientDb.getConfigFile()));
 
         MockitoAnnotations.initMocks(this);
     }
@@ -101,21 +103,22 @@ public class RepeatSyncTest {
     @Before
     public void init() throws SyncException, ContextException, SQLException, IOException {
 
-        Config.getInstance().init(getClass().getResourceAsStream(db.getConfigFile()));
+        Config.getInstance().init(getClass().getResourceAsStream(serverDb.getConfigFile()));
 
-        db.init();
+        clientDb.init();
+        clientDb.dropTables(tableNames);
+        clientDb.executeQueries(createQueries);
 
-        db.dropTablesOnServer(tableNames);
-        db.dropTablesOnClient(tableNames);
+        serverDb.init();
+        serverDb.dropTables(tableNames);
+        serverDb.executeQueries(createQueries);
 
-        db.executeQueriesOnServer(createQueries);
-        db.executeQueriesOnClient(createQueries);
     }
 
     @After
     public void tearDown() throws SQLException {
-        db.closeConnectionsOnServer();
-        db.closeConnectionsOnClient();
+        serverDb.closeConnections();
+        clientDb.closeConnections();
     }
 
     @Test
@@ -126,7 +129,8 @@ public class RepeatSyncTest {
             .expectServer("CS")
             .expectClient("CS");
 
-        scenario.setDatabase(db);
+        scenario.setServerDatabase(serverDb);
+        scenario.setClientDatabase(clientDb);
 
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by categoryid asc",
@@ -148,7 +152,7 @@ public class RepeatSyncTest {
                 if (firstSync) {
                     // change revision from server entry to force a client not up to date exception
                     try {
-                        db.executeQueriesOnServer(updateMdRow2);
+                        serverDb.executeQueries(updateMdRow2);
                     } catch (SQLException e) {
                         e.printStackTrace(
                             System.err);  //To change body of catch statement use File | Settings | File Templates.
@@ -173,7 +177,8 @@ public class RepeatSyncTest {
             .expectServer("SSC")
             .expectClient("SSC");
 
-        scenario.setDatabase(db);
+        scenario.setServerDatabase(serverDb);
+        scenario.setClientDatabase(clientDb);
 
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by categoryid asc",
@@ -195,7 +200,7 @@ public class RepeatSyncTest {
                 if (firstSync) {
                     // change revision from server entry to force a client not up to date exception
                     try {
-                        db.executeQueriesOnServer(updateMdRow2);
+                        serverDb.executeQueries(updateMdRow2);
                     } catch (SQLException e) {
                         e.printStackTrace(
                             System.err);  //To change body of catch statement use File | Settings | File Templates.
@@ -219,7 +224,8 @@ public class RepeatSyncTest {
             .expectServer("C")
             .expectClient("C");
 
-        scenario.setDatabase(db);
+        scenario.setServerDatabase(serverDb);
+        scenario.setClientDatabase(clientDb);
 
         scenario.setSelectQueries(new String[]{
                 "select * from categories order by categoryid asc",
@@ -241,7 +247,7 @@ public class RepeatSyncTest {
                 if (firstSync) {
                     // change revision from server entry to force a client not up to date exception
                     try {
-                        db.executeQueriesOnServer(updateMdRow2);
+                        serverDb.executeQueries(updateMdRow2);
                     } catch (SQLException e) {
                         e.printStackTrace(
                             System.err);  //To change body of catch statement use File | Settings | File Templates.
