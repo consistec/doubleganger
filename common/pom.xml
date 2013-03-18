@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>de.consistec.syncframework</groupId>
+        <groupId>de.consistec.doubleganger</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <artifactId>syncframework_parent</artifactId>
+        <artifactId>doubleganger_parent</artifactId>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
 
@@ -22,9 +22,9 @@
                 <configuration>
                     <enumTypes>
                         <!-- list every enum type you would like to see checked -->
-                        <enumType>de.consistec.syncframework.common.i18n.Errors</enumType>
-                        <enumType>de.consistec.syncframework.common.i18n.Infos</enumType>
-                        <enumType>de.consistec.syncframework.common.i18n.Warnings</enumType>
+                        <enumType>de.consistec.doubleganger.common.i18n.Errors</enumType>
+                        <enumType>de.consistec.doubleganger.common.i18n.Infos</enumType>
+                        <enumType>de.consistec.doubleganger.common.i18n.Warnings</enumType>
                     </enumTypes>
                 </configuration>
             </plugin>

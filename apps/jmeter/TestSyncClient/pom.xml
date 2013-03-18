@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <artifactId>TestSyncClient</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <ciManagement>
         <system>hudson</system>
-        <url>https://hudson.sb.consistec.de/hudson/job/SyncFramework-JMeter-develop/</url>
+        <url>https://hudson.sb.consistec.de/hudson/job/Doubleganger-JMeter-develop/</url>
     </ciManagement>
 
     <properties>
@@ -33,11 +33,11 @@
         <postgres_synctables>categories</postgres_synctables>
         <postgres_schema>public</postgres_schema>
         <postgres_database_adapter>
-            de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter
+            de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter
         </postgres_database_adapter>
 
         <!--proxy provider settings-->
-        <proxy_provider>de.consistec.syncframework.impl.proxy.http_servlet.HttpServerSyncProxy</proxy_provider>
+        <proxy_provider>de.consistec.doubleganger.impl.proxy.http_servlet.HttpServerSyncProxy</proxy_provider>
 
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
@@ -53,17 +53,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>db_adapters</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>sync_providers_proxies</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -137,7 +137,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>de.consistec.syncframework.client.Main</mainClass>
+                                    <mainClass>de.consistec.doubleganger.client.Main</mainClass>
                                 </transformer>
                             </transformers>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
@@ -175,7 +175,7 @@
                     <useMissingFile>true</useMissingFile>
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
-                    <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                    <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
                     <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
@@ -375,7 +375,7 @@
                             <complianceLevel>${java.version}</complianceLevel>
                             <aspectLibraries>
                                 <aspectLibrary>
-                                    <groupId>de.consistec.syncframework</groupId>
+                                    <groupId>de.consistec.doubleganger</groupId>
                                     <artifactId>logging</artifactId>
                                 </aspectLibrary>
                             </aspectLibraries>

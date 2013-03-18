@@ -31,7 +31,7 @@
 
 # This two variables has to be changed on an other machine
 JMETER_PATH="/home/marcel/dev/svn-workspace/jmeter_v2_8_RC1/bin"
-SYNCBIB_PATH="/home/marcel/dev/workspaces/syncframework"
+SYNCBIB_PATH="/home/marcel/dev/workspaces/doubleganger"
 DEFAULT_XTIMES_NUMBER=2
 XTIMES_NUMBER=${DEFAULT_XTIMES_NUMBER}
 

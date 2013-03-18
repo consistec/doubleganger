@@ -22,12 +22,12 @@
   -->
 
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-    <description>Sample server application based on syncframework</description>
+    <description>Sample server application based on doubleganger</description>
     <display-name>consistec GmbH Syncserver Build: ${display_build}</display-name>
     <context-param>
         <description>Name of the configuration file for synchronistion framework</description>
         <param-name>sync_config_file_name</param-name>
-        <param-value>syncframework.properties</param-value>
+        <param-value>doubleganger.properties</param-value>
     </context-param>
 
     <context-param>
@@ -40,7 +40,7 @@
 
     <servlet>
         <servlet-name>SyncService</servlet-name>
-        <servlet-class>de.consistec.syncframework.server.SyncServiceServlet</servlet-class>
+        <servlet-class>de.consistec.doubleganger.server.SyncServiceServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -49,7 +49,7 @@
     </servlet-mapping>
 
     <listener>
-        <listener-class>de.consistec.syncframework.server.ContextListener</listener-class>
+        <listener-class>de.consistec.doubleganger.server.ContextListener</listener-class>
     </listener>
 
 	<resource-ref>

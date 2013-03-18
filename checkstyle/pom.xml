@@ -3,12 +3,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <artifactId>checkstyle</artifactId>
     <version>1</version>
 
     <name> checkstyle </name>
-    <description>Contains the checkstyle settings for the syncframework project</description>
+    <description>Contains the checkstyle settings for the doubleganger project</description>
 
      <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

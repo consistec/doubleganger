@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="de.consistec.syncframework.android" android:versionCode="1"
+	package="de.consistec.doubleganger.android" android:versionCode="1"
 	android:versionName="0.0.1-SNAPSHOT">
 	<uses-sdk android:minSdkVersion="10" />
 	<uses-permission android:name="android.permission.INTERNET"></uses-permission>
@@ -16,7 +16,7 @@
 		</activity>
 	</application>
 	<instrumentation android:name="android.test.InstrumentationTestRunner"
-		android:targetPackage="de.consistec.syncframework.android" android:label="Tests for My App" />
+		android:targetPackage="de.consistec.doubleganger.android" android:label="Tests for My App" />
 
 </manifest>
 

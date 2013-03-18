@@ -4,8 +4,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>de.consistec.syncframework</groupId>
-        <artifactId>syncframework_parent</artifactId>
+        <groupId>de.consistec.doubleganger</groupId>
+        <artifactId>doubleganger_parent</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../parent/pom.xml</relativePath>
     </parent>
@@ -58,8 +58,8 @@
                 <configuration>
                     <enumTypes>
                         <!-- list every enum type you would like to see checked -->
-                        <enumType>de.consistec.syncframework.impl.i18n.DBAdapterErrors</enumType>
-                        <enumType>de.consistec.syncframework.impl.i18n.DBAdapterWarnings</enumType>
+                        <enumType>de.consistec.doubleganger.impl.i18n.DBAdapterErrors</enumType>
+                        <enumType>de.consistec.doubleganger.impl.i18n.DBAdapterWarnings</enumType>
                     </enumTypes>
                 </configuration>
             </plugin>

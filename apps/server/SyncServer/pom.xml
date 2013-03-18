@@ -2,20 +2,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <artifactId>SyncServer</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <name>synchronisation server</name>
-    <description>Sample synchronisation server based on syncframework</description>
+    <description>Sample synchronisation server based on doubleganger</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- Which tables should be monitored and synchronised. Comma-separated list. -->
         <db.sync_tables>categories</db.sync_tables>
-        <!--  Default db adapter class is de.consistec.syncframework.common.adapter.GenericDatabaseAdapter -->
-        <db.adapter_class>de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter</db.adapter_class>
+        <!--  Default db adapter class is de.consistec.doubleganger.common.adapter.GenericDatabaseAdapter -->
+        <db.adapter_class>de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter</db.adapter_class>
         <!-- Options for generic adapter -->
         <db.url></db.url>
         <db.port>5432</db.port>
@@ -53,7 +53,7 @@
                 <!-- Copy and configure files required for jmeter-tests in jmeter-tests-dir -->
                 <includes>
                     <include>log4j.xml</include>
-                    <include>test_syncframework.properties</include>
+                    <include>test_doubleganger.properties</include>
                     <include>server.properties</include>
                 </includes>
                 <!--<filtering>true</filtering>-->
@@ -75,7 +75,7 @@
                                 <include>META-INF/context.xml</include>
                                 <include>WEB-INF/web.xml</include>
                                 <include>META-INF/jetty-env.xml</include>
-                                <include>WEB-INF/syncframework.properties</include>
+                                <include>WEB-INF/doubleganger.properties</include>
                                 <include>WEB-INF/server.properties</include>
                             </includes>
                         </resource>
@@ -121,7 +121,7 @@
                     <useMissingFile>true</useMissingFile>
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
-                    <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                    <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
                     <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
@@ -185,19 +185,19 @@
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>db_adapters</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>sync_providers_proxies</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <type>test-jar</type>
@@ -222,7 +222,7 @@
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>logging</artifactId>
             <version>1</version>
         </dependency>
@@ -283,7 +283,7 @@
                             <complianceLevel>${java.version}</complianceLevel>
                             <aspectLibraries>
                                 <aspectLibrary>
-                                    <groupId>de.consistec.syncframework</groupId>
+                                    <groupId>de.consistec.doubleganger</groupId>
                                     <artifactId>logging</artifactId>
                                 </aspectLibrary>
                             </aspectLibraries>

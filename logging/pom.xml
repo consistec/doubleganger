@@ -4,12 +4,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <artifactId>logging</artifactId>
     <version>1</version>
 
     <name>logging</name>
-    <description>Contains logging aspect for the syncframework project</description>
+    <description>Contains logging aspect for the doubleganger project</description>
 
     <properties>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>

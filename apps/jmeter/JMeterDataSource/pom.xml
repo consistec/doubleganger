@@ -35,7 +35,7 @@
                     <useMissingFile>true</useMissingFile>
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
-                    <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                    <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
                     <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>

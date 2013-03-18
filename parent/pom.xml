@@ -4,14 +4,14 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <version>0.0.1-SNAPSHOT</version>
-    <artifactId>syncframework_parent</artifactId>
+    <artifactId>doubleganger_parent</artifactId>
     <packaging>pom</packaging>
 
     <ciManagement>
         <system>hudson</system>
-        <url>https://hudson.sb.consistec.de/hudson/job/SyncFramework-develop/</url>
+        <url>https://hudson.sb.consistec.de/hudson/job/Doubleganger-develop/</url>
     </ciManagement>
 
     <licenses>
@@ -31,7 +31,7 @@
         <fail_on_checkstyle_violation>true</fail_on_checkstyle_violation>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <powermock.version>1.4.12</powermock.version>
-        <generic_database_adapter>de.consistec.syncframework.impl.adapter.GenericDatabaseAdapter
+        <generic_database_adapter>de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter
         </generic_database_adapter>
         <synctables>categories,items</synctables>
         <!-- postgresql-settings for tests -->
@@ -47,7 +47,7 @@
         <postgres_extern_user>postgres</postgres_extern_user>
         <postgres_extern_pwd>root</postgres_extern_pwd>
         <postgres_driver>org.postgresql.Driver</postgres_driver>
-        <postgres_database_adapter>de.consistec.syncframework.impl.adapter.PostgresDatabaseAdapter
+        <postgres_database_adapter>de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter
         </postgres_database_adapter>
         <postgres_triggers_server>false</postgres_triggers_server>
         <postgres_triggers_client>false</postgres_triggers_client>
@@ -64,7 +64,7 @@
         <mysql_extern_user>extern</mysql_extern_user>
         <mysql_extern_pwd>extern</mysql_extern_pwd>
         <mysql_driver>com.mysql.jdbc.Driver</mysql_driver>
-        <mysql_database_adapter>de.consistec.syncframework.impl.adapter.MySqlDatabaseAdapter
+        <mysql_database_adapter>de.consistec.doubleganger.impl.adapter.MySqlDatabaseAdapter
         </mysql_database_adapter>
         <mysql_triggers_server>false</mysql_triggers_server>
         <mysql_triggers_client>false</mysql_triggers_client>
@@ -173,7 +173,7 @@
             </dependency>
 
             <dependency>
-                <groupId>de.consistec.syncframework</groupId>
+                <groupId>de.consistec.doubleganger</groupId>
                 <artifactId>logging</artifactId>
                 <version>1</version>
             </dependency>
@@ -226,7 +226,7 @@
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>logging</artifactId>
         </dependency>
     </dependencies>
@@ -341,7 +341,7 @@
                         </missingFile>
                         <!-- Ignore own modules -->
                         <excludedGroups>de.consistec</excludedGroups>
-                        <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                        <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
                         <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                         <!-- Using lib with excluded License will break build if failIfWarning is true-->
                         <failIfWarning>true</failIfWarning>
@@ -388,7 +388,7 @@
                         <complianceLevel>${java.version}</complianceLevel>
                         <aspectLibraries>
                             <aspectLibrary>
-                                <groupId>de.consistec.syncframework</groupId>
+                                <groupId>de.consistec.doubleganger</groupId>
                                 <artifactId>logging</artifactId>
                             </aspectLibrary>
                         </aspectLibraries>
@@ -478,7 +478,7 @@
                             <showWeaveInfo>true</showWeaveInfo>
                             <aspectLibraries>
                                 <aspectLibrary>
-                                    <groupId>de.consistec.syncframework</groupId>
+                                    <groupId>de.consistec.doubleganger</groupId>
                                     <artifactId>logging</artifactId>
                                 </aspectLibrary>
                             </aspectLibraries>

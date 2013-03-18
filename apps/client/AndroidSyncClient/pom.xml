@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>de.consistec.syncframework</groupId>
+    <groupId>de.consistec.doubleganger</groupId>
     <version>0.0.1-SNAPSHOT</version>
     <artifactId>AndroidSyncClient</artifactId>
     <packaging>apk</packaging>
@@ -58,20 +58,20 @@
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>android-adapters</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>db_adapters</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <classifier>tests</classifier>
         </dependency>
 
         <dependency>
-            <groupId>de.consistec.syncframework</groupId>
+            <groupId>de.consistec.doubleganger</groupId>
             <artifactId>sync_providers_proxies</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
@@ -190,7 +190,7 @@
                     <useMissingFile>true</useMissingFile>
                     <!-- Ignore own modules -->
                     <excludedGroups>de.consistec</excludedGroups>
-                    <!-- Third party licenses not allowed to use in syncframework project separated by | -->
+                    <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
                     <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
                     <!-- Using lib with excluded License will break build if failIfWarning is true-->
                     <failIfWarning>false</failIfWarning>
@@ -282,7 +282,7 @@
                                     <goal>pull</goal>
                                 </goals>
                                 <configuration>
-                                    <pullSource>/data/data/de.consistec.syncframework.android/files/coverage.ec
+                                    <pullSource>/data/data/de.consistec.doubleganger.android/files/coverage.ec
                                     </pullSource>
                                     <pullDestination>${project.basedir}/target/emma/coverage.ec</pullDestination>
                                 </configuration>
