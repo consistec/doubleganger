@@ -23,6 +23,8 @@ package de.consistec.syncframework.impl.adapter.it_alldb;
  * #L%
  */
 import static de.consistec.syncframework.common.SyncDirection.BIDIRECTIONAL;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
+import static de.consistec.syncframework.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 import static de.consistec.syncframework.common.conflict.ConflictStrategy.SERVER_WINS;
 
 import de.consistec.syncframework.common.SyncData;
@@ -53,22 +55,18 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
 import java.util.Collection;
-import javax.sql.DataSource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.postgresql.jdbc2.optional.PoolingDataSource;
 
 /**
  * @author marcel
  * @company consistec Engineering and Consulting GmbH
  * @date 30.01.13 11:28
  */
-@Ignore
 @RunWith(value = Parameterized.class)
 public class ClientProviderTransactionTest {
 
@@ -85,8 +83,8 @@ public class ClientProviderTransactionTest {
     }
 
     public ClientProviderTransactionTest(TestDatabaseWithAdapter dbWithAdapter) {
-        this.clientDb = dbWithAdapter.getDB();
-        this.serverDb = dbWithAdapter.getDB();
+        this.clientDb = dbWithAdapter.getClientDb();
+        this.serverDb = dbWithAdapter.getServerDb();
         this.dbAdapter = dbWithAdapter.getDatabaseAdatper();
     }
 
@@ -286,23 +284,11 @@ public class ClientProviderTransactionTest {
         scenario.assertServerIsInExpectedState();
     }
 
-    private static DataSource createDatasource() {
-        PoolingDataSource source = new PoolingDataSource();
-        source.setDataSourceName("datasource for pooling db connections");
-        source.setServerName("localhost");
-        source.setPortNumber(5432);
-        source.setDatabaseName("client");
-        source.setUser("syncuser");
-        source.setPassword("syncuser");
-        source.setMaxConnections(10);
-
-        return source;
-    }
-
     private static class PostgresDatabaseWithAdapter extends TestDatabaseWithAdapter {
 
         public PostgresDatabaseWithAdapter() {
-            super(new PooledTestDatabase(new PostgresDatabase(DatabaseAdapterFactory.AdapterPurpose.CLIENT)));
+            super(new PooledTestDatabase(new PostgresDatabase(SERVER)), new PooledTestDatabase(new PostgresDatabase(
+                CLIENT)));
             MockClientPostgresDatabaseAdapter dbAdapter = new MockClientPostgresDatabaseAdapter();
             try {
                 PooledTestDatabase pooledDatabase = new PooledTestDatabase(new PostgresDatabase(
@@ -338,7 +324,7 @@ public class ClientProviderTransactionTest {
     private static class MySqlDatabaseWithAdapter extends TestDatabaseWithAdapter {
 
         public MySqlDatabaseWithAdapter() {
-            super(new PooledTestDatabase(new MySqlDatabase(DatabaseAdapterFactory.AdapterPurpose.CLIENT)));
+            super(new PooledTestDatabase(new MySqlDatabase(SERVER)), new PooledTestDatabase(new MySqlDatabase(CLIENT)));
             MockClientMySqlDatabaseAdapter dbAdapter = new MockClientMySqlDatabaseAdapter();
             try {
                 PooledTestDatabase pooledDatabase = new PooledTestDatabase(new MySqlDatabase(
@@ -374,11 +360,11 @@ public class ClientProviderTransactionTest {
     private static class TestDatabaseWithAdapter {
 
         private IDatabaseAdapter adapter;
-        private TestDatabase db;
+        private TestDatabase clientDb, serverDb;
 
-        public TestDatabaseWithAdapter(final TestDatabase db) {
-            this.db = db;
-            this.adapter = adapter;
+        public TestDatabaseWithAdapter(final TestDatabase serverDb, final TestDatabase clientDb) {
+            this.serverDb = serverDb;
+            this.clientDb = clientDb;
         }
 
         public void setDatabaseAdapter(IDatabaseAdapter adapter) {
@@ -389,8 +375,12 @@ public class ClientProviderTransactionTest {
             return adapter;
         }
 
-        public TestDatabase getDB() {
-            return db;
+        public TestDatabase getClientDb() {
+            return clientDb;
+        }
+
+        public TestDatabase getServerDb() {
+            return serverDb;
         }
     }
 }
