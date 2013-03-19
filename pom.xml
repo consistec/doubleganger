@@ -17,6 +17,12 @@
         <url>https://hudson.sb.consistec.de/hudson/job/Doubleganger-develop/</url>
     </ciManagement>
 
+    <modules>
+        <module>common</module>
+        <module>implementation/db_adapters</module>
+        <module>implementation/server_sync_providers_proxies</module>
+    </modules>
+
     <licenses>
         <license> <!-- This has to be changed to appropriate license -->
             <!--<distribution>repo</distribution>-->
@@ -302,7 +308,7 @@
                         <outputDirectory>${project.basedir}/target</outputDirectory>
                         <useMissingFile>true</useMissingFile>
                         <missingFile>
-                            ${project.basedir}/../src/license/${project.artifactId}_third-party.properties
+                            ${project.basedir}/src/license/${project.artifactId}_third-party.properties
                         </missingFile>
                         <!-- Ignore own modules -->
                         <excludedGroups>de.consistec</excludedGroups>
@@ -315,9 +321,9 @@
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <inceptionYear>2012</inceptionYear>
                         <organizationName>consistec GmbH</organizationName>
-                        <projectName>doppelganger</projectName>
+                        <projectName>doubleganger</projectName>
                         <descriptionTemplate>
-                            ${project.basedir}/../src/license/consistec/description_template.ftl
+                            ${project.basedir}/src/license/consistec/description_template.ftl
                         </descriptionTemplate>
                         <roots>
                             <root>src/main/java</root>
@@ -453,10 +459,4 @@
             </build>
         </profile>
     </profiles>
-
-    <modules>
-        <module>common</module>
-        <module>implementation/db_adapters</module>
-        <module>implementation/server_sync_providers_proxies</module>
-    </modules>
 </project>

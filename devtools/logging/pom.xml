@@ -19,7 +19,7 @@
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <license.licenseResolver>file://${basedir}/../parent/src/license</license.licenseResolver>
+        <license.licenseResolver>file://${basedir}/../../src/license</license.licenseResolver>
     </properties>
 
     <dependencies>
