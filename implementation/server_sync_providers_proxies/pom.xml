@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.consistec.doubleganger</groupId>
-        <artifactId>doubleganger_parent</artifactId>
+        <artifactId>doubleganger</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>sync_providers_proxies</artifactId>
-    <name>server sync providers proxies</name>
+    <name>Server sync providers proxies</name>
 
     <dependencies>
         <dependency>

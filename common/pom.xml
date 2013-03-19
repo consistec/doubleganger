@@ -5,14 +5,14 @@
     <parent>
         <groupId>de.consistec.doubleganger</groupId>
         <version>0.0.1-SNAPSHOT</version>
-        <artifactId>doubleganger_parent</artifactId>
-        <relativePath>../parent/pom.xml</relativePath>
+        <artifactId>doubleganger</artifactId>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>common</artifactId>
-    <name>common</name>
+    <name>Common</name>
 
-    <description> Core of the framework </description>
+    <description>Core of the framework</description>
 
     <build>
         <plugins>
@@ -22,6 +22,8 @@
                 <configuration>
                     <enumTypes>
                         <!-- list every enum type you would like to see checked -->
+                        <enumType>de.consistec.doubleganger.common.i18n.DBAdapterErrors</enumType>
+                        <enumType>de.consistec.doubleganger.common.i18n.DBAdapterWarnings</enumType>
                         <enumType>de.consistec.doubleganger.common.i18n.Errors</enumType>
                         <enumType>de.consistec.doubleganger.common.i18n.Infos</enumType>
                         <enumType>de.consistec.doubleganger.common.i18n.Warnings</enumType>

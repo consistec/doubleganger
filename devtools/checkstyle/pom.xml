@@ -7,8 +7,8 @@
     <artifactId>checkstyle</artifactId>
     <version>1</version>
 
-    <name> checkstyle </name>
-    <description>Contains the checkstyle settings for the doubleganger project</description>
+    <name>Checkstyle</name>
+    <description>Contains the checkstyle settings for the Doubleganger project</description>
 
      <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,7 +16,7 @@
         <license.organizationName>consistec GmbH</license.organizationName>
         <license.projectName>doppelganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <license.licenseResolver>file://${basedir}/../parent/src/license</license.licenseResolver>
+        <license.licenseResolver>file://${basedir}/../src/license</license.licenseResolver>
     </properties>
 
     <build>

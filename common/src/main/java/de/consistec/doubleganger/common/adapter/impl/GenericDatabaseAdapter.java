@@ -1,4 +1,4 @@
-package de.consistec.doubleganger.impl.adapter;
+package de.consistec.doubleganger.common.adapter.impl;
 
 /*
  * #%L
@@ -41,11 +41,11 @@ import de.consistec.doubleganger.common.data.schema.Table;
 import de.consistec.doubleganger.common.exception.SchemaConverterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
+import de.consistec.doubleganger.common.i18n.DBAdapterWarnings;
 import de.consistec.doubleganger.common.util.CollectionsUtil;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
-import de.consistec.doubleganger.impl.i18n.DBAdapterErrors;
-import de.consistec.doubleganger.impl.i18n.DBAdapterWarnings;
 
 import java.sql.BatchUpdateException;
 import java.sql.Connection;

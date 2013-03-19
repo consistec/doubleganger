@@ -22,6 +22,7 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
 import static de.consistec.doubleganger.common.util.StringUtil.isNullOrEmpty;

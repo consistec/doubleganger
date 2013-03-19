@@ -9,21 +9,20 @@ package de.consistec.doubleganger.impl.proxy.http_servlet;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.doubleganger.impl.proxy.http_servlet.SyncAction.APPLY_CHANGES;
@@ -46,7 +45,7 @@ import de.consistec.doubleganger.common.exception.SerializationException;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.server.IServerSyncProvider;
-import de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter;
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.impl.adapter.JSONSerializationAdapter;
 
 import java.io.IOException;
@@ -92,8 +91,8 @@ public class ServletProcessorTest {
     public static void setUpClass() throws IOException {
         Config config = Config.getInstance();
         // preparing framework to use sqlite database.
-        config.setClientDatabaseAdapter(de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter.class);
-        config.setServerDatabaseAdapter(de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter.class);
+        config.setClientDatabaseAdapter(de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter.class);
+        config.setServerDatabaseAdapter(de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter.class);
         config.getClientDatabaseProperties().put(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqlite.JDBC");
         config.getClientDatabaseProperties().put(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:target/client.sqlite");
         config.getServerDatabaseProperties().put(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqlite.JDBC");

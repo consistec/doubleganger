@@ -8,8 +8,8 @@
     <artifactId>logging</artifactId>
     <version>1</version>
 
-    <name>logging</name>
-    <description>Contains logging aspect for the doubleganger project</description>
+    <name>Logging</name>
+    <description>Contains logging aspect for the Doubleganger project</description>
 
     <properties>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>

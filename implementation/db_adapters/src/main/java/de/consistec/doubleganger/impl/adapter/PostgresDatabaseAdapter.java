@@ -31,15 +31,16 @@ import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.exception.SchemaConverterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.doubleganger.common.exception.database_adapter.TransactionAbortedException;
 import de.consistec.doubleganger.common.exception.database_adapter.UniqueConstraintException;
+import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
 import de.consistec.doubleganger.common.util.PropertiesUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
-import de.consistec.doubleganger.impl.i18n.DBAdapterErrors;
 
 import java.sql.BatchUpdateException;
 import java.sql.ResultSet;

@@ -7,9 +7,10 @@
     <artifactId>android-adapters</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>android adapters</name>
+    <name>Android database adapters</name>
 
     <properties>
+        <doubleganger.checkstyle.resources>${project.basedir}/../../devtools/checkstyle/src/main/resources/</doubleganger.checkstyle.resources>
         <maven.compiler.plugin.version>3.0</maven.compiler.plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- license information -->
@@ -153,7 +154,7 @@
                     <violationSeverity>error</violationSeverity>
                     <logViolationsToConsole>true</logViolationsToConsole>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <configLocation>consistec-checkstyle/consistec-rules.xml</configLocation>
+                    <configLocation>${doubleganger.checkstyle.resources}/consistec-checkstyle/consistec-rules.xml</configLocation>
                 </configuration>
                 <executions>
                     <execution>
@@ -167,7 +168,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>${project.groupId}</groupId>
-                        <version>1</version>
+                        <version>${project.version}</version>
                         <artifactId>checkstyle</artifactId>
                     </dependency>
                 </dependencies>

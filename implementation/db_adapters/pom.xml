@@ -5,16 +5,59 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.consistec.doubleganger</groupId>
-        <artifactId>doubleganger_parent</artifactId>
+        <artifactId>doubleganger</artifactId>
         <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>db_adapters</artifactId>
-    <name>databases adapters</name>
+    <name>Database adapters</name>
 
     <properties>
         <skipItTests>false</skipItTests>
+        <synctables>categories,items</synctables>
+
+        <!-- postgresql-settings for tests -->
+        <postgres_server>localhost</postgres_server>
+        <postgres_port>5432</postgres_port>
+        <postgres_connect_db>postgres</postgres_connect_db>
+        <postgres_admin>postgres</postgres_admin>
+        <postgres_admin_pwd>root</postgres_admin_pwd>
+        <postgres_server_dbname>server</postgres_server_dbname>
+        <postgres_client_dbname>client</postgres_client_dbname>
+        <postgres_sync_user>syncuser</postgres_sync_user>
+        <postgres_sync_pwd>syncuser</postgres_sync_pwd>
+        <postgres_extern_user>postgres</postgres_extern_user>
+        <postgres_extern_pwd>root</postgres_extern_pwd>
+        <postgres_driver>org.postgresql.Driver</postgres_driver>
+        <postgres_database_adapter>de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter
+        </postgres_database_adapter>
+        <postgres_triggers_server>false</postgres_triggers_server>
+        <postgres_triggers_client>false</postgres_triggers_client>
+
+        <!-- mySql-settings for tests -->
+        <mysql_server>localhost</mysql_server>
+        <mysql_port>3306</mysql_port>
+        <mysql_connect_db></mysql_connect_db>
+        <mysql_admin>root</mysql_admin>
+        <mysql_admin_pwd>root</mysql_admin_pwd>
+        <mysql_server_dbname>server</mysql_server_dbname>
+        <mysql_client_dbname>client</mysql_client_dbname>
+        <mysql_sync_user>mysql</mysql_sync_user>
+        <mysql_sync_pwd>mysql</mysql_sync_pwd>
+        <mysql_extern_user>extern</mysql_extern_user>
+        <mysql_extern_pwd>extern</mysql_extern_pwd>
+        <mysql_driver>com.mysql.jdbc.Driver</mysql_driver>
+        <mysql_database_adapter>de.consistec.doubleganger.impl.adapter.MySqlDatabaseAdapter
+        </mysql_database_adapter>
+        <mysql_triggers_server>false</mysql_triggers_server>
+        <mysql_triggers_client>false</mysql_triggers_client>
+
+        <!-- Sqlite settings for tests -->
+        <sqlite_extern_user></sqlite_extern_user>
+        <sqlite_extern_pwd></sqlite_extern_pwd>
+        <sqlite_triggers_server>false</sqlite_triggers_server>
+        <sqlite_triggers_client>false</sqlite_triggers_client>
     </properties>
 
     <dependencies>
@@ -52,17 +95,6 @@
             </testResource>
         </testResources>
         <plugins>
-            <plugin>
-                <groupId>ch.qos.cal10n.plugins</groupId>
-                <artifactId>maven-cal10n-plugin</artifactId>
-                <configuration>
-                    <enumTypes>
-                        <!-- list every enum type you would like to see checked -->
-                        <enumType>de.consistec.doubleganger.impl.i18n.DBAdapterErrors</enumType>
-                        <enumType>de.consistec.doubleganger.impl.i18n.DBAdapterWarnings</enumType>
-                    </enumTypes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
