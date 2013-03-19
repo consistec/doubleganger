@@ -283,10 +283,11 @@ public class ClientHashProcessor {
                 dataHolder.getServerSyncData().getChanges().remove(serverChange);
                 break;
             case FIRE_EVENT:
-                resolveConflictsFireEvent(data, conflictHandlingStrategy);
-                // remove client change from change list if syncdirection is server_to_client
-                dataHolder.getClientSyncData().getChanges().remove(clientChange);
-                dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                boolean isClientChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
+                if (isClientChange) {
+                    // CLIENT_CHANGE
+                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                }
                 break;
             default:
                 throw new IllegalStateException(String.format("Unknown conflict strategy %s", conflictStrategy.name()));
@@ -314,13 +315,13 @@ public class ClientHashProcessor {
 
     }
 
-    private void resolveConflictsFireEvent(ConflictHandlingData data, IConflictStrategy conflictHandlingStrategy)
+    private boolean resolveConflictsFireEvent(ConflictHandlingData data, IConflictStrategy conflictHandlingStrategy)
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {
             throw new SyncException(read(Errors.COMMON_NO_CONFLICT_LISTENER_FOUND));
         } else {
-            conflictHandlingStrategy.resolveByFireEvent(adapter, data, data.getLocalData(), conflictListener);
+            return conflictHandlingStrategy.resolveByFireEvent(adapter, data, data.getLocalData(), conflictListener);
         }
     }
     //</editor-fold>

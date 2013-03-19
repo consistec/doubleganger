@@ -64,8 +64,8 @@ public class ServerToClientConflictStrategy extends DefaultConflictStrategy {
     }
 
     @Override
-    public void resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                                   final Map<String, Object> clientData, final IConflictListener conflictListener
+    public boolean resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
+                                      final Map<String, Object> clientData, final IConflictListener conflictListener
     ) throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
         throw new IllegalStateException(
             read(Errors.NOT_SUPPORTED_CONFLICT_STRATEGY, ConflictStrategy.FIRE_EVENT.name(),

@@ -23,6 +23,8 @@ package de.consistec.doubleganger.common;
  * #L%
  */
 
+import de.consistec.doubleganger.common.data.ResolvedChange;
+
 import java.util.Map;
 
 /**
@@ -34,9 +36,9 @@ import java.util.Map;
  * the IConflict event occurs, that object's appropriate
  * method is invoked.
  *
+ * @author Markus Backes
  * @company consistec Engineering and Consulting GmbH
  * @date 03.07.12 11:36
- * @author Markus Backes
  * @since 0.0.1-SNAPSHOT
  */
 public interface IConflictListener {
@@ -44,9 +46,10 @@ public interface IConflictListener {
     /**
      * Resolves the merge conflict.
      * <p/>
+     *
      * @param serverData the server data
      * @param clientData the client data
      * @return data after client has resolved the conflict
      */
-    Map<String, Object> resolve(Map<String, Object> serverData, Map<String, Object> clientData);
+    ResolvedChange resolve(Map<String, Object> serverData, Map<String, Object> clientData);
 }
