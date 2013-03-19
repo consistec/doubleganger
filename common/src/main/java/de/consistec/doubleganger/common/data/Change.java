@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.data;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.doubleganger.common.util.HashCalculator;
@@ -48,8 +47,6 @@ public class Change implements Serializable {
      * A Comparator which compares to Change objects through their primarey keys.
      */
     private static PrimaryKeyComparator pkComparator = new PrimaryKeyComparator();
-
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     /**
      * The message digest entry for this change.
      * Not null.
@@ -67,9 +64,6 @@ public class Change implements Serializable {
      */
     private Map<String, Object> rowData = newHashMap();
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
     /**
      * Instantiates a new change.
      */
@@ -86,9 +80,6 @@ public class Change implements Serializable {
         this.mdEntry = mdEntry;
         this.rowData = rowData;
     }
-
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class accessors " >
 
     /**
      * Gets the md entry.
@@ -125,9 +116,6 @@ public class Change implements Serializable {
     public void setRowData(Map<String, Object> rowData) {
         this.rowData = rowData;
     }
-
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
      * Brief description of instance state.
@@ -208,13 +196,11 @@ public class Change implements Serializable {
     public static final PrimaryKeyComparator getPrimaryKeyComparator() {
         return pkComparator;
     }
-    //</editor-fold>
 
     private static class PrimaryKeyComparator implements Comparator<Change> {
 
         @Override
-        public int compare(final Change o1, final Change o2
-        ) {
+        public int compare(final Change o1, final Change o2) {
             if (o1.getMdEntry() == null || o2.getMdEntry() == null) {
                 throw new IllegalStateException("md entry must not be null!");
             }

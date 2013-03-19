@@ -9,20 +9,19 @@ package de.consistec.doubleganger.impl.proxy.http_servlet;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.impl.proxy.http_servlet.SyncRequestHttpParams.ACTION;
@@ -88,7 +87,6 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class HttpServerSyncProxy implements IServerSyncProvider {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     /**
      * Header name in which server exception message will be stored.
      */
@@ -106,9 +104,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     private Credentials credentials;
     private ISerializationAdapter serializationAdapter;
     private String threadId;
-
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
 
     /**
      * Instantiates a new server sync provider proxy.
@@ -163,8 +158,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
         }
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private void initializeDefaultSerializationAdapter() {
         this.serializationAdapter = new JSONSerializationAdapter();
     }
@@ -187,7 +180,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public int applyChanges(SyncData clientData) throws SyncException {
 
-//        threadId = ManagementFactory.getRuntimeMXBean().getName();
         threadId = "1";
 
         try {
@@ -207,7 +199,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     public SyncData getChanges(int rev) throws SyncException {
         LOGGER.warn("--------------------------------------   Proxy called - get chages");
 
-//        threadId = ManagementFactory.getRuntimeMXBean().getName();
         threadId = "1";
 
         try {
@@ -225,7 +216,6 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
     @Override
     public Schema getSchema() throws SyncException {
 
-//        threadId = ManagementFactory.getRuntimeMXBean().getName();
         threadId = "1";
 
         try {
@@ -341,5 +331,4 @@ public class HttpServerSyncProxy implements IServerSyncProvider {
         LOGGER.debug("Server response size (in bytes): {}", decodedResponse.getBytes());
         return decodedResponse;
     }
-    //</editor-fold>
 }

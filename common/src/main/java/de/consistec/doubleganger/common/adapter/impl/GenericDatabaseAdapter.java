@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.adapter.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.defaultIfNull;
@@ -95,8 +94,6 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
-    //<editor-fold defaultstate="collapsed" desc="---- Properties names -----" >
     /**
      * This option specify jdbc driver class canonical name for a database.
      * <p/>
@@ -144,7 +141,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Value: {@value}
      */
     public static final String SQLITE_CONFIG_FILE = "/config_sqlite.properties";
-    //</editor-fold>
     /**
      * Part of a description of table columns available in a catalog.
      * <p/>
@@ -292,8 +288,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      */
     protected String schemaOfConnection = "PUBLIC"; //NOSONAR
 
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
     /**
      * Do not create adapter instances directly!.
      * This constructor has scope {@code protected} only to allow subclasses.
@@ -301,9 +295,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     protected GenericDatabaseAdapter() {
         LOGGER.debug("creating new {} ...", getClass().getCanonicalName());
     }
-
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
      * Initialize adapter with external connection.
@@ -1210,5 +1201,4 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         builder.append(" }");
         return builder.toString();
     }
-    //</editor-fold>
 }

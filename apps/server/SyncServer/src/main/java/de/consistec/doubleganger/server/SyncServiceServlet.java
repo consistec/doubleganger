@@ -130,5 +130,4 @@ public class SyncServiceServlet extends HttpServlet {
             return UNIQUE_ID.get();
         }
     } // UniqueThreadIdGenerator
-    //</editor-fold>
-}
+    }

@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
 
 /**
@@ -33,8 +32,6 @@ import de.consistec.doubleganger.common.conflict.ConflictStrategy;
  * @date 10.01.13 15:59
  */
 public final class ConfigConstants {
-
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
 
     /**
      * Delimiter for multivalued options strings, like SYNC_TABLES.<br/>
@@ -76,9 +73,6 @@ public final class ConfigConstants {
      * Value: SyncDirection.SERVER_TO_CLIENT
      */
     public static final SyncDirection DEFAULT_SYNC_DIRECTION = SyncDirection.BIDIRECTIONAL;
-
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="Config options names in config file" >
     /**
      * Key prefix for common options.
      * <p/>
@@ -191,7 +185,6 @@ public final class ConfigConstants {
      * Value: {@value}
      */
     public static final String OPTIONS_COMMON_SER_PROXY_GROUP = OPTIONS_SERVER_PREFIX + OPTIONS_PROXY_PROVIDER;
-
     /**
      * CHECKSTYLE:OFF
      */
@@ -213,11 +206,7 @@ public final class ConfigConstants {
      * Value: {@value}
      */
     public static final String OPTIONS_COMMON_SERV_PROXY = OPTIONS_COMMON_SER_PROXY_GROUP + ".class";
-//</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
     private ConfigConstants() {
     }
-//</editor-fold>
-
 }

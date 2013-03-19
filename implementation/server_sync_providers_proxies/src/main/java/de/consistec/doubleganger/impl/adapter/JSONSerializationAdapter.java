@@ -9,20 +9,19 @@ package de.consistec.doubleganger.impl.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
@@ -60,16 +59,13 @@ import org.json.JSONObject;
  */
 public class JSONSerializationAdapter implements ISerializationAdapter<String> {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final String FIELD_NAME_EXISTS = "exists";
     private static final String FIELD_NAME_PRIMARYKEY = "primarykey";
     private static final String FIELD_NAME_REVISION = "revision";
     private static final String FIELD_NAME_TABLE_NAME = "tableName";
     private static final String FIELD_NAME_ROWDATA = "rowdata";
     private static final transient SchemaXMLConverter XML_CONVERTER = new SchemaXMLConverter();
-    //</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     @Override
     public List<Change> deserializeChangeList(final String serializedObject) throws
         SerializationException {
@@ -314,5 +310,4 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
             throw new SerializationException(e);
         }
     }
-    //</editor-fold>
 }

@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.i18n;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import ch.qos.cal10n.BaseName;
 import ch.qos.cal10n.Locale;
 import ch.qos.cal10n.LocaleData;
@@ -38,10 +37,9 @@ import ch.qos.cal10n.LocaleData;
  */
 @BaseName("de/consistec/doubleganger/common/i18n/infos")
 @LocaleData(value = {
-    @Locale("en") })
+    @Locale("en")})
 public enum Infos {
 
-    //<editor-fold defaultstate="expanded" desc="***************** Common messages *****************" >
     /**
      * Informs that initializing procedure for client was invoked.
      */
@@ -205,9 +203,6 @@ public enum Infos {
      * Informs that database schema from server is going to be applied on client database.
      */
     COMMON_APPLYING_DB_SCHEMA,
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="*************** Messages related to configuration ***************" >
     /**
      * Loading configuration from input stream is just started.
      */
@@ -241,9 +236,6 @@ public enum Infos {
      * Inform that loaded configuration file is empty.
      */
     CONFIG_CONFIGURATION_FILE_IS_EMPTY,
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="*************** Messages related to data layer. ***************" >
     /**
      * Information about setting the transaction isolation level on connection object.
      * <p>
@@ -266,26 +258,20 @@ public enum Infos {
      * Information that recreation of server meta is retried.
      */
     COMMON_RETRYING_RECREATE_SERVER_META_TABLES,
-
     /**
      * Information of config creation.
      */
     COMMON_CREATING_CONFIG,
-
     /**
      * Information about requesting changes from server is finished.
      */
     COMMON_REQUESTING_CHANGES_FROM_SERVER_FINISHED,
-
     /**
      * Information about applying changes from client on server.
      */
     COMMON_APPLYING_CHANGES_FROM_CLIENT,
-
     /**
      * Information about applying changes from client on server is finished.
      */
     COMMON_APPLYING_CHANGES_FROM_CLIENT_FINISHED;
-
-    //</editor-fold>
 }

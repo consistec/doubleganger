@@ -8,20 +8,19 @@ package de.consistec.doubleganger.logging;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.After;
@@ -45,22 +44,6 @@ import org.slf4j.MarkerFactory;
 @Aspect
 public class TracingAspect {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-
-//</editor-fold>
-
     private static final Logger LOGGER = LoggerFactory.getLogger("TracingAspect");
     private static final Marker TRACE_MARKER = MarkerFactory.getMarker("TRACE");
 
@@ -74,8 +57,7 @@ public class TracingAspect {
 
     @Before("executeConstructors()")
     public void traceConstructors(JoinPoint thisJoinPoint,
-                                  JoinPoint.StaticPart thisJoinPointStaticPart
-    ) {
+        JoinPoint.StaticPart thisJoinPointStaticPart) {
         Signature sig = thisJoinPointStaticPart.getSignature();
         String line = "" + thisJoinPointStaticPart.getSourceLocation().getLine();
 
@@ -91,8 +73,7 @@ public class TracingAspect {
 
     @Before("executeMethods()")
     public void traceMethods(JoinPoint thisJoinPoint,
-                             JoinPoint.StaticPart thisJoinPointStaticPart
-    ) {
+        JoinPoint.StaticPart thisJoinPointStaticPart) {
         Signature sig = thisJoinPointStaticPart.getSignature();
         String line = "" + thisJoinPointStaticPart.getSourceLocation().getLine();
 

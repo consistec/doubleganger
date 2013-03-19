@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.i18n;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import ch.qos.cal10n.BaseName;
 import ch.qos.cal10n.Locale;
 import ch.qos.cal10n.LocaleData;
@@ -37,10 +36,10 @@ import ch.qos.cal10n.LocaleData;
  * @since 0.0.1-SNAPSHOT
  */
 @BaseName("de/consistec/doubleganger/common/i18n/warnings")
-@LocaleData(value = {@Locale("en") })
+@LocaleData(value = {
+    @Locale("en")})
 public enum Warnings {
 
-    //<editor-fold defaultstate="expanded" desc="***************** Common messages *****************" >
     /**
      * When update of clients revision fails.
      */
@@ -62,10 +61,6 @@ public enum Warnings {
      * When creation of {@link javax.xml.validation.SchemaFactory SchemaFactory} fails.
      */
     COMMON_CANT_CREATE_XML_SCHEMA_FACTORY,
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="*************** Messages related to configuration ***************" >
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="*************** Messages related to data layer. ***************" >
     /**
      * Message to inform that transaction isolation level SERIALIZABLE couldn't be set on the database connection.
      */
@@ -89,5 +84,4 @@ public enum Warnings {
      * Warning, if metadata table (_md) could not be recreated.
      */
     COMMON_RECREATING_SERVER_META_TABLES_FAILED;
-    //</editor-fold>
 }

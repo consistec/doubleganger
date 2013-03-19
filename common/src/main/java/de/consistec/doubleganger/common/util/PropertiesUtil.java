@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.util;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.ConfigConstants.DELIMITER;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
@@ -47,14 +46,10 @@ import java.util.Properties;
  */
 public final class PropertiesUtil {
 
-    //<editor-fold defaultstate="expanded" desc=" Class constructors" >
     // Allow no instannces.
     private PropertiesUtil() {
         throw new AssertionError("No instances allowed");
     }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
     /**
      * Reads the enumeration value from given Properties object, and if the property isn't found,
@@ -73,8 +68,7 @@ public final class PropertiesUtil {
      * @throws InvocationTargetException
      */
     public static <T extends Enum> T readEnum(final Properties props, final String name, final boolean required,
-                                              final Class<T> clazz
-    ) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        final Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         final String stringValue = readString(props, name, required);
         if (StringUtil.isNullOrEmpty(stringValue) && !required) {
             return null;
@@ -96,8 +90,7 @@ public final class PropertiesUtil {
      * @return The number specified in given Properties object under the key <i>"name"</i>
      */
     public static <T extends Number> T readNumber(final Properties props, final String name, final boolean required,
-                                                  final Class<T> clazz
-    ) { //NOSONAR
+        final Class<T> clazz) { //NOSONAR
         String stringValue = readString(props, name, required);
 
         if (!required && StringUtil.isNullOrEmpty(stringValue)) {
@@ -139,7 +132,7 @@ public final class PropertiesUtil {
      * @param name Key to find the String in <i>props</i> object.
      * @param required true if methods should ends with ConfigException in cease of property absence.
      * @return String value specified in given Properties object under the key <i>"name"</i>
-     *         or null if {@code required} parameter is {@code false}.
+     * or null if {@code required} parameter is {@code false}.
      */
     public static String readString(final Properties props, final String name, final boolean required) {
 
@@ -161,14 +154,13 @@ public final class PropertiesUtil {
      * @param required true if methods should ends with ConfigException in cease of property absence.
      * @param clazz type of returned collection
      * @return Collection of Strings specified as one String separated with
-     *         {@link de.consistec.doubleganger.common.Config#DELIMITER } in given Properties object under the key
-     *         <i>"name"</i>
+     * {@link de.consistec.doubleganger.common.Config#DELIMITER } in given Properties object under the key
+     * <i>"name"</i>
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
     public static Collection<String> readCollection(final Properties props, final String name, final boolean required,
-                                                    final Class<? extends Collection> clazz
-    ) throws InstantiationException, IllegalAccessException {
+        final Class<? extends Collection> clazz) throws InstantiationException, IllegalAccessException {
 
         final String value = readString(props, name, required);
         if (StringUtil.isNullOrEmpty(value) && !required) {
@@ -239,7 +231,7 @@ public final class PropertiesUtil {
      * @param defaultValue default value.
      * @param valueToCheck current value.
      * @return If <i>valueToCheck</i> is <i>null</i> then return <i>defaultValue</i>.
-     *         Otherwise return <i>valueToCheck</i>.
+     * Otherwise return <i>valueToCheck</i>.
      */
     public static <T> T defaultIfNull(final T defaultValue, final T valueToCheck) {
 

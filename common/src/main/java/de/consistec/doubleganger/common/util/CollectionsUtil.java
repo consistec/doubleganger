@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.util;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.common.Tuple;
 
 import java.util.ArrayList;
@@ -47,23 +46,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class CollectionsUtil {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
     private CollectionsUtil() {
         throw new AssertionError("No instances allowed");
     }
-//</editor-fold>
 
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
-    //<editor-fold defaultstate="collapsed" desc=" -------- static factory methods  ----------- " >
-    /**
-     * Suppress IllegalInstantiation checks for some generic collections.
-     * They were introduced to force usage of these methods.
-     * CHECKSTYLE:OFF
-     */
     /**
      * Fabricates generic HashMap instance.
      * <p/>
@@ -320,10 +306,4 @@ public final class CollectionsUtil {
         }
         return count;
     }
-
-    /**
-     * CHECKSTYLE:ON
-     */
-    //</editor-fold>
-//</editor-fold>
 }

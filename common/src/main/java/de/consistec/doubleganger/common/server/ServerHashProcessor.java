@@ -87,12 +87,10 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class ServerHashProcessor {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerHashProcessor.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
     private IDatabaseAdapter adapter;
 
-    //</editor-fold>
     /**
      * Instantiates a new server hash processor.
      *

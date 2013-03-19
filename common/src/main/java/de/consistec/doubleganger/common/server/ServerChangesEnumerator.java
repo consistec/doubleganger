@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.server;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
@@ -61,14 +60,10 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class ServerChangesEnumerator {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerChangesEnumerator.class.getCanonicalName());
     private static final transient Config CONF = Config.getInstance();
     private IDatabaseAdapter adapter = null;
     private TableSyncStrategies tableSyncStrategies;
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
 
     /**
      * Instantiates a new server changes enumerator.
@@ -81,9 +76,6 @@ public class ServerChangesEnumerator {
         this.tableSyncStrategies = tableSyncStrategies;
         LOGGER.debug("ChangesEnumerator Constructor finished");
     }
-
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
     /**
      * Creates the list of {@code Change} objects for all inserted, modified or deleted data rows
@@ -139,5 +131,4 @@ public class ServerChangesEnumerator {
         LOGGER.debug("getServerChanges finished");
         return serverChangeSet;
     }
-    //</editor-fold>
 }

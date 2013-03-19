@@ -9,20 +9,19 @@ package de.consistec.doubleganger.impl.proxy.http_servlet;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.common.SyncContext;
 import de.consistec.doubleganger.impl.adapter.ISerializationAdapter;
 
@@ -35,15 +34,11 @@ import de.consistec.doubleganger.impl.adapter.ISerializationAdapter;
  */
 public class HttpRequestParamValues {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private SyncContext.ServerContext ctx;
     private ISerializationAdapter serializationAdapter;
     private String clientRevision;
     private String clientChanges;
     private String clientSettings;
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
 
     /**
      * Constructor.
@@ -55,21 +50,16 @@ public class HttpRequestParamValues {
      * @param clientSettings clients settings
      */
     public HttpRequestParamValues(final SyncContext.ServerContext ctx,
-                                  final ISerializationAdapter serializationAdapter,
-                                  final String clientRevision,
-                                  final String clientChanges,
-                                  final String clientSettings
-    ) {
+        final ISerializationAdapter serializationAdapter,
+        final String clientRevision,
+        final String clientChanges,
+        final String clientSettings) {
         this.ctx = ctx;
         this.serializationAdapter = serializationAdapter;
         this.clientRevision = clientRevision;
         this.clientChanges = clientChanges;
         this.clientSettings = clientSettings;
     }
-
-//</editor-fold>
-
-//<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
 
     /**
      * The servers context.
@@ -115,7 +105,4 @@ public class HttpRequestParamValues {
     public String getClientSettings() {
         return clientSettings;
     }
-
-//</editor-fold>
-
 }

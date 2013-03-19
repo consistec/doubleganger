@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
@@ -75,15 +74,11 @@ import org.slf4j.cal10n.LocLogger;
  */
 public class ClientHashProcessor {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientHashProcessor.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
     private IConflictListener conflictListener;
     private IDatabaseAdapter adapter;
     private TableSyncStrategies strategies;
-
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
 
     /**
      * Instantiates a new client hash processor.
@@ -94,16 +89,12 @@ public class ClientHashProcessor {
      * {@link de.consistec.doubleganger.common.conflict.ConflictStrategy ConflictStrategy} is FIRE_EVENT.
      */
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
-                               IConflictListener conflictListener
-    ) {
+        IConflictListener conflictListener) {
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
         LOGGER.debug("HashProcessor Constructor finished");
     }
-
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
      * Resolves the conflicts between the client changes and the server changes.
@@ -323,5 +314,4 @@ public class ClientHashProcessor {
             conflictHandlingStrategy.resolveByFireEvent(adapter, data, data.getLocalData(), conflictListener);
         }
     }
-    //</editor-fold>
 }
