@@ -23,7 +23,7 @@
     </licenses>
 
     <properties>
-        <project_name>doppleganger</project_name>
+        <project_name>doubleganger</project_name>
         <license.licenseName>gpl_v3</license.licenseName>
         <license.licenseResolver>file://${project.basedir}/../parent/src/license</license.licenseResolver>
 
