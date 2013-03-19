@@ -22,10 +22,10 @@ package de.consistec.doubleganger.android.adapter;
  * #L%
  */
 
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.doubleganger.common.util.PropertiesUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
-import de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter;
 
 import dalvik.system.PathClassLoader;
 import java.security.AccessController;

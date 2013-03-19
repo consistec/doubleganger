@@ -84,7 +84,7 @@ public final class ConfigConstants {
      * <p/>
      * Value: {@value}
      */
-    public static final String OPTIONS_COMMON_PREFIX = "framework";
+    public static final String OPTIONS_COMMON_PREFIX = "doubleganger";
     /**
      * Key prefix for server options.
      * <p/>

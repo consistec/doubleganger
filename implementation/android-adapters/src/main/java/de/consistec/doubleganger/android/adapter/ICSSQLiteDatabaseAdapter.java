@@ -24,6 +24,7 @@ package de.consistec.doubleganger.android.adapter;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.Column;
 import de.consistec.doubleganger.common.data.schema.Constraint;
 import de.consistec.doubleganger.common.data.schema.ConstraintType;
@@ -31,7 +32,6 @@ import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.data.schema.Table;
 import de.consistec.doubleganger.common.exception.SchemaConverterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
-import de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;

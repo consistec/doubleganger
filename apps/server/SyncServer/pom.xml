@@ -7,7 +7,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>Synchronisation server</name>
+    <name>Synchronization server</name>
     <description>Sample synchronization server based on Doubleganger</description>
 
     <properties>

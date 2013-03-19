@@ -22,9 +22,9 @@ package de.consistec.doubleganger.android.test;
  * #L%
  */
 import de.consistec.doubleganger.common.Config;
+import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.exception.ContextException;
 import de.consistec.doubleganger.common.exception.SyncException;
-import de.consistec.doubleganger.impl.adapter.GenericDatabaseAdapter;
 
 import android.content.res.AssetManager;
 import android.os.Build;
