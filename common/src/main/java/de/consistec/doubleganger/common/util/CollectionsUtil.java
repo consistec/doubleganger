@@ -50,6 +50,10 @@ public final class CollectionsUtil {
         throw new AssertionError("No instances allowed");
     }
 
+    /*
+     * CHECKSTYLE:OFF
+     */
+
     /**
      * Fabricates generic HashMap instance.
      * <p/>
@@ -306,4 +310,9 @@ public final class CollectionsUtil {
         }
         return count;
     }
+
+    /*
+     * CHECKSTYLE:ON
+     */
+
 }

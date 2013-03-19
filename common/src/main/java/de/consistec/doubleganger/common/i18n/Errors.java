@@ -37,7 +37,7 @@ import ch.qos.cal10n.LocaleData;
  */
 @BaseName("de/consistec/doubleganger/common/i18n/errors")
 @LocaleData({
-    @Locale("en")})
+    @Locale("en") })
 public enum Errors {
 
     /**

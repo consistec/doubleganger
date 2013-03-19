@@ -37,7 +37,7 @@ import ch.qos.cal10n.LocaleData;
  */
 @BaseName("de/consistec/doubleganger/common/i18n/infos")
 @LocaleData(value = {
-    @Locale("en")})
+    @Locale("en") })
 public enum Infos {
 
     /**
