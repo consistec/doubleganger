@@ -66,7 +66,6 @@ public interface IConflictStrategy {
      * where the keys the column names from the data row are and the values
      * the content of the data row are.
      * @param conflictListener - listener to call events if configured
-     * @return true if client_change is used otherwise false
      * @throws SyncException
      * @throws DatabaseAdapterException
      * @throws NoSuchAlgorithmException

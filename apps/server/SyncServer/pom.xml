@@ -7,8 +7,8 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>synchronisation server</name>
-    <description>Sample synchronisation server based on doubleganger</description>
+    <name>Synchronization server</name>
+    <description>Sample synchronization server based on Doubleganger</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

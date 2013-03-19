@@ -12,3 +12,8 @@ nb-configuration.xml
 target
 *.log.1
 nbactions.xml
+*/*/.settings/
+*/*/.project
+*/*/.classpath
+*/*/*/bin/
+*/*/*/gen/
