@@ -23,6 +23,9 @@ package de.consistec.doubleganger.impl.adapter.it_alldb;
  * #L%
  */
 
+import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static org.junit.Assert.assertTrue;
@@ -127,11 +130,11 @@ public class TableSyncStrategyTest {
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowServerData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,
             ConflictStrategy.SERVER_WINS);
@@ -193,11 +196,11 @@ public class TableSyncStrategyTest {
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowServerData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.BIDIRECTIONAL,
             ConflictStrategy.CLIENT_WINS);
@@ -256,11 +259,11 @@ public class TableSyncStrategyTest {
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         SyncContext.LocalContext ctx = SyncContext.local(new TableSyncStrategies());
 

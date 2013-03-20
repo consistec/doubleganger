@@ -21,6 +21,11 @@ package de.consistec.doubleganger.android.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.PK_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
@@ -148,12 +153,13 @@ public class ICSSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
 
             table = new Table(mdTableName);
             Column pkColumn = getPrimaryKeyColumn(tableName);
-            table.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-            table.add(new Column("mdv", Types.VARCHAR, 500, 0, true));
-            table.add(new Column("rev", Types.INTEGER, 0, 0, true));
-            table.add(new Column("f", Types.INTEGER, 0, 0, true));
+            table.add(new Column(PK_COLUMN_NAME, pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(),
+                false));
+            table.add(new Column(MDV_COLUMN_NAME, Types.VARCHAR, 500, 0, true));
+            table.add(new Column(REV_COLUMN_NAME, Types.INTEGER, 0, 0, true));
+            table.add(new Column(FLAG_COLUMN_NAME, Types.INTEGER, 0, 0, true));
 
-            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+            table.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", PK_COLUMN_NAME));
             schema.addTables(table);
         }
         if (schema.getTables().size() > 0) {
