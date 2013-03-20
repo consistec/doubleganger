@@ -9,15 +9,15 @@ package de.consistec.doubleganger.impl.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -77,7 +77,7 @@ public class JSONSerializationAdapterTest extends TestBase {
     @Test
     public void testChangeListSerialization() throws SerializationException {
 
-        final List<Change> changeList = newArrayList();
+        final SyncData changeList = new SyncData();
         MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
         Map<String, Object> rowData = newHashMap();
         rowData.put(COLUMNNAME1, 1);
@@ -86,7 +86,7 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 4.5);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         entry = new MDEntry(2, false, 2, TABLENAME2, TEST_MDV);
         rowData = new HashMap<String, Object>();
@@ -96,19 +96,19 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 3.14);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         final String jsonChangeList = adapter.serializeChangeList(changeList);
-        final List<Change> deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
+        final SyncData deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
 
-        assertEquals("Original and deserialised change lists are different", changeList, deserializedChangeList);
+        assertEquals("Original and deserialized change lists are different", changeList.getChanges(), deserializedChangeList.getChanges());
     }
 
     @Test
     public void testSyncDataSerialization() throws SerializationException {
 
-        final List<Change> changeList = newArrayList();
+        SyncData data = new SyncData();
         MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
         Map<String, Object> rowData = newHashMap();
         rowData.put(COLUMNNAME1, 1);
@@ -117,7 +117,7 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 4.5);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
+        data.addChange(new Change(entry, rowData));
 
         entry = new MDEntry(2, false, 2, TABLENAME2, TEST_MDV);
         rowData = new HashMap<String, Object>();
@@ -127,9 +127,7 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 3.14);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
-
-        SyncData data = new SyncData(0, changeList);
+        data.addChange(new Change(entry, rowData));
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         final String jsonChangeList = adapter.serializeChangeList(data);
@@ -145,9 +143,7 @@ public class JSONSerializationAdapterTest extends TestBase {
     @Test
     public void testSyncSerializationEmptyChangeList() throws SerializationException {
 
-        final List<Change> changeList = newArrayList();
-
-        SyncData data = new SyncData(0, changeList);
+        SyncData data = new SyncData();
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         final String jsonChangeList = adapter.serializeChangeList(data);

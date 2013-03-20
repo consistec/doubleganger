@@ -132,14 +132,13 @@ public class ServletProcessorTest {
         HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse responseMock = Mockito.mock(HttpServletResponse.class);
         IServerSyncProvider providerMock = Mockito.mock(IServerSyncProvider.class);
-        List<Change> expectedChangeList = newArrayList();
-        SyncData expectedSyncData = new SyncData(0, expectedChangeList);
+        SyncData expectedSyncData = new SyncData();
 
         MDEntry entryOne = new MDEntry(1, true, 0, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowDataOne = newHashMap();
         rowDataOne.put(TEST_COLUMN1, 1);
         rowDataOne.put(TEST_COLUMN2, new Date(System.currentTimeMillis()));
-        expectedChangeList.add(new Change(entryOne, rowDataOne));
+        expectedSyncData.addChange(new Change(entryOne, rowDataOne));
 
         Mockito.when(requestMock.getParameter(ACTION.name())).thenReturn(GET_CHANGES.getStringName());
         Mockito.when(requestMock.getParameter(REVISION.name())).thenReturn("1");
@@ -158,7 +157,7 @@ public class ServletProcessorTest {
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         String decodedResponse = URLDecoder.decode(writer.toString(), "UTF-8");
         SyncData syndData = adapter.deserializeMaxRevisionAndChangeList(decodedResponse);
-        assertEquals(expectedChangeList, syndData.getChanges());
+        assertEquals(expectedSyncData.getChanges(), syndData.getChanges());
         assertEquals(0, syndData.getRevision());
     }
 
@@ -169,19 +168,19 @@ public class ServletProcessorTest {
         HttpServletRequest requestMock = Mockito.mock(HttpServletRequest.class);
         HttpServletResponse responseMock = Mockito.mock(HttpServletResponse.class);
         IServerSyncProvider providerMock = Mockito.mock(IServerSyncProvider.class);
-        List<Change> changeList = newArrayList();
+        SyncData syncData = new SyncData();
+        syncData.setRevision(1);
 
         MDEntry entryOne = new MDEntry(1, true, 0, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowDataOne = newHashMap();
         rowDataOne.put(TEST_COLUMN1, 1);
         rowDataOne.put(TEST_COLUMN2, new Date(System.currentTimeMillis()));
-        changeList.add(new Change(entryOne, rowDataOne));
+        syncData.addChange(new Change(entryOne, rowDataOne));
 
-        SyncData syncData = new SyncData(1, changeList);
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
 
         Mockito.when(requestMock.getParameter(ACTION.name())).thenReturn(APPLY_CHANGES.getStringName());
-        Mockito.when(requestMock.getParameter(CHANGES.name())).thenReturn(adapter.serializeChangeList(changeList));
+        Mockito.when(requestMock.getParameter(CHANGES.name())).thenReturn(adapter.serializeChangeList(syncData.getChanges()));
         Mockito.when(requestMock.getParameter(REVISION.name())).thenReturn("1");
         Mockito.when(providerMock.applyChanges((SyncData) anyObject())).thenReturn(1);
         Mockito.when(requestMock.getContentLength()).thenReturn(MOCK_LENGTH);

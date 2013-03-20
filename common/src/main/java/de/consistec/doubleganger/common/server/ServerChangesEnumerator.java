@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.server;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.SyncData;
@@ -39,7 +38,6 @@ import de.consistec.doubleganger.common.util.LoggingUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
 
@@ -89,9 +87,8 @@ public class ServerChangesEnumerator {
 
         LOGGER.debug("getServerChanges called");
 
-        final List<Change> list = newArrayList();
-        int revision = adapter.getLastRevision();
-        final SyncData serverChangeSet = new SyncData(revision, list);
+        final SyncData serverChangeSet = new SyncData();
+        serverChangeSet.setRevision(adapter.getLastRevision());
 
         for (final String syncTable : CONF.getSyncTables()) {
 

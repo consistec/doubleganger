@@ -22,9 +22,9 @@ package de.consistec.doubleganger.android.test;
  * #L%
  */
 
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 
+import de.consistec.doubleganger.common.SyncData;
 import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.data.MDEntry;
 import de.consistec.doubleganger.common.exception.SerializationException;
@@ -32,7 +32,6 @@ import de.consistec.doubleganger.impl.adapter.JSONSerializationAdapter;
 
 import android.test.InstrumentationTestCase;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,7 +52,7 @@ public class AndroidSerializationTest extends InstrumentationTestCase {
     private static final String TEST_COLUMN5 = "column5";
 
     public void testSerialization() throws SerializationException {
-        List<Change> changeList = newArrayList();
+        SyncData changeList = new SyncData();
         MDEntry entry = new MDEntry(1, true, 1, TEST_TABLE_NAME, "");
         Map<String, Object> rowData = newHashMap();
         rowData.put(TEST_COLUMN1, 1);
@@ -61,7 +60,7 @@ public class AndroidSerializationTest extends InstrumentationTestCase {
         rowData.put(TEST_COLUMN3, true);
         rowData.put(TEST_COLUMN4, new Date(System.currentTimeMillis()));
         rowData.put(TEST_COLUMN5, 4.5);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         entry = new MDEntry(2, false, 2, TEST_TABLE_NAME, null);
         rowData = newHashMap();
@@ -70,11 +69,11 @@ public class AndroidSerializationTest extends InstrumentationTestCase {
         rowData.put(TEST_COLUMN3, "false");
         rowData.put(TEST_COLUMN4, new Date(System.currentTimeMillis()));
         rowData.put(TEST_COLUMN5, 3.14);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
         String jsonChangeList = adapter.serializeChangeList(changeList);
-        List<Change> deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
+        SyncData deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
 
         assertEquals(changeList, deserializedChangeList);
     }
