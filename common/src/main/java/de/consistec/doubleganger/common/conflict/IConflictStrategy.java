@@ -26,6 +26,7 @@ package de.consistec.doubleganger.common.conflict;
 import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ConflictHandlingData;
+import de.consistec.doubleganger.common.data.ResolvedChange;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 
@@ -66,13 +67,14 @@ public interface IConflictStrategy {
      * where the keys the column names from the data row are and the values
      * the content of the data row are.
      * @param conflictListener - listener to call events if configured
+     * @return ResolvedChange -  the modified change from user
      * @throws SyncException
      * @throws DatabaseAdapterException
      * @throws NoSuchAlgorithmException
      * @todo write comment
      */
-    boolean resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                               final Map<String, Object> clientData, final IConflictListener conflictListener
+    ResolvedChange resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
+                                      final Map<String, Object> clientData, final IConflictListener conflictListener
     ) throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException;
 
 }

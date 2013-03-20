@@ -120,8 +120,9 @@ public class DefaultConflictStrategy implements IConflictStrategy {
     }
 
     @Override
-    public boolean resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                                      final Map<String, Object> clientData, final IConflictListener conflictListener
+    public ResolvedChange resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
+                                             final Map<String, Object> clientData,
+                                             final IConflictListener conflictListener
     ) throws
         SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
 
@@ -130,10 +131,9 @@ public class DefaultConflictStrategy implements IConflictStrategy {
         if (resolved.getDecision() == UserDecision.SERVER_CHANGE
             || resolved.getDecision() == UserDecision.USER_EDIT) {
             applyResolvedChange(resolved, adapter, clientData, data);
-            return false;
-        } else {
-            return true;
         }
+
+        return resolved;
     }
 
     private void applyResolvedChange(ResolvedChange change, final IDatabaseAdapter adapter,
