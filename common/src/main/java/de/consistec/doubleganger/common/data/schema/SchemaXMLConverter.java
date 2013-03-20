@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.data.schema;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.exception.SerializationException;
@@ -62,7 +61,6 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class SchemaXMLConverter extends DefaultHandler {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaXMLConverter.class.getCanonicalName());
     private static final String TABLE_QNAME = "table";
     private static final String TABLES_QNAME = "tables";
@@ -82,17 +80,13 @@ public class SchemaXMLConverter extends DefaultHandler {
     private Table table;
     private Schema schema;
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
     /**
      * Create new instance of converter.
      */
     public SchemaXMLConverter() {
         super();
     }
-    //</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     /**
      * Converts {@link de.consistec.doubleganger.common.data.schema.Schema Schema} to xml String.
      *
@@ -247,5 +241,4 @@ public class SchemaXMLConverter extends DefaultHandler {
             table.add(constraint);
         }
     }
-    //</editor-fold>
 }

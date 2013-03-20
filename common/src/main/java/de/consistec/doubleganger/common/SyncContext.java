@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.Preconditions.checkGlobalSyncDirectionAndConflictStrategyState;
 import static de.consistec.doubleganger.common.util.Preconditions.checkNotNull;
@@ -132,19 +131,14 @@ import org.slf4j.cal10n.LocLogger;
  */
 public final class SyncContext {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
     /**
      * Default local server provider class.
      * <p/>
      * value: {@value}
      */
-//    private static final Class<? extends IServerSyncProvider> DEFAULT_SERVER_PROVIDER = ServerSyncProvider.class;
     private static final LocLogger LOGGER = LoggingUtil.createLogger(SyncContext.class);
     private static final Config CONF = Config.getInstance();
     private TableSyncStrategies strategies = new TableSyncStrategies();
-
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
 
     /**
      * Do not allow direct creation of new instance.
@@ -152,9 +146,6 @@ public final class SyncContext {
     private SyncContext() {
     }
 
-//</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private void initServer(Connection connection) throws ContextException {
 
         IDatabaseAdapter adapter = null;
@@ -538,9 +529,6 @@ public final class SyncContext {
         return mainCtx.new LocalContext(serverDs, clientDs);
     }
 
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Inner classes " >
-
     /**
      * Represents client side of the synchronization process.
      */
@@ -702,8 +690,6 @@ public final class SyncContext {
          */
         private LocalContext(DataSource serverDs, DataSource clientDs) throws ContextException, SyncException {
 
-            // just one time initialization
-//            initServerContext(serverDs);
             this.serverProvider = createServer(serverDs);
 
             IClientSyncProvider clientProvider = createClient(clientDs, serverProvider);
@@ -855,6 +841,4 @@ public final class SyncContext {
             return instance;
         }
     }
-
-    //</editor-fold>
 }

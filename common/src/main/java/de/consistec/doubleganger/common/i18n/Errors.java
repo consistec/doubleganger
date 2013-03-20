@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.i18n;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import ch.qos.cal10n.BaseName;
 import ch.qos.cal10n.Locale;
 import ch.qos.cal10n.LocaleData;
@@ -37,10 +36,10 @@ import ch.qos.cal10n.LocaleData;
  * @since 0.0.1-SNAPSHOT
  */
 @BaseName("de/consistec/doubleganger/common/i18n/errors")
-@LocaleData({@Locale("en") })
+@LocaleData({
+    @Locale("en") })
 public enum Errors {
 
-    //<editor-fold defaultstate="expanded" desc="***************** Common errors *****************" >
     /**
      * Message for problems during synchronization of client tables.
      */
@@ -213,10 +212,6 @@ public enum Errors {
      * When invoking an operation and the frameworks structures were not initialized.
      */
     COMMON_FRAMEWORK_NOT_INITIALIZED,
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="***************** Errors related to configuration *****************" >
-
     /**
      * Message for problems with loading server's database adapter class.
      */
@@ -252,9 +247,6 @@ public enum Errors {
      * (e.g. {@link de.consistec.doubleganger.common.SyncContext.ClientContext ClientContext}) but not specified.
      */
     CONFIG_NO_SERVER_PROXY_SPECIFIED,
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="*************** Messages related to data layer. ***************" >
     /**
      * Message for failures in rolling back database transaction.
      */
@@ -329,7 +321,6 @@ public enum Errors {
      * Example: client->server and server.wins
      */
     NOT_SUPPORTED_CONFLICT_STRATEGY,
-
     /**
      * This is an implementation error.
      * The conflict should never occur due to the configured sync direction and conflict strategy.
@@ -340,7 +331,6 @@ public enum Errors {
      * configured on server side.
      */
     COMMON_SYNCTABLE_SETTINGS_ERROR,
-
     /**
      * The sync strategy from client differ from servers sync strategy.
      */
@@ -369,6 +359,4 @@ public enum Errors {
      * no database adapter initialized.
      */
     DATA_NULLABLE_DATABASEADAPTER;
-
-    //</editor-fold>
 }

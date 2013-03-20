@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.util;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newConcurrentHashMap;
 
 import ch.qos.cal10n.IMessageConveyor;
@@ -40,7 +39,6 @@ import org.slf4j.cal10n.LocLoggerFactory;
  * @since 0.0.1-SNAPSHOT
  */
 public final class LoggingUtil {
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
 
     /**
      * Default conveyor is specified as field to avoid unnecessary searches through the map.
@@ -48,19 +46,14 @@ public final class LoggingUtil {
     private static final IMessageConveyor DEFAULT_MESSAGE_CONVEYOR = DefaultMessageConveyorSearcher.search();
     private static final LocLoggerFactory DEFAULT_FACTORY = new LocLoggerFactory(DEFAULT_MESSAGE_CONVEYOR);
     private static Map<Locale, IMessageConveyor> cache = newConcurrentHashMap(5);
-//</editor-fold>
 
     static {
         cache.put(Locale.getDefault(), DEFAULT_MESSAGE_CONVEYOR);
     }
 
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
     private LoggingUtil() {
         throw new AssertionError("No instances allowed");
     }
-//</editor-fold>
-
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     /**
      * Create an instance of "localization aware" logger for system defaults locale.
@@ -81,7 +74,4 @@ public final class LoggingUtil {
     public static LocLogger createLogger(Class clazz) {
         return DEFAULT_FACTORY.getLocLogger(clazz);
     }
-
-//</editor-fold>
-
 }

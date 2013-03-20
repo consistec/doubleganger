@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.client;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.Preconditions.checkSyncDirectionOfServerChanges;
 
@@ -65,12 +64,9 @@ import org.slf4j.cal10n.LocLogger;
  */
 public final class ClientSyncProvider extends AbstractSyncProvider implements IClientSyncProvider {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ClientSyncProvider.class.getCanonicalName());
     private IConflictListener conflictListener;
     private IDatabaseAdapter adapter = null;
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
 
     /**
      * Creates new provider instance which will be using its own database connection.
@@ -107,7 +103,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         DatabaseAdapterInstantiationException {
         super(strategies, dbAdapter);
     }
-
 
     /**
      * Creates provider which will be using given data source for provide database adapters instances with
@@ -349,35 +344,6 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
         return false;
     }
 
-//    /**
-//     * Calls the <code>ClientTableSynchronizer</code> to looks for new, modified
-//     * and deleted rows in all client data tables.
-//     *
-//     * @return List<Change> the list of client changes.
-//     * @throws SyncException if the <code>ClientTableSynchronizer</code> cannot do its work
-//     * and therefore throws an more specific exception.
-//     */
-//    private List<Change> synchronizeClientTables() throws SyncException {
-//
-//        if (adapter == null) {
-//            throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));
-//        }
-//
-//        try {
-//            ClientTableSynchronizer tableSynchronizer = new ClientTableSynchronizer(adapter);
-//            List<Change> clientChanges = tableSynchronizer.synchronizeClientTables();
-//            return clientChanges;
-//        } catch (DatabaseAdapterException e) {
-//
-//            rollback(adapter);
-//            throw new SyncException(read(Errors.COMMON_SYNCHRONIZE_CLIENT_TABLE_FAILED), e);
-//        } catch (RuntimeException ex) {
-//            // No matter what, do rollback.
-//            rollback(adapter);
-//            throw ex;
-//        }
-//    }
-
     /**
      * To improve readability, call {@link prepareAdapterWithAutoCommit()} or {@link prepareAdapterNoAutoCommit()}.
      *
@@ -405,5 +371,4 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
 
         return adapter;
     }
-    //</editor-fold>
 }

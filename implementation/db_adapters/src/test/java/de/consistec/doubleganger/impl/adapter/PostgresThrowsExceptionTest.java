@@ -22,7 +22,6 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -56,12 +55,9 @@ import org.mockito.MockitoAnnotations;
 @Ignore
 public class PostgresThrowsExceptionTest {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final SQLException TRANSACTION_EXCEPTION = new SQLException("test transaction aborted exception",
         "400001");
     private static final SQLException UNIQUE_EXCEPTION = new SQLException("test unique exception", "23505");
-//</editor-fold>
-
     @Mock
     private Connection connectionMock;
     @Mock

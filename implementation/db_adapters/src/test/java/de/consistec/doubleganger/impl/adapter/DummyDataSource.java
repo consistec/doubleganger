@@ -57,15 +57,12 @@ import org.powermock.reflect.Whitebox;
  */
 public class DummyDataSource implements DataSource {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private SupportedDatabases dbType;
     private DatabaseAdapterFactory.AdapterPurpose conType;
     private List<Connection> createdConnections;
     private String propertiesPrefix;
     private Properties properties;
-//</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
     public DummyDataSource(SupportedDatabases dbType, DatabaseAdapterFactory.AdapterPurpose conType) {
         this.dbType = dbType;
         this.conType = conType;
@@ -89,9 +86,7 @@ public class DummyDataSource implements DataSource {
             throw new RuntimeException(ex);
         }
     }
-//</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc=" Class accessors and mutators " >
     public SupportedDatabases getDbType() {
         return dbType;
     }
@@ -99,9 +94,7 @@ public class DummyDataSource implements DataSource {
     public DatabaseAdapterFactory.AdapterPurpose getConType() {
         return conType;
     }
-//</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     private Connection create(String username, String password) throws Exception {
 
         Connection con = null;
@@ -239,7 +232,6 @@ public class DummyDataSource implements DataSource {
         return Collections.unmodifiableList(createdConnections);
     }
 
-    //<editor-fold defaultstate="collapsed" desc=" -------- Not implemented methods -------- " >
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -273,13 +265,9 @@ public class DummyDataSource implements DataSource {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    //</editor-fold>
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Inner types " >
     public enum SupportedDatabases {
 
         POSTGRESQL, MYSQL, SQLITE;
     };
-    //</editor-fold>
 }

@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_IS_SQL_TRIGGER_ACTIVATED;
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_MD_TABLE_SUFFIX;
@@ -83,14 +82,6 @@ import org.slf4j.cal10n.LocLogger;
  */
 public final class Config {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
-    //<editor-fold defaultstate="collapsed" desc=" ------------- Default values ------------- " >
-    /**
-     * .
-     * CHECKSTYLE:ON
-     */
-    //</editor-fold>
-    //<editor-fold desc="Class Fields" >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(Config.class.getCanonicalName());
     //    private static Config instance;
     private Class<? extends IDatabaseAdapter> serverDatabaseAdapter;
@@ -109,9 +100,6 @@ public final class Config {
     private SyncDirection globalSyncDirection;
     private int syncRetryNumber;
 
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
-
     /**
      * It's singleton so no direct instance creation allowed.
      */
@@ -120,7 +108,6 @@ public final class Config {
          * Here AssertionError should be thrown, but we are using this constructor in unit tests (through reflection)
          * to reset configuration before each test method.
          */
-
         // here we need an initial read for the cal10n localization framework
         // otherwise we get an IOException (stream closed) if we want to read resources in.
         LOGGER.info(read(Infos.COMMON_CREATING_CONFIG));
@@ -138,9 +125,6 @@ public final class Config {
         Properties props = loader.loadFromFile(inputStream);
         setValues(props);
     }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="Accessors" >
 
     /**
      * An proxy to remote server.
@@ -464,9 +448,6 @@ public final class Config {
         this.isSqlTriggerOnClientActivated = active;
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
-
     /**
      * Returns a single instance of Config class.
      * If there is no instance yet, it will be created.
@@ -508,23 +489,23 @@ public final class Config {
         retryNumberOfApplyChangesOnTransactionError = PropertiesUtil.defaultIfNull(
             DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR,
             PropertiesUtil.readNumber(props, OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR,
-                false,
-                Integer.class));
+            false,
+            Integer.class));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_NR_OF_APPLY_CHANGES_TRIES_ON_TRANS_ERROR,
             retryNumberOfApplyChangesOnTransactionError);
 
         retryNumberOfGetChangesOnTransactionError = PropertiesUtil.defaultIfNull(DEFAULT_NR_GET_CHANGES_ON_TRANS_ERR,
             PropertiesUtil.readNumber(props, OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR,
-                false,
-                Integer.class));
+            false,
+            Integer.class));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_NR_OF_GET_CHANGES_TRIES_ON_TRANS_ERROR,
             retryNumberOfGetChangesOnTransactionError);
 
         try {
             globalConflictStrategy = PropertiesUtil.defaultIfNull(DEFAULT_CONFLICT_STRATEGY,
                 PropertiesUtil.readEnum(props,
-                    OPTIONS_COMMON_CONFLICT_ACTION, false,
-                    ConflictStrategy.class));
+                OPTIONS_COMMON_CONFLICT_ACTION, false,
+                ConflictStrategy.class));
             LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_CONFLICT_ACTION, globalConflictStrategy.name());
 
         } catch (Exception ex) {
@@ -674,5 +655,4 @@ public final class Config {
 
         static final Config INSTANCE = new Config();
     }
-    //</editor-fold>
 }

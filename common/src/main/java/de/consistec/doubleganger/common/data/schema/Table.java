@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.data.schema;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashSet;
 import static de.consistec.doubleganger.common.util.Preconditions.checkNotNull;
@@ -42,13 +41,10 @@ import java.util.Set;
  */
 public class Table {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private String name;
     private Set<Column> columns = newHashSet();
     private Set<Constraint> constraints = newHashSet();
-    //</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class constructors" >
     /**
      * Creates a table object with a <i>name</i>.
      *
@@ -57,9 +53,7 @@ public class Table {
     public Table(String name) {
         this.name = name;
     }
-    //</editor-fold>
 
-    //<editor-fold defaultstate="expanded" desc=" Class accessors " >
     /**
      *
      * @return Table name
@@ -154,8 +148,6 @@ public class Table {
         this.constraints.removeAll(Arrays.asList(constraints));
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     @Override
     public boolean equals(Object o) {
 
@@ -202,5 +194,4 @@ public class Table {
         return String.format("%s{name=%s, columns=%s, constraints=%s}", getClass().getSimpleName(), name,
             columns.toString(), constraints.toString());
     }
-    //</editor-fold>
 }

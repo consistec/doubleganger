@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.util;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import java.security.MessageDigest;
@@ -41,7 +40,6 @@ import java.util.Map;
  */
 public class HashCalculator {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     /**
      * The Constant HEXES.
      */
@@ -50,10 +48,6 @@ public class HashCalculator {
      * The message digest.
      */
     private MessageDigest md;
-
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
 
     /**
      * Instantiates a new HashCalculator.
@@ -73,10 +67,6 @@ public class HashCalculator {
     public HashCalculator(String algorithm) throws NoSuchAlgorithmException {
         this.md = MessageDigest.getInstance(algorithm);
     }
-
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
     /**
      * Returns hexadecimal representation of given data.
@@ -163,8 +153,4 @@ public class HashCalculator {
     public String toString() {
         return getClass().getSimpleName() + "{" + "md=" + md + '}';
     }
-
-    //</editor-fold>
-
-
 }

@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.util;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 /**
  * String utility class.
  *
@@ -33,16 +32,12 @@ package de.consistec.doubleganger.common.util;
  */
 public final class StringUtil {
 
-    //<editor-fold defaultstate="expanded" desc=" Class constructors" >
     /**
      * It's utility class, so no instances.
      */
     private StringUtil() {
         throw new AssertionError("No instances allowed");
     }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods" >
 
     /**
      * Checks if provided string value is null or empty.
@@ -53,6 +48,4 @@ public final class StringUtil {
     public static boolean isNullOrEmpty(final String value) {
         return value == null || value.isEmpty();
     }
-
-    //</editor-fold>
 }

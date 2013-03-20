@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.server;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashSet;
@@ -88,14 +87,9 @@ import org.slf4j.cal10n.LocLogger;
  */
 public final class ServerSyncProvider extends AbstractSyncProvider implements IServerSyncProvider { //NOSONAR
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields" >
     private static final LocLogger LOGGER = LoggingUtil.createLogger(ServerSyncProvider.class.getCanonicalName());
     private static final Config CONF = Config.getInstance();
     private static final int NUMBER_OF_SYNC_RETRIES = 3;
-
-
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors" >
 
     /**
      * Creates provider with its own database connection.
@@ -145,39 +139,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         super(strategies, ds, dbAdapter);
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods" >
-
-//    /**
-//     * Creates database adapter object (no autocommit).
-//     *
-//     * @return Adapter object.
-//     */
-//    private IDatabaseAdapter prepareDbAdapter() throws
-//        DatabaseAdapterInstantiationException {
-//
-//        if (dbAdapter != null) {
-//            return dbAdapter;
-//        }
-//
-//        IDatabaseAdapter adapter;
-//        try {
-//            if (getDs() == null) {
-//                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER);
-//            } else {
-//                adapter = DatabaseAdapterFactory.newInstance(DatabaseAdapterFactory.AdapterPurpose.SERVER,
-//                    getDs().getConnection());
-//            }
-//
-//            adapter.getConnection().setAutoCommit(false);
-//            return adapter;
-//
-//        } catch (SQLException ex) {
-//            throw new DatabaseAdapterInstantiationException(ex);
-//        }
-//
-//    }
-
     @Override
     public void validate(final SyncSettings clientSettings) throws SyncException {
 
@@ -193,7 +154,7 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
                 if (!clientSyncStrategy.equals(serverSyncStrategy)) {
                     throw new SyncException(
                         MessageReader.read(Errors.COMMON_NOT_IDENTICAL_SYNCSTRATEGY, clientSyncStrategy,
-                            serverSyncStrategy));
+                        serverSyncStrategy));
                 }
 
                 createMDTableIfNotExists(clientTable);
@@ -415,5 +376,4 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
             closeConnection(adapter);
         }
     }
-    //</editor-fold>
 }

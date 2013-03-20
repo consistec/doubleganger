@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.data;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.io.Serializable;
 
 /**
@@ -36,7 +35,6 @@ import java.io.Serializable;
  */
 public class MDEntry implements Serializable {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private static final long serialVersionUID = 1L;
     /**
      * The primary key of the change.
@@ -71,8 +69,6 @@ public class MDEntry implements Serializable {
      */
     private String mdv;
 
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Class constructors " >
     /**
      * Instantiates a new Md entry with default values.
      */
@@ -96,8 +92,6 @@ public class MDEntry implements Serializable {
         this.tableName = tableName;
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc=" Accessors " >
     /**
      * Gets the primary key.
      *
@@ -127,6 +121,7 @@ public class MDEntry implements Serializable {
 
     /**
      * Returns true if the data row still exists.
+     * <p/>
      * @return true if data row still exists
      */
     public boolean dataRowExists() {
@@ -194,8 +189,6 @@ public class MDEntry implements Serializable {
         this.mdv = mdv;
     }
 
-    //</editor-fold>
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
     /**
      * Description of object state.
      * Something like {@code MDEntry{pk=PkObjectToString, dataRowExists=true, rev=2, tableName=name}}.
@@ -248,6 +241,4 @@ public class MDEntry implements Serializable {
         result = hashcodePrime * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
-    //</editor-fold>
-
 }

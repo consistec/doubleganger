@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.i18n;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newConcurrentHashMap;
 
 import de.consistec.doubleganger.common.util.DefaultMessageConveyorSearcher;
@@ -40,25 +39,20 @@ import java.util.Map;
  */
 public final class MessageReader {
 
-//<editor-fold defaultstate="expanded" desc=" Class fields " >
     /**
      * Default conveyor is specified as field to avoid unnecessary searches through the map.
      */
     private static final IMessageConveyor DEFAULT_MESSAGE_CONVEYOR = DefaultMessageConveyorSearcher.search();
     private static final Map<Locale, IMessageConveyor> CACHE = newConcurrentHashMap(5);
-//</editor-fold>
 
     static {
         CACHE.put(Locale.getDefault(), DEFAULT_MESSAGE_CONVEYOR);
     }
 
-//<editor-fold defaultstate="expanded" desc=" Class constructors " >
     private MessageReader() {
         throw new AssertionError("No instances allowed");
     }
 
-//</editor-fold>
-//<editor-fold defaultstate="expanded" desc=" Class methods " >
     /**
      * Reads translated string.
      * Method searches the ResourceBundle for default system locale, if provided, and if not, it searches the English
@@ -78,5 +72,4 @@ public final class MessageReader {
             throw new IllegalArgumentException("Provided enumeration is not an CAL10n enum!");
         }
     }
-//</editor-fold>
 }

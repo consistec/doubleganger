@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common.data.schema;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 /**
  * Representation of a database column.
  *
@@ -33,15 +32,11 @@ package de.consistec.doubleganger.common.data.schema;
  */
 public class Column {
 
-    //<editor-fold defaultstate="expanded" desc=" Class fields " >
     private String name;
     private int type;
     private int size;
     private int decimalDigits;
     private boolean nullable = true;
-    //<editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class constructors " >
 
     /**
      * Initialize partially the new object, with name and type of the column.
@@ -70,9 +65,6 @@ public class Column {
         this.decimalDigits = decimalDigits;
         this.nullable = nullable;
     }
-    //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc=" Class accessors " >
 
     /**
      * @return Column name
@@ -130,7 +122,7 @@ public class Column {
      *
      * @param decimalDigits the number of fractional digits
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumns((String catalog,
-     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     public void setDecimalDigits(int decimalDigits) {
         this.decimalDigits = decimalDigits;
@@ -154,10 +146,6 @@ public class Column {
     public void setNullable(boolean nullable) {
         this.nullable = nullable;
     }
-
-    //</editor-fold>
-
-    //<editor-fold defaultstate="expanded" desc=" Class methods " >
 
     @Override
     public boolean equals(Object object) {
