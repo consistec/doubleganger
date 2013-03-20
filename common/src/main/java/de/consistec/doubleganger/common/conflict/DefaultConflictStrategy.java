@@ -30,6 +30,7 @@ import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ConflictHandlingData;
 import de.consistec.doubleganger.common.data.Change;
+import de.consistec.doubleganger.common.data.ResolvedChange;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.util.HashCalculator;
@@ -119,33 +120,52 @@ public class DefaultConflictStrategy implements IConflictStrategy {
     }
 
     @Override
-    public void resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                                   final Map<String, Object> clientData, final IConflictListener conflictListener
+    public ResolvedChange resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
+                                             final Map<String, Object> clientData,
+                                             final IConflictListener conflictListener
     ) throws
         SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
 
-        Map<String, Object> resolved = conflictListener.resolve(data.getRemoteChange().getRowData(), clientData);
+        ResolvedChange resolved = conflictListener.resolve(data.getRemoteChange().getRowData(), clientData);
+
+        if (resolved.getDecision() == UserDecision.SERVER_CHANGE
+            || resolved.getDecision() == UserDecision.USER_EDIT) {
+            applyResolvedChange(resolved, adapter, clientData, data);
+        }
+
+        return resolved;
+    }
+
+    private void applyResolvedChange(ResolvedChange change, final IDatabaseAdapter adapter,
+                                     final Map<String, Object> clientData,
+                                     final ConflictHandlingData data
+    ) throws DatabaseAdapterException, NoSuchAlgorithmException {
+
         if (rowHasData(clientData)) {
 
-            if (!rowHasData(resolved)) {
+            if (!rowHasData(change.getRowData())) {
                 adapter.deleteRow(data.getRemoteEntry().getPrimaryKey(), data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
+                    data.getRemoteEntry().getPrimaryKey(),
                     null,
                     data.getRemoteEntry().getTableName());
             } else {
-                adapter.updateDataRow(resolved, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateDataRow(change.getRowData(), data.getRemoteEntry().getPrimaryKey(),
                     data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
-                    new HashCalculator().getHash(resolved), data.getRemoteEntry().getTableName());
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
+                    data.getRemoteEntry().getPrimaryKey(),
+                    new HashCalculator().getHash(change.getRowData()), data.getRemoteEntry().getTableName());
             }
         } else {
-            if (rowHasData(resolved)) {
-                adapter.insertDataRow(resolved, data.getRemoteEntry().getTableName());
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED, data.getRemoteEntry().getPrimaryKey(),
-                    new HashCalculator().getHash(resolved), data.getRemoteEntry().getTableName());
+            if (rowHasData(change.getRowData())) {
+                adapter.insertDataRow(change.getRowData(), data.getRemoteEntry().getTableName());
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
+                    data.getRemoteEntry().getPrimaryKey(),
+                    new HashCalculator().getHash(change.getRowData()), data.getRemoteEntry().getTableName());
 
             } else {
-                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_PROCESSED, data.getRemoteEntry().getPrimaryKey(),
+                adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_PROCESSED,
+                    data.getRemoteEntry().getPrimaryKey(),
                     null,
                     data.getRemoteEntry().getTableName());
             }

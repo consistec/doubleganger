@@ -22,6 +22,7 @@ package de.consistec.doubleganger.common.conflict;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static org.junit.Assert.assertTrue;
 
@@ -32,6 +33,7 @@ import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ConflictHandlingData;
 import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.data.MDEntry;
+import de.consistec.doubleganger.common.data.ResolvedChange;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
@@ -123,8 +125,9 @@ public class ClientToServerConflictStrategyTest {
         conflictStrategy.resolveByFireEvent(databaseAdapterMock, conflictHandlingData, clientData,
             new IConflictListener() {
                 @Override
-                public Map<String, Object> resolve(final Map<String, Object> serverData,
-                    final Map<String, Object> clientData) {
+                public ResolvedChange resolve(final Map<String, Object> serverData,
+                                              final Map<String, Object> clientData
+                ) {
                     return null;
                 }
             });

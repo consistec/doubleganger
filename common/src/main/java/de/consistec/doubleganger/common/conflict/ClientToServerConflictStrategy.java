@@ -29,6 +29,7 @@ import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.SyncDirection;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ConflictHandlingData;
+import de.consistec.doubleganger.common.data.ResolvedChange;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.i18n.Errors;
@@ -64,8 +65,8 @@ public class ClientToServerConflictStrategy implements IConflictStrategy {
     }
 
     @Override
-    public void resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                                   final Map<String, Object> clientData, final IConflictListener conflictListener
+    public ResolvedChange resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
+                                       final Map<String, Object> clientData, final IConflictListener conflictListener
     ) throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
         throw new IllegalStateException(read(Errors.NOT_SUPPORTED_CONFLICT_STRATEGY, ConflictStrategy.FIRE_EVENT,
             SyncDirection.CLIENT_TO_SERVER.name()));

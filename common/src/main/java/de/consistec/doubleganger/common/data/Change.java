@@ -22,6 +22,7 @@ package de.consistec.doubleganger.common.data;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 
 import de.consistec.doubleganger.common.util.HashCalculator;
@@ -126,10 +127,12 @@ public class Change implements Serializable {
      */
     @Override
     public String toString() {
+        String mdEntryString = (mdEntry == null) ? "" : mdEntry.toString();
+        String rowDataString = (rowData == null) ? "" : rowData.toString();
         return getClass().getSimpleName() + "{ mdEntry="
-            + mdEntry.toString()
+            + mdEntryString
             + ", rowData= "
-            + rowData.toString()
+            + rowDataString
             + " }";
     }
 
