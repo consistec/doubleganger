@@ -23,7 +23,6 @@ package de.consistec.doubleganger.impl.adapter;
  * #L%
  */
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashSet;
 
@@ -67,35 +66,36 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
     private static final transient SchemaXMLConverter XML_CONVERTER = new SchemaXMLConverter();
 
     @Override
-    public List<Change> deserializeChangeList(final String serializedObject) throws
+    public SyncData deserializeChangeList(final String serializedObject) throws
         SerializationException {
 
-        return deserializeChangeList(serializedObject, 0);
+        return deserializeChangeList(serializedObject, 1);
     }
 
     @Override
     public SyncData deserializeMaxRevisionAndChangeList(final String serializedObject) throws
         SerializationException {
 
-        List<Change> changeList = deserializeChangeList(serializedObject, 1);
+        SyncData changeList = deserializeChangeList(serializedObject, 1);
 
         try {
 
             final JSONArray array = new JSONArray(serializedObject);
             Integer maxRevision = Integer.valueOf(array.getInt(0));
+            changeList.setRevision(maxRevision);
 
-            return new SyncData(maxRevision, changeList);
+            return changeList;
         } catch (JSONException e) {
             throw new SerializationException(read(Errors.CANT_CONVERT_FROM_JSON_TO_CHANGE_LIST), e);
         }
     }
 
-    private List<Change> deserializeChangeList(final String serializedObject, int startIndex) throws
+    private SyncData deserializeChangeList(final String serializedObject, int startIndex) throws
         SerializationException {
 
         try {
 
-            final List<Change> changesList = newArrayList();
+            final SyncData changesList = new SyncData();
             final JSONArray array = new JSONArray(serializedObject);
             JSONObject object;
             JSONObject mdEntryObject;
@@ -137,7 +137,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
                 }
 
                 change.setRowData(map);
-                changesList.add(change);
+                changesList.addChange(change);
             }
             return changesList;
         } catch (JSONException e) {

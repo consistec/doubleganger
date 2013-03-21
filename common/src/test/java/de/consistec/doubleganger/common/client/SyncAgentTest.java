@@ -9,15 +9,15 @@ package de.consistec.doubleganger.common.client;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -82,12 +82,17 @@ public class SyncAgentTest {
     @Test(expected = ServerStatusException.class)
     public void repeatSyncDueToClientNotUptoDate() throws ContextException, SyncException {
 
-        when(this.serverSyncProviderMock.getChanges(anyInt())).thenReturn(new SyncData(1, new ArrayList<Change>()));
+        SyncData data1 = new SyncData();
+        data1.setRevision(1);
+        SyncData data2 = new SyncData();
+        data1.setRevision(2);
+
+        when(this.serverSyncProviderMock.getChanges(anyInt())).thenReturn(data1);
         // throw exception to repeat the sync
         when(this.serverSyncProviderMock.applyChanges((SyncData) anyObject())).thenThrow(new ServerStatusException(
             CLIENT_NOT_UPTODATE, read(Errors.COMMON_UPDATE_NECESSARY)));
         when(this.clientSyncProviderMock.resolveConflicts((SyncData) anyObject(), (SyncData) anyObject())).thenReturn(
-            new SyncDataHolder(new SyncData(1, new ArrayList<Change>()), new SyncData(2, new ArrayList<Change>())));
+            new SyncDataHolder(data1, data2));
 
         SyncAgent agent = new SyncAgent(this.serverSyncProviderMock, this.clientSyncProviderMock);
         agent.synchronize();

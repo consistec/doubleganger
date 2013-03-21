@@ -9,26 +9,27 @@ package de.consistec.doubleganger.common;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.data.Change;
 
 import java.util.List;
 
 /**
- * Container for revision and change set data which where synchronized.
+ * Container for revision and change set data which were synchronized.
  *
  * @author thorsten
  * @company consistec Engineering and Consulting GmbH
@@ -40,24 +41,22 @@ public class SyncData {
     private List<Change> changes;
 
     /**
-     * Constructor of the container.
-     *
-     * @param revision client or server revision
-     * @param changes client or server change set
+     * Creates a new SyncData (revision 0, no changes).
      */
-    public SyncData(int revision, List<Change> changes) {
-        this.revision = revision;
-        this.changes = changes;
+    public SyncData() {
+        this.revision = 0;
+        this.changes = newArrayList();
     }
 
     /**
-     * Constructor of the container.
+     * Creates a clone of an existing SyncData (copying its {@link Change}s).
      *
      * @param syncData revision and change set from client or server
      */
     public SyncData(SyncData syncData) {
         this.revision = syncData.getRevision();
-        this.changes = syncData.getChanges();
+        // we have to copy the lists to remove items from it.
+        this.changes = newArrayList(syncData.getChanges());
     }
 
     /**
@@ -70,15 +69,6 @@ public class SyncData {
     }
 
     /**
-     * returns the change set of the container.
-     *
-     * @return list of changes
-     */
-    public List<Change> getChanges() {
-        return changes;
-    }
-
-    /**
      * sets the containers revision.
      *
      * @param revision client or server revision.
@@ -88,11 +78,47 @@ public class SyncData {
     }
 
     /**
-     * sets the containers change set.
+     * returns the change set of the container.
      *
-     * @param changes from client or server
+     * @return list of changes
      */
-    public void setChanges(final List<Change> changes) {
-        this.changes = changes;
+    public List<Change> getChanges() {
+        return changes;
     }
+
+    /**
+     * Adds a change to synchronize.
+     * <p/>
+     * @param change the change to synchronize.
+     */
+    public void addChange(final Change change) {
+        this.changes.add(change);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SyncData other = (SyncData) obj;
+        if (this.revision != other.revision) {
+            return false;
+        }
+        if (this.changes != other.changes && (this.changes == null || !this.changes.equals(other.changes))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.revision;
+        hash = 79 * hash + (this.changes != null ? this.changes.hashCode() : 0);
+        return hash;
+    }
+
 }

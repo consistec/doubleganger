@@ -128,7 +128,7 @@ public class ServerSyncProviderTest {
         doThrow(TRANSACTION_SQL_EXCEPTION).when(
             connectionMock).commit();
 
-        serverSyncProvider.applyChanges(new SyncData(0, new ArrayList<Change>()));
+        serverSyncProvider.applyChanges(new SyncData());
 
         verify(databaseAdapterMock).commit();
     }
@@ -147,7 +147,7 @@ public class ServerSyncProviderTest {
 
         doThrow(UNIQUE_EXCEPTION).when(databaseAdapterMock).commit();
 
-        serverSyncProvider.applyChanges(new SyncData(0, new ArrayList<Change>()));
+        serverSyncProvider.applyChanges(new SyncData());
     }
 
     @Test
@@ -171,7 +171,7 @@ public class ServerSyncProviderTest {
         doAnswer(throwTransactionException)
             .when(databaseAdapterMock).getAllRowsFromTable(anyString(), any(DatabaseAdapterCallback.class));
         doAnswer(throwTransactionException)
-            .when(databaseAdapterMock).getChangesByFlag(anyString(), any(DatabaseAdapterCallback.class));
+            .when(databaseAdapterMock).getChanges(anyString(), any(DatabaseAdapterCallback.class));
 
         serverSyncProvider.getChanges(0);
     }
