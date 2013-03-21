@@ -108,8 +108,8 @@ public class ClientHashProcessor {
     public SyncDataHolder resolveConflicts(SyncData clientData, SyncData serverData) throws SyncException {
         LOGGER.debug("applyChangesFromServerOnClient called");
 
-        Collections.sort(serverData.getChanges(), Change.getPrimaryKeyComparator());
-        Collections.sort(clientData.getChanges(), Change.getPrimaryKeyComparator());
+        clientData.sortChanges();
+        serverData.sortChanges();
 
         SyncData copiedClientSyncData = new SyncData(clientData);
         SyncData copiedServerSyncData = new SyncData(serverData);
@@ -170,6 +170,21 @@ public class ClientHashProcessor {
         final String tableName = remoteEntry.getTableName();
         final int rev = remoteEntry.getRevision();
         final Map<String, Object> remoteRowData = serverChange.getRowData();
+//        // this basically boils down to:
+//        if (remoteEntry.dataRowExists()) {
+//            // SERVER ADD or MOD
+//            final String hash;
+//            try {
+//                hash = serverChange.calculateHash();
+//            } catch (NoSuchAlgorithmException e) {
+//                throw new DatabaseAdapterException(e);
+//            }
+//            adapter.insertOrUpdateDataRow(remoteRowData, pKey, tableName);
+//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+//        } else {
+//            adapter.deleteRowOrDoNothing(pKey, tableName);
+//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+//        }
 
         // SERVER ADD, MOD OR DEL
         if (remoteEntry.dataRowExists()) {
@@ -257,32 +272,32 @@ public class ClientHashProcessor {
         switch (conflictStrategy) {
             case CLIENT_WINS:
                 conflictHandlingStrategy.resolveByClientWinsStrategy(adapter, data);
-                dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                dataHolder.getServerSyncData().removeChange(serverChange);
                 break;
             case SERVER_WINS:
                 conflictHandlingStrategy.resolveByServerWinsStrategy(adapter, data);
                 // remove client change from change list if syncdirection is server_to_client
-                dataHolder.getClientSyncData().getChanges().remove(clientChange);
-                dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                dataHolder.getClientSyncData().removeChange(clientChange);
+                dataHolder.getServerSyncData().removeChange(serverChange);
                 break;
             case FIRE_EVENT:
                 ResolvedChange resolvedChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 if (resolvedChange.getDecision() == UserDecision.CLIENT_CHANGE) {
                     // server change must not applied to client db
                     // client change stays in list to send to server
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                    dataHolder.getServerSyncData().removeChange(serverChange);
                 } else if (resolvedChange.getDecision() == UserDecision.SERVER_CHANGE) {
                     // client change must not applied to server db
-                    dataHolder.getClientSyncData().getChanges().remove(clientChange);
+                    dataHolder.getClientSyncData().removeChange(clientChange);
                     // server change already applied to client db
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
+                    dataHolder.getServerSyncData().removeChange(serverChange);
                 } else {
                     // change client change with resolved change to apply to server db
-                    dataHolder.getClientSyncData().getChanges().remove(clientChange);
-                    dataHolder.getClientSyncData().getChanges().add(resolvedChange);
+                    dataHolder.getClientSyncData().removeChange(clientChange);
+                    dataHolder.getClientSyncData().addChange(resolvedChange);
                     // change server change with resolved change to apply to client db
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
-                    dataHolder.getServerSyncData().getChanges().add(resolvedChange);
+                    dataHolder.getServerSyncData().removeChange(serverChange);
+                    dataHolder.getServerSyncData().addChange(resolvedChange);
                 }
                 break;
             default:
@@ -301,9 +316,9 @@ public class ClientHashProcessor {
         LOGGER.debug("Updating client revisions on hashtable");
         for (Change change : clientData.getChanges()) {
             MDEntry tmpMDEntry = change.getMdEntry();
-            int result = adapter.updateRevision(clientData.getRevision(),
-                tmpMDEntry.getTableName() + CONF.getMdTableSuffix(),
-                tmpMDEntry.getPrimaryKey());
+            int revision = clientData.getRevision();
+            String mdTableName = tmpMDEntry.getTableName() + CONF.getMdTableSuffix();
+            int result = adapter.updateRevision(revision, mdTableName, tmpMDEntry.getPrimaryKey());
             if (result != 1) {
                 LOGGER.warn(read(Warnings.COMMON_CANT_UPDATE_CLIENT_REV));
             }

@@ -26,6 +26,7 @@ import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList
 
 import de.consistec.doubleganger.common.data.Change;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -83,7 +84,7 @@ public class SyncData {
      * @return list of changes
      */
     public List<Change> getChanges() {
-        return changes;
+        return Collections.unmodifiableList(changes);
     }
 
     /**
@@ -93,6 +94,22 @@ public class SyncData {
      */
     public void addChange(final Change change) {
         this.changes.add(change);
+    }
+
+    /**
+     * Remove a change from the synchronization list.
+     * <p/>
+     * @param change the change to remove.
+     */
+    public void removeChange(final Change change) {
+        this.changes.remove(change);
+    }
+
+    /**
+     * Sorts the change list using the {@link Change.getPrimaryKeyComparator}.
+     */
+    public void sortChanges() {
+        Collections.sort(this.changes, Change.getPrimaryKeyComparator());
     }
 
     @Override

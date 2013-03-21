@@ -110,7 +110,7 @@ public class ServerChangesEnumerator {
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
                                 syncTable).getDirection();
                             if (syncDirection != SyncDirection.CLIENT_TO_SERVER) {
-                                serverChangeSet.getChanges().add(tmpChange);
+                                serverChangeSet.addChange(tmpChange);
                             }
 
                             int revision = tmpChange.getMdEntry().getRevision();
