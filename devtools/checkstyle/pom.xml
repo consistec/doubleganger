@@ -5,7 +5,7 @@
 
     <groupId>de.consistec.doubleganger</groupId>
     <artifactId>checkstyle</artifactId>
-    <version>1</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <name>Checkstyle</name>
     <description>Contains the checkstyle settings for the Doubleganger project</description>
