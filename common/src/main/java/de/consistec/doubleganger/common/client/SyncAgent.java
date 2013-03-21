@@ -208,6 +208,8 @@ public class SyncAgent {
             // transaction phase 2 client
             clientProvider.updateClientRevision(clientChangesToApply);
 
+            updateFinished();
+
         } catch (ServerStatusException ex) {
             LOGGER.warn(Warnings.COMMON_CLIENT_CAUGHT_SERVER_STATUS_EXCEPTION, ex.getStatus().name(), ex.getMessage());
 
