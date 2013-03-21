@@ -26,6 +26,8 @@ import static de.consistec.doubleganger.common.SyncDirection.BIDIRECTIONAL;
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 import static de.consistec.doubleganger.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.MYSQL;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.POSTGRESQL;
 
 import de.consistec.doubleganger.common.SyncData;
 import de.consistec.doubleganger.common.SyncDataHolder;
@@ -47,8 +49,6 @@ import de.consistec.doubleganger.impl.TestScenario;
 import de.consistec.doubleganger.impl.adapter.MySqlDatabaseAdapter;
 import de.consistec.doubleganger.impl.adapter.PooledTestDatabase;
 import de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter;
-import de.consistec.doubleganger.impl.adapter.it_mysql.MySqlDatabase;
-import de.consistec.doubleganger.impl.adapter.it_postgres.PostgresDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -287,12 +287,11 @@ public class ClientProviderTransactionTest {
     private static class PostgresDatabaseWithAdapter extends TestDatabaseWithAdapter {
 
         public PostgresDatabaseWithAdapter() {
-            super(new PooledTestDatabase(new PostgresDatabase(SERVER)), new PooledTestDatabase(new PostgresDatabase(
-                CLIENT)));
+            super(new PooledTestDatabase(new TestDatabase(POSTGRESQL, SERVER, false)),
+                new PooledTestDatabase(new TestDatabase(POSTGRESQL, CLIENT, false)));
             MockClientPostgresDatabaseAdapter dbAdapter = new MockClientPostgresDatabaseAdapter();
             try {
-                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new PostgresDatabase(
-                    DatabaseAdapterFactory.AdapterPurpose.CLIENT));
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new TestDatabase(POSTGRESQL, CLIENT, false));
                 pooledDatabase.initPooledDB();
                 dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
             } catch (SQLException e) {
@@ -324,11 +323,11 @@ public class ClientProviderTransactionTest {
     private static class MySqlDatabaseWithAdapter extends TestDatabaseWithAdapter {
 
         public MySqlDatabaseWithAdapter() {
-            super(new PooledTestDatabase(new MySqlDatabase(SERVER)), new PooledTestDatabase(new MySqlDatabase(CLIENT)));
+            super(new PooledTestDatabase(new TestDatabase(MYSQL, SERVER, false)),
+                new PooledTestDatabase(new TestDatabase(MYSQL, CLIENT, false)));
             MockClientMySqlDatabaseAdapter dbAdapter = new MockClientMySqlDatabaseAdapter();
             try {
-                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new MySqlDatabase(
-                    DatabaseAdapterFactory.AdapterPurpose.CLIENT));
+                PooledTestDatabase pooledDatabase = new PooledTestDatabase(new TestDatabase(MYSQL, CLIENT, false));
                 pooledDatabase.initPooledDB();
                 dbAdapter.init(pooledDatabase.getPooledClientDataSource().getConnection());
             } catch (SQLException e) {

@@ -26,8 +26,11 @@ package de.consistec.doubleganger.impl.adapter.it_alldb;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.POSTGRESQL;
+
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,7 +43,6 @@ import de.consistec.doubleganger.common.SyncDataHolder;
 import de.consistec.doubleganger.common.SyncDirection;
 import de.consistec.doubleganger.common.TableSyncStrategies;
 import de.consistec.doubleganger.common.TableSyncStrategy;
-import de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ClientHashProcessor;
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
@@ -50,7 +52,6 @@ import de.consistec.doubleganger.common.exception.ContextException;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.impl.TestDatabase;
-import de.consistec.doubleganger.impl.adapter.it_postgres.PostgresDatabase;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -83,7 +84,7 @@ public class TableSyncStrategyTest {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
     private static final String TEST_MDV = "6767e648767786786dsffdsa786dfsaf";
-    private TestDatabase db = new PostgresDatabase(DatabaseAdapterFactory.AdapterPurpose.SERVER);
+    private TestDatabase db = new TestDatabase(POSTGRESQL, SERVER, false);
     @Mock
     private ResultSet localDataResultSet;
     @Mock

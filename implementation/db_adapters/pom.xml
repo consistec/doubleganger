@@ -115,8 +115,7 @@
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <skipITs>${skipItTests}</skipITs>
                     <includes>
-                        <include>**/IT*.java</include>
-                        <include>**/it_sqlite/IT*.java</include>
+                        <include>**/*IT.java</include>
                     </includes>
                 </configuration>
                 <executions>
@@ -283,6 +282,7 @@
                 </testResources>
             </build>
         </profile>
+
         <profile>
             <id>with_mysql_tests</id>
             <properties>

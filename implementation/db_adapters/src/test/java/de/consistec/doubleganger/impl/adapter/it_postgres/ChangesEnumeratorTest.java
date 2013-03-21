@@ -24,6 +24,9 @@ package de.consistec.doubleganger.impl.adapter.it_postgres;
  */
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.MYSQL;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.POSTGRESQL;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.SQLITE;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.SyncData;
@@ -39,8 +42,6 @@ import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.server.ServerChangesEnumerator;
 import de.consistec.doubleganger.impl.TestDatabase;
-import de.consistec.doubleganger.impl.adapter.it_mysql.MySqlDatabase;
-import de.consistec.doubleganger.impl.adapter.it_sqlite.SqlLiteDatabase;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -72,9 +73,9 @@ public class ChangesEnumeratorTest {
     public static Collection<Object[]> AllScenarii() {
 
         return Arrays.asList(new Object[][]{
-                {new SqlLiteDatabase(SERVER), new SqlLiteDatabase(CLIENT)},
-                {new MySqlDatabase(SERVER), new MySqlDatabase(CLIENT)},
-                {new PostgresDatabase(SERVER), new PostgresDatabase(CLIENT)}});
+                {new TestDatabase(SQLITE, SERVER, false), new TestDatabase(SQLITE, CLIENT, false)},
+                {new TestDatabase(MYSQL, SERVER, false), new TestDatabase(MYSQL, CLIENT, false)},
+                {new TestDatabase(POSTGRESQL, SERVER, false), new TestDatabase(POSTGRESQL, CLIENT, false)}});
     }
 
     public ChangesEnumeratorTest(TestDatabase serverDb, TestDatabase clientDb) {
