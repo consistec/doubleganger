@@ -14,7 +14,7 @@
     <name>Database adapters</name>
 
     <properties>
-        <skipItTests>false</skipItTests>
+        <skipItTests>true</skipItTests>
         <synctables>categories,items</synctables>
 
         <!-- postgresql-settings for tests -->
