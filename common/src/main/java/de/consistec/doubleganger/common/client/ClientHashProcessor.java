@@ -170,21 +170,6 @@ public class ClientHashProcessor {
         final String tableName = remoteEntry.getTableName();
         final int rev = remoteEntry.getRevision();
         final Map<String, Object> remoteRowData = serverChange.getRowData();
-//        // this basically boils down to:
-//        if (remoteEntry.dataRowExists()) {
-//            // SERVER ADD or MOD
-//            final String hash;
-//            try {
-//                hash = serverChange.calculateHash();
-//            } catch (NoSuchAlgorithmException e) {
-//                throw new DatabaseAdapterException(e);
-//            }
-//            adapter.insertOrUpdateDataRow(remoteRowData, pKey, tableName);
-//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
-//        } else {
-//            adapter.deleteRowOrDoNothing(pKey, tableName);
-//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
-//        }
 
         // SERVER ADD, MOD OR DEL
         if (remoteEntry.dataRowExists()) {

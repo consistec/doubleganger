@@ -106,7 +106,7 @@ public class ClientChangesEnumerator {
 
                                 Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
                                 MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
-                                mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
+                                mdEntry.setDataRowExists(DBMapperUtil.dataRowHasValues(rowData));
 
                                 Change change = new Change(mdEntry, rowData);
                                 allChanges.addChange(change);

@@ -104,7 +104,7 @@ public class ServerChangesEnumerator {
                             tmpChange.setRowData(rowData);
 
                             MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, syncTable);
-                            mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
+                            mdEntry.setDataRowExists(DBMapperUtil.dataRowHasValues(rowData));
                             tmpChange.setMdEntry(mdEntry);
 
                             SyncDirection syncDirection = tableSyncStrategies.getSyncStrategyForTable(
