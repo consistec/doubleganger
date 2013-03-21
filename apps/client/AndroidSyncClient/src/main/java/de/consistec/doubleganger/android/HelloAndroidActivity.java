@@ -24,6 +24,7 @@ package de.consistec.doubleganger.android;
 
 import de.consistec.doubleganger.android.adapter.GingerbreadSQLiteDatabaseAdapter;
 import de.consistec.doubleganger.android.adapter.ICSSQLiteDatabaseAdapter;
+import de.consistec.doubleganger.android.conflict.ConflictResolver;
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.ISyncProgressListener;
 import de.consistec.doubleganger.common.SyncContext;
@@ -40,10 +41,8 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +58,10 @@ public class HelloAndroidActivity extends Activity {
     private static final Config CONF = Config.getInstance();
     private TextView textView;
     private EditText editText;
+    private int layoutResourceId;
+    private int columnResourceId;
+    private int columnValueResourceId;
+
 
     // configuring log4j logger
     static {
@@ -95,6 +98,18 @@ public class HelloAndroidActivity extends Activity {
                 textView.setText(message);
             }
         });
+    }
+
+    public int getLayoutResourceId() {
+        return R.layout.conflict_row_view;
+    }
+
+    public int getColumnResourceId() {
+        return R.id.column;
+    }
+
+    public int getColumnValueResourceId() {
+        return R.id.columnValue;
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {
@@ -165,6 +180,8 @@ public class HelloAndroidActivity extends Activity {
                     try {
                         final SyncContext.ClientContext clientCtx = SyncContext.client();
                         clientCtx.addProgressListener(new HelloAndroidActivityProgressListener());
+
+                        clientCtx.setConflictListener(new ConflictResolver(HelloAndroidActivity.this));
                         clientCtx.synchronize();
 
                     } catch (final SyncException ex) {

@@ -3,4 +3,7 @@
     <string name="sync">Synchronize</string>
     <string name="app_name">AndroidSyncClient</string>
     <string name="url">http://10.0.2.2:8080/SyncServer/SyncService</string>
+    <string name="useClientChange">use client change</string>
+    <string name="useServerChange">use server change</string>
+    <string name="useSelectedChange">use change</string>
 </resources>
