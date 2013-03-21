@@ -51,7 +51,6 @@ import de.consistec.doubleganger.common.util.LoggingUtil;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
@@ -118,14 +117,11 @@ public class ClientHashProcessor {
         try {
             for (final Change remoteChange : serverData.getChanges()) {
 
-                int foundIndex = Collections.binarySearch(clientData.getChanges(), remoteChange,
-                    Change.getPrimaryKeyComparator());
-
                 final MDEntry remoteEntry = remoteChange.getMdEntry();
                 LOGGER.debug("processing: {}", remoteEntry.toString());
 
-                if (isConflict(foundIndex)) {
-                    Change clientChange = clientData.getChanges().get(foundIndex);
+                Change clientChange = clientData.getConflictingChange(remoteChange);
+                if (clientChange != null) {
                     resolveConflict(remoteChange, clientChange, dataHolder);
                 }
             }
@@ -170,6 +166,22 @@ public class ClientHashProcessor {
         final String tableName = remoteEntry.getTableName();
         final int rev = remoteEntry.getRevision();
         final Map<String, Object> remoteRowData = serverChange.getRowData();
+
+//        // this basically boils down to:
+//        if (remoteEntry.dataRowExists()) {
+//            // SERVER ADD or MOD
+//            final String hash;
+//            try {
+//                hash = serverChange.calculateHash();
+//            } catch (NoSuchAlgorithmException e) {
+//                throw new DatabaseAdapterException(e);
+//            }
+//            adapter.insertOrUpdateDataRow(remoteRowData, pKey, tableName);
+//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+//        } else {
+//            adapter.deleteRowOrDoNothing(pKey, tableName);
+//            adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, MDV_DELETED_VALUE, tableName);
+//        }
 
         // SERVER ADD, MOD OR DEL
         if (remoteEntry.dataRowExists()) {
@@ -231,10 +243,6 @@ public class ClientHashProcessor {
                 }
             });
         }
-    }
-
-    private boolean isConflict(int foundIndex) {
-        return foundIndex >= 0;
     }
 
     private void resolveConflict(final Change serverChange, final Change clientChange, SyncDataHolder dataHolder)

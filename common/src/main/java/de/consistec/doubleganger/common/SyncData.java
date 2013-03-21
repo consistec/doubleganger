@@ -112,6 +112,17 @@ public class SyncData {
         Collections.sort(this.changes, Change.getPrimaryKeyComparator());
     }
 
+    /**
+     * Searches the list of changes for this specific change and returns the conflicting change.
+     * Please use {@link sortChanges()} beforehand to sort the list of changes.
+     * @param remoteChange the change to search for
+     * @return the conflicting change (null if not found)
+     */
+    public Change getConflictingChange(Change remoteChange) {
+        int foundIndex = Collections.binarySearch(this.changes, remoteChange, Change.getPrimaryKeyComparator());
+        return (foundIndex < 0) ? null : this.changes.get(foundIndex);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
