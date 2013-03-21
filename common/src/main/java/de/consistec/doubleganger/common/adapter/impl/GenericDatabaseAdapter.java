@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.adapter.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
@@ -595,7 +594,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
             for (String table : CONF.getSyncTables()) {
                 mdTable = table + CONF.getMdTableSuffix();
-                rst = stmt.executeQuery(String.format("select MAX(rev) from %s", mdTable));
+                rst = stmt.executeQuery(String.format("select MAX(%s) from %s", REV_COLUMN_NAME, mdTable));
                 while (rst.next()) {
                     int tmp = rst.getInt(1);
                     if (tmp > rev) {
@@ -618,12 +617,13 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     public void updateMdRow(final int rev, final int flag, final Object pk, final String mdv, final String tableName)
         throws DatabaseAdapterException {
 
-        LOGGER.debug("updating md row with values: pk:{} mdv:{} rev:{} flag: {} tablename:{}{}", pk, mdv, rev, flag,
-            tableName, CONF.getMdTableSuffix());
+        LOGGER.debug("updating md row with values: {}:{} {}:{} {}:{} {}:{} tablename:{}{}", PK_COLUMN_NAME, pk,
+            MDV_COLUMN_NAME, mdv, REV_COLUMN_NAME, rev, FLAG_COLUMN_NAME, flag, tableName, CONF.getMdTableSuffix());
 
         String statement;
 
-        statement = String.format("update %s%s SET mdv=?, rev=?, f=? where pk=?", tableName, CONF.getMdTableSuffix());
+        statement = String.format("update %s%s SET %s=?, %s=?, %s=? where %s=?", tableName, CONF.getMdTableSuffix(),
+            MDV_COLUMN_NAME, REV_COLUMN_NAME, FLAG_COLUMN_NAME, PK_COLUMN_NAME);
 
         PreparedStatement updateStatement = null;
         try {
@@ -677,8 +677,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void insertMdRow(int rev, int f, Object pk, String mdv, String tableName) throws DatabaseAdapterException {
 
-        LOGGER.debug(String.format("inserting md row with values: pk:%s mdv:%s rev:%d flag: %d tablename:%s",
-            pk, mdv, rev, f, tableName));
+        LOGGER.debug(String.format("inserting md row with values: %s:%s %s:%s %s:%d %s:%d tablename:%s",
+            PK_COLUMN_NAME, pk, MDV_COLUMN_NAME, mdv, REV_COLUMN_NAME, rev, FLAG_COLUMN_NAME, f, tableName));
 
         final String statement = String.format("insert into %s (%s,%s,%s,%s) VALUES (?,?,?,?)",
             tableName + CONF.getMdTableSuffix(), PK_COLUMN_NAME, MDV_COLUMN_NAME, REV_COLUMN_NAME, FLAG_COLUMN_NAME);
@@ -823,12 +823,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void getChangesByFlag(String table, DatabaseAdapterCallback<ResultSet> callback) throws
-        DatabaseAdapterException {
+    public void getChanges(String table, DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
 
         String mdTableName = table + CONF.getMdTableSuffix();
-        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where %s <> 0", mdTableName,
-            table, mdTableName, table, getPrimaryKeyColumn(table).getName(), FLAG_COLUMN_NAME);
+        final String query = String.format("select * from %s left join %s on %s.%s = %s.%s where %s <> 0", mdTableName,
+            table, mdTableName, PK_COLUMN_NAME, table, getPrimaryKeyColumn(table).getName(), FLAG_COLUMN_NAME);
 
         LOGGER.debug("reading changes by flag with query: {}", query);
 
@@ -851,8 +850,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public int updateRevision(int rev, String table, Object pk) throws DatabaseAdapterException {
         int updateCount;
-        String statement = String.format("update %s SET %s = ?, %s = ? where %s = ?", table, REV_COLUMN_NAME,
-            FLAG_COLUMN_NAME, PK_COLUMN_NAME);
+        String statement = String.format("update %s SET %s = ?, %s = ? where %s = ?", table,
+            REV_COLUMN_NAME, FLAG_COLUMN_NAME, PK_COLUMN_NAME);
 
         PreparedStatement stmt = null;
         try {
@@ -1109,7 +1108,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     /**
-     * Executes many SQL queries, one after the other.
+     * Executes many SQL queries as a batch.
      * <p/>
      *
      * @param queries the queries to execute

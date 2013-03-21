@@ -312,8 +312,7 @@ public class ClientHashProcessor {
     }
 
     private ResolvedChange resolveConflictsFireEvent(ConflictHandlingData data,
-                                                     IConflictStrategy conflictHandlingStrategy
-    )
+        IConflictStrategy conflictHandlingStrategy)
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {

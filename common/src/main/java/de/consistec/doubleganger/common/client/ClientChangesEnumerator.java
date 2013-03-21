@@ -93,7 +93,7 @@ public class ClientChangesEnumerator {
 
             LOGGER.debug("processing table {}", tableName);
 
-            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+            adapter.getChanges(tableName, new DatabaseAdapterCallback<ResultSet>() {
                 @Override
                 public void onSuccess(ResultSet resultSet) throws DatabaseAdapterException {
                     try {
