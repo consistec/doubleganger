@@ -25,7 +25,6 @@ package de.consistec.doubleganger.common.client;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.IConflictListener;
@@ -109,20 +108,11 @@ public class ClientHashProcessor {
     public SyncDataHolder resolveConflicts(SyncData clientData, SyncData serverData) throws SyncException {
         LOGGER.debug("applyChangesFromServerOnClient called");
 
-
         Collections.sort(serverData.getChanges(), Change.getPrimaryKeyComparator());
         Collections.sort(clientData.getChanges(), Change.getPrimaryKeyComparator());
 
         SyncData copiedClientSyncData = new SyncData(clientData);
         SyncData copiedServerSyncData = new SyncData(serverData);
-
-        // we have to copy the lists to remove items from it.
-        List<Change> newClientList = newArrayList(clientData.getChanges());
-        List<Change> newServerList = newArrayList(serverData.getChanges());
-
-        copiedClientSyncData.setChanges(newClientList);
-        copiedServerSyncData.setChanges(newServerList);
-
 
         SyncDataHolder dataHolder = new SyncDataHolder(copiedClientSyncData, copiedServerSyncData);
         try {
@@ -322,8 +312,7 @@ public class ClientHashProcessor {
     }
 
     private ResolvedChange resolveConflictsFireEvent(ConflictHandlingData data,
-                                                     IConflictStrategy conflictHandlingStrategy
-    )
+        IConflictStrategy conflictHandlingStrategy)
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {

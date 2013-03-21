@@ -100,14 +100,13 @@ public class SyncServiceServletTest {
     @Test
     public void testEncodingDecoding() throws HttpException, SyncException, URISyntaxException {
 
-        List<Change> expectedChangeList = newArrayList();
-        SyncData expectedSyncData = new SyncData(0, expectedChangeList);
+        SyncData expectedSyncData = new SyncData();
 
         MDEntry entryOne = new MDEntry(1, true, 0, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowDataOne = newHashMap();
         rowDataOne.put(TEST_COLUMN1, 1);
         rowDataOne.put(TEST_COLUMN2, "ääüüöö");
-        expectedChangeList.add(new Change(entryOne, rowDataOne));
+        expectedSyncData.addChange(new Change(entryOne, rowDataOne));
 
         server.addRequest(SyncAction.GET_CHANGES, new GetChangesCommandMock(expectedSyncData));
 

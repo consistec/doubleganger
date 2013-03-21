@@ -105,7 +105,7 @@ public class ServerTableSynchronizer {
 
     private void updateRevisionOnChangedRows(final int revision, final String tableName) throws DatabaseAdapterException {
         final String mdTableName = tableName + CONF.getMdTableSuffix();
-        adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+        adapter.getChanges(tableName, new DatabaseAdapterCallback<ResultSet>() {
             @Override
             public void onSuccess(ResultSet allChangedRows) throws DatabaseAdapterException {
                 try {

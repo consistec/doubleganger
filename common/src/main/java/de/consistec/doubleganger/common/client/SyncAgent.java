@@ -80,7 +80,7 @@ public class SyncAgent {
 
     /**
      * Instantiates a new sync agent.
-     * Before objects will be initialized, a check will be performed, if client context was initialized.
+     * Before objects will be initialized, we check if both providers have been initialized.
      * If not, an {@link IllegalStateException} will be thrown.
      *
      * @param serverProvider Server sync provider.

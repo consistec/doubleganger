@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.SyncData;
@@ -40,17 +39,16 @@ import de.consistec.doubleganger.common.util.LoggingUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
 
 /**
  * The {@code ClientChangesEnumerator} is responsible for creating a list
- * of {@code Change} objects which represents all changes on client tables to sync.
+ * of {@link Change} objects which represents all changes on client tables to sync.
  * <br/>
  * For all inserted, modified or deleted rows, which are marked in the database
- * client md-table with flag = 1, the {@code ClientChangeEnumerator} creates a {@code Change}
- * object. This object consists of meta data values {@code MDEntry} and
+ * client md-table with flag = 1, the {@link ClientChangeEnumerator} creates a {@link Change}
+ * object. This object consists of meta data values {@link MDEntry} and
  * row data values. The row data values are represented as Map<String, Object>, where the columnname
  * the key and Object is the values in the data row are.
  *
@@ -69,7 +67,7 @@ public class ClientChangesEnumerator {
     /**
      * Instantiates a new client changes enumerator.
      *
-     * @param adapter The database adapte
+     * @param adapter The database adapter
      * @param tableSyncStrategies The configured sync strategies for tables
      */
     public ClientChangesEnumerator(IDatabaseAdapter adapter, TableSyncStrategies tableSyncStrategies) {
@@ -79,7 +77,7 @@ public class ClientChangesEnumerator {
     }
 
     /**
-     * Creates the list of {@code Change} objects for all inserted, modified or deleted
+     * Creates a list of {@link Change}s, a {@link SyncData}, for all inserted, modified or deleted
      * data rows in the client tables to sync.
      *
      * @return The changes
@@ -89,28 +87,29 @@ public class ClientChangesEnumerator {
 
         LOGGER.debug("getClientChanges called");
 
-        final List<Change> allChanges = newArrayList();
+        final SyncData allChanges = new SyncData();
 
         for (final String tableName : CONF.getSyncTables()) {
 
             LOGGER.debug("processing table {}", tableName);
 
-            adapter.getChangesByFlag(tableName, new DatabaseAdapterCallback<ResultSet>() {
+            adapter.getChanges(tableName, new DatabaseAdapterCallback<ResultSet>() {
                 @Override
                 public void onSuccess(ResultSet resultSet) throws DatabaseAdapterException {
                     try {
-                        while (resultSet.next()) {
+                        TableSyncStrategy syncStrategy = tableSyncStrategies.getSyncStrategyForTable(tableName);
+                        SyncDirection syncDirection = syncStrategy.getDirection();
 
-                            TableSyncStrategy syncStrategy = tableSyncStrategies.getSyncStrategyForTable(tableName);
-                            SyncDirection syncDirection = syncStrategy.getDirection();
+                        if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
 
-                            if (syncDirection != SyncDirection.SERVER_TO_CLIENT) {
+                            while (resultSet.next()) {
+
                                 Map<String, Object> rowData = DBMapperUtil.getRowData(resultSet);
                                 MDEntry mdEntry = DBMapperUtil.getMetadata(resultSet, tableName);
                                 mdEntry.setDataRowExists(DBMapperUtil.dataRowExists(rowData));
 
                                 Change change = new Change(mdEntry, rowData);
-                                allChanges.add(change);
+                                allChanges.addChange(change);
 
                                 LOGGER.info(Infos.COMMON_ADDED_CLIENT_CHANGE_TO_CHANGE_SET, change);
                             }
@@ -122,6 +121,6 @@ public class ClientChangesEnumerator {
             });
         }
         LOGGER.debug("getClientChanges finished");
-        return new SyncData(0, allChanges);
+        return allChanges;
     }
 }

@@ -23,6 +23,9 @@ package de.consistec.doubleganger.impl.adapter.it_alldb;
  * #L%
  */
 
+import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static org.junit.Assert.assertTrue;
@@ -97,7 +100,8 @@ public class TableSyncStrategyTest {
     @Test
     public void resolveConflictRemoveClientChange() throws Exception {
 
-        List<Change> changeList = newArrayList();
+        SyncData serverData = new SyncData();
+        serverData.setRevision(1);
         MDEntry entry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowServerData = newHashMap();
         rowServerData.put(TEST_COLUMN1, 1);
@@ -107,8 +111,7 @@ public class TableSyncStrategyTest {
         rowServerData.put(TEST_COLUMN5, 4.5);
         Change remoteChange = new Change(entry, rowServerData);
 
-        List<Change> serverChanges = newArrayList();
-        serverChanges.add(remoteChange);
+        serverData.addChange(remoteChange);
 
         MDEntry clientEntry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowClientData = newHashMap();
@@ -119,19 +122,16 @@ public class TableSyncStrategyTest {
         rowClientData.put(TEST_COLUMN5, 4.5);
         Change localChange = new Change(clientEntry, rowClientData);
 
-        List<Change> clientChanges = newArrayList();
-        clientChanges.add(localChange);
-
-        SyncData clientData = new SyncData(0, clientChanges);
-        SyncData serverData = new SyncData(1, serverChanges);
+        SyncData clientData = new SyncData();
+        clientData.addChange(localChange);
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowServerData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.SERVER_TO_CLIENT,
             ConflictStrategy.SERVER_WINS);
@@ -172,8 +172,9 @@ public class TableSyncStrategyTest {
         rowServerData.put(TEST_COLUMN5, 4.5);
         Change remoteChange = new Change(entry, rowServerData);
 
-        List<Change> serverChanges = newArrayList();
-        serverChanges.add(remoteChange);
+        SyncData serverData = new SyncData();
+        serverData.setRevision(1);
+        serverData.addChange(remoteChange);
 
 
         MDEntry clientEntry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
@@ -185,19 +186,17 @@ public class TableSyncStrategyTest {
         rowClientData.put(TEST_COLUMN5, 4.5);
         Change localChange = new Change(clientEntry, rowClientData);
 
-        List<Change> clientChanges = newArrayList();
-        clientChanges.add(localChange);
+        SyncData clientData = new SyncData();
+        clientData.addChange(localChange);
 
-        SyncData clientData = new SyncData(0, clientChanges);
-        SyncData serverData = new SyncData(1, serverChanges);
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowServerData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         TableSyncStrategy strategy = new TableSyncStrategy(SyncDirection.BIDIRECTIONAL,
             ConflictStrategy.CLIENT_WINS);
@@ -216,7 +215,7 @@ public class TableSyncStrategyTest {
             tableSyncStrategy.getConflictStrategy() == ConflictStrategy.CLIENT_WINS);
         assertTrue(
             tableSyncStrategy.getDirection() == SyncDirection.BIDIRECTIONAL);
-        assertTrue(clientChanges.size() == 1);
+        assertTrue(clientData.getChanges().size() == 1);
 
         // model.run(1) should be executed exactly one time.
         verify(dbAdapter, times(1)).updateMdRow(entry.getRevision(), 1, entry.getPrimaryKey(), TEST_MDV,
@@ -235,8 +234,9 @@ public class TableSyncStrategyTest {
         rowData.put(TEST_COLUMN5, 4.5);
         Change remoteChange = new Change(entry, rowData);
 
-        List<Change> serverChanges = newArrayList();
-        serverChanges.add(remoteChange);
+        SyncData serverData = new SyncData();
+        serverData.setRevision(1);
+        serverData.addChange(remoteChange);
 
         MDEntry clientEntry = new MDEntry(1, true, 1, TEST_TABLE_NAME, TEST_MDV);
         Map<String, Object> rowClientData = newHashMap();
@@ -247,20 +247,18 @@ public class TableSyncStrategyTest {
         rowClientData.put(TEST_COLUMN5, 4.5);
         Change localChange = new Change(clientEntry, rowClientData);
 
-        List<Change> clientChanges = newArrayList();
-        clientChanges.add(localChange);
+        SyncData clientData = new SyncData();
+        clientData.addChange(localChange);
 
-        SyncData clientData = new SyncData(0, clientChanges);
-        SyncData serverData = new SyncData(1, serverChanges);
 
 
         when(localDataResultSet.next()).thenReturn(false);
 
-        when(localHashResultSet.getInt("rev")).thenReturn(7);
-        when(localHashResultSet.getInt("f")).thenReturn(1); // Client change
+        when(localHashResultSet.getInt(REV_COLUMN_NAME)).thenReturn(7);
+        when(localHashResultSet.getInt(FLAG_COLUMN_NAME)).thenReturn(1); // Client change
         HashCalculator clc = new HashCalculator();
         String hashValue = clc.getHash(rowData);
-        when(localHashResultSet.getString("mdv")).thenReturn(hashValue);
+        when(localHashResultSet.getString(MDV_COLUMN_NAME)).thenReturn(hashValue);
 
         SyncContext.LocalContext ctx = SyncContext.local(new TableSyncStrategies());
 

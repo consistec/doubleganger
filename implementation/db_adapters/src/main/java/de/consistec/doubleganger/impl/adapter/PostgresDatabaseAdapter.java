@@ -22,7 +22,6 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
@@ -162,8 +161,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
     @Override
     public void getRowForPrimaryKey(final Object primaryKey, final String tableName,
-                                    final DatabaseAdapterCallback<ResultSet> callback
-    ) throws DatabaseAdapterException {
+        final DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
         try {
             super.getRowForPrimaryKey(primaryKey, tableName, callback);
         } catch (DatabaseAdapterException ex) {
@@ -239,9 +237,7 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * @throws DatabaseAdapterException
      */
     private void executePlpgsqlLanguageQuery() throws DatabaseAdapterException {
-        // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
-        String createLanguageQuery = new Scanner(getClass().getResourceAsStream(CREATE_LANGUAGE_FILE_PATH))
-            .useDelimiter("\\A").next();
+        String createLanguageQuery = getFileContent(CREATE_LANGUAGE_FILE_PATH);
         executeSqlQuery(createLanguageQuery);
     }
 
@@ -278,11 +274,9 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         // we don't want any trigger on the metadata tables
         if (!tableName.endsWith(CONF.getMdTableSuffix())) {
 
-            // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
             // Yes, we read this file *every time* a MD table is created... It's not optimized, but
             // we do it only once: the first sync is somewhat slower, but that's all.
-            String triggerRawQuery = new Scanner(getClass().getResourceAsStream(filePath))
-                .useDelimiter("\\A").next();
+            String triggerRawQuery = getFileContent(filePath);
 
             triggerQuery = triggerRawQuery.replaceAll("%syncuser%", SYNC_USER);
             triggerQuery = triggerQuery.replaceAll("%table%", tableName);
@@ -323,6 +317,11 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
         } finally {
             closeStatements(stmt);
         }
+    }
+
+    private String getFileContent(String filePath) {
+        // see http://weblogs.java.net/blog/2004/10/24/stupid-scanner-tricks
+        return new Scanner(getClass().getResourceAsStream(filePath)).useDelimiter("\\A").next();
     }
 
     @Override

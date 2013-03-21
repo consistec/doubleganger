@@ -22,7 +22,11 @@ package de.consistec.doubleganger.common.adapter.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.PK_COLUMN_NAME;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.defaultIfNull;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
@@ -590,7 +594,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
             for (String table : CONF.getSyncTables()) {
                 mdTable = table + CONF.getMdTableSuffix();
-                rst = stmt.executeQuery(String.format("select MAX(rev) from %s", mdTable));
+                rst = stmt.executeQuery(String.format("select MAX(%s) from %s", REV_COLUMN_NAME, mdTable));
                 while (rst.next()) {
                     int tmp = rst.getInt(1);
                     if (tmp > rev) {
@@ -613,12 +617,13 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     public void updateMdRow(final int rev, final int flag, final Object pk, final String mdv, final String tableName)
         throws DatabaseAdapterException {
 
-        LOGGER.debug("updating md row with values: pk:{} mdv:{} rev:{} flag: {} tablename:{}{}", pk, mdv, rev, flag,
-            tableName, CONF.getMdTableSuffix());
+        LOGGER.debug("updating md row with values: {}:{} {}:{} {}:{} {}:{} tablename:{}{}", PK_COLUMN_NAME, pk,
+            MDV_COLUMN_NAME, mdv, REV_COLUMN_NAME, rev, FLAG_COLUMN_NAME, flag, tableName, CONF.getMdTableSuffix());
 
         String statement;
 
-        statement = String.format("update %s%s SET mdv=?, rev=?, f=? where pk=?", tableName, CONF.getMdTableSuffix());
+        statement = String.format("update %s%s SET %s=?, %s=?, %s=? where %s=?", tableName, CONF.getMdTableSuffix(),
+            MDV_COLUMN_NAME, REV_COLUMN_NAME, FLAG_COLUMN_NAME, PK_COLUMN_NAME);
 
         PreparedStatement updateStatement = null;
         try {
@@ -672,11 +677,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void insertMdRow(int rev, int f, Object pk, String mdv, String tableName) throws DatabaseAdapterException {
 
-        LOGGER.debug(String.format("inserting md row with values: pk:%s mdv:%s rev:%d flag: %d tablename:%s",
-            pk, mdv, rev, f, tableName));
+        LOGGER.debug(String.format("inserting md row with values: %s:%s %s:%s %s:%d %s:%d tablename:%s",
+            PK_COLUMN_NAME, pk, MDV_COLUMN_NAME, mdv, REV_COLUMN_NAME, rev, FLAG_COLUMN_NAME, f, tableName));
 
-        final String statement = String.format("insert into %s (pk,mdv,rev,f) VALUES (?,?,?,?)",
-            tableName + CONF.getMdTableSuffix());
+        final String statement = String.format("insert into %s (%s,%s,%s,%s) VALUES (?,?,?,?)",
+            tableName + CONF.getMdTableSuffix(), PK_COLUMN_NAME, MDV_COLUMN_NAME, REV_COLUMN_NAME, FLAG_COLUMN_NAME);
         PreparedStatement insertStatement = null;
 
         try {
@@ -795,8 +800,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         DatabaseAdapterException {
 
         String mdTableName = table + CONF.getMdTableSuffix();
-        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where rev > ?", mdTableName,
-            table, mdTableName, table, getPrimaryKeyColumn(table).getName());
+        final String query = String.format("select * from %s left join %s on %s.%s = %s.%s where %s > ?", mdTableName,
+            table, mdTableName, PK_COLUMN_NAME, table, getPrimaryKeyColumn(table).getName(), REV_COLUMN_NAME);
 
         LOGGER.debug("reading changes for revision with query: {}", query);
 
@@ -818,12 +823,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void getChangesByFlag(String table, DatabaseAdapterCallback<ResultSet> callback) throws
-        DatabaseAdapterException {
+    public void getChanges(String table, DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
 
         String mdTableName = table + CONF.getMdTableSuffix();
-        final String query = String.format("select * from %s left join %s on %s.pk = %s.%s where f <> 0", mdTableName,
-            table, mdTableName, table, getPrimaryKeyColumn(table).getName());
+        final String query = String.format("select * from %s left join %s on %s.%s = %s.%s where %s <> 0", mdTableName,
+            table, mdTableName, PK_COLUMN_NAME, table, getPrimaryKeyColumn(table).getName(), FLAG_COLUMN_NAME);
 
         LOGGER.debug("reading changes by flag with query: {}", query);
 
@@ -846,7 +850,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public int updateRevision(int rev, String table, Object pk) throws DatabaseAdapterException {
         int updateCount;
-        String statement = String.format("update %s SET rev = ?, f = ? where pk = ?", table);
+        String statement = String.format("update %s SET %s = ?, %s = ? where %s = ?", table,
+            REV_COLUMN_NAME, FLAG_COLUMN_NAME, PK_COLUMN_NAME);
 
         PreparedStatement stmt = null;
         try {
@@ -904,8 +909,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             String mdTable = tableName + CONF.getMdTableSuffix();
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
-                String.format("select rev, pk, mdv, f from %s left join %s on %s.pk = %s where %s is null", mdTable,
-                tableName, mdTable, tmpPkName, tmpPkName));
+                String.format("select %s, %s, %s, %s from %s left join %s on %s.%s = %s where %s is null",
+                REV_COLUMN_NAME, PK_COLUMN_NAME, MDV_COLUMN_NAME, FLAG_COLUMN_NAME,
+                mdTable, tableName, mdTable, PK_COLUMN_NAME, tmpPkName, tmpPkName));
             callback.onSuccess(deletedRows);
 
         } catch (SQLException e) {
@@ -1000,13 +1006,13 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         String mdTableName = tableName + CONF.getMdTableSuffix();
         LOGGER.debug("creating new metadata table: {}", mdTableName);
 
-        String pk = "pk";
+        String pk = PK_COLUMN_NAME;
         Column pkColumn = getPrimaryKeyColumn(tableName);
         Table mdTable = new Table(mdTableName);
         mdTable.add(new Column(pk, pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-        mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-        mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
-        mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
+        mdTable.add(new Column(MDV_COLUMN_NAME, Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        mdTable.add(new Column(REV_COLUMN_NAME, Types.INTEGER, 0, 0, true));
+        mdTable.add(new Column(FLAG_COLUMN_NAME, Types.INTEGER, 0, 0, false));
         mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", pk));
 
         Schema schema = new Schema();
@@ -1036,11 +1042,12 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
         Column pkColumn = getPrimaryKeyColumn(tableName);
         Table mdTable = new Table(mdTableName);
-        mdTable.add(new Column("pk", pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(), false));
-        mdTable.add(new Column("mdv", Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
-        mdTable.add(new Column("rev", Types.INTEGER, 0, 0, true));
-        mdTable.add(new Column("f", Types.INTEGER, 0, 0, false));
-        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", "pk"));
+        mdTable.add(new Column(PK_COLUMN_NAME, pkColumn.getType(), pkColumn.getSize(), pkColumn.getDecimalDigits(),
+            false));
+        mdTable.add(new Column(MDV_COLUMN_NAME, Types.VARCHAR, MDV_COLUMN_SIZE, 0, true));
+        mdTable.add(new Column(REV_COLUMN_NAME, Types.INTEGER, 0, 0, true));
+        mdTable.add(new Column(FLAG_COLUMN_NAME, Types.INTEGER, 0, 0, false));
+        mdTable.add(new Constraint(ConstraintType.PRIMARY_KEY, "MDPK", PK_COLUMN_NAME));
 
         Schema schema = new Schema();
         schema.addTables(mdTable);
@@ -1101,7 +1108,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     }
 
     /**
-     * Executes many SQL queries, one after the other.
+     * Executes many SQL queries as a batch.
      * <p/>
      *
      * @param queries the queries to execute

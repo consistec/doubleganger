@@ -99,14 +99,14 @@ public interface IDatabaseAdapter {
         throws DatabaseAdapterException;
 
     /**
-     * Returns a list of rows in the data and metadata tables which flag has been changed (triggers activated).
+     * Returns a list of rows in the table which have been changed.
      * <p/>
      *
      * @param tableName The table from which to select the changes
      * @param callback The callback with the changes
      * @throws DatabaseAdapterException
      */
-    void getChangesByFlag(String tableName, DatabaseAdapterCallback<ResultSet> callback)
+    void getChanges(String tableName, DatabaseAdapterCallback<ResultSet> callback)
         throws DatabaseAdapterException;
 
     /**

@@ -25,7 +25,6 @@ package de.consistec.doubleganger.impl.commands;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.SyncData;
-import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.exception.SerializationException;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.util.LoggingUtil;
@@ -34,7 +33,6 @@ import de.consistec.doubleganger.impl.i18n.Errors;
 import de.consistec.doubleganger.impl.i18n.Infos;
 import de.consistec.doubleganger.impl.proxy.http_servlet.HttpRequestParamValues;
 
-import java.util.List;
 import org.slf4j.cal10n.LocLogger;
 
 /**
@@ -68,11 +66,10 @@ public class ApplyChangesCommand implements RequestCommand {
             try {
                 final int clientRevision = Integer.valueOf(paramValues.getClientRevision());
 
-                List<Change> deserializedChanges = paramValues.getSerializationAdapter().deserializeChangeList(
+                SyncData syncData = paramValues.getSerializationAdapter().deserializeChangeList(
                     paramValues.getClientChanges());
-                LOGGER.debug("deserialized Changes:");
-                LOGGER.debug("<{}>", deserializedChanges);
-                SyncData syncData = new SyncData(clientRevision, deserializedChanges);
+                syncData.setRevision(clientRevision);
+                LOGGER.debug("deserialized Changes:\n<{}>", syncData);
                 int nextServerRevisionSendToClient = paramValues.getCtx().applyChanges(syncData);
                 LOGGER.info(Infos.NEW_SERVER_REVISION, nextServerRevisionSendToClient);
 

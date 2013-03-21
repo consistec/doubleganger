@@ -70,7 +70,7 @@ public class DumbDbAdapter implements IDatabaseAdapter {
     }
 
     @Override
-    public void getChangesByFlag(String tableName, DatabaseAdapterCallback<ResultSet> callback) throws
+    public void getChanges(String tableName, DatabaseAdapterCallback<ResultSet> callback) throws
         DatabaseAdapterException, TransactionAbortedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
