@@ -74,11 +74,10 @@ public class JSONSerializationAdapterTest extends TestBase {
     private static final String TEST_STRING = "foobar";
     private static final String TEST_MDV = "7686876786sd9876786876";
 
-    @Test
+        @Test
     public void testChangeListSerialization() throws SerializationException {
 
-        List<Change> changeList = new ArrayList<Change>();
-
+        final SyncData changeList = new SyncData();
         MDEntry entry = new MDEntry(1, true, 1, TABLENAME1, TEST_MDV);
         Map<String, Object> rowData = newHashMap();
         rowData.put(COLUMNNAME1, 1);
@@ -87,7 +86,7 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 4.5);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         entry = new MDEntry(2, false, 2, TABLENAME2, TEST_MDV);
         rowData = new HashMap<String, Object>();
@@ -97,14 +96,13 @@ public class JSONSerializationAdapterTest extends TestBase {
         rowData.put(COLUMNNAME4, new Date(System.currentTimeMillis()));
         rowData.put(COLUMNNAME5, 3.14);
         rowData.put(COLUMNNAME6, null);
-        changeList.add(new Change(entry, rowData));
+        changeList.addChange(new Change(entry, rowData));
 
         final JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-        final String jsonChangeList = adapter.serializeChangeList(changeList);
+        final String jsonChangeList = adapter.serializeChangeList(changeList.getChanges());
         final SyncData deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
 
-        assertEquals("Original and deserialized change lists are different", changeList,
-            deserializedChangeList.getChanges());
+        assertEquals("Original and deserialized change lists are different", changeList.getChanges(), deserializedChangeList.getChanges());
     }
 
     @Test
