@@ -39,6 +39,7 @@ import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
 import de.consistec.doubleganger.common.conflict.ConflictStrategyFactory;
 import de.consistec.doubleganger.common.conflict.IConflictStrategy;
+import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.data.MDEntry;
 import de.consistec.doubleganger.common.data.ResolvedChange;
@@ -262,8 +263,15 @@ public class ClientHashProcessor {
                 ResolvedChange resolvedChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 // exchange client change with resolved change to apply to server db
                 dataHolder.getClientSyncData().removeChange(clientChange);
-                resolvedChange.setMdEntry(clientChange.getMdEntry());
-                dataHolder.getClientSyncData().addChange(resolvedChange);
+//                resolvedChange.setMdEntry(clientChange.getMdEntry());
+//                dataHolder.getClientSyncData().addChange(resolvedChange);
+
+                // only add to client sync data if the user selected to use user change
+                // if the user selected to use server change than we don't need to apply to server
+                if (resolvedChange.getDecision() != UserDecision.SERVER_CHANGE) {
+                    resolvedChange.setMdEntry(clientChange.getMdEntry());
+                    dataHolder.getClientSyncData().addChange(resolvedChange);
+                }
 
                 // delete server change it is not needed anymore
                 dataHolder.getServerSyncData().removeChange(serverChange);
