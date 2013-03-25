@@ -10,6 +10,7 @@ public class Item {
     private String itemName = "";
 
     private String itemDesc = "";
+    private Object itemValue;
 
 
     public String getItemName() {
@@ -34,6 +35,14 @@ public class Item {
 
         this.itemDesc = itemDesc;
 
+    }
+
+    public Object getItemValue() {
+        return itemValue;
+    }
+
+    public void setItemValue(final Object itemValue) {
+        this.itemValue = itemValue;
     }
 
     @Override

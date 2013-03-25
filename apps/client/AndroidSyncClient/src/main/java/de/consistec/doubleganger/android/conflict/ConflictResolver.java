@@ -5,8 +5,8 @@ import de.consistec.doubleganger.android.ThreadEvent;
 import de.consistec.doubleganger.android.adapter.Item;
 import de.consistec.doubleganger.android.dialog.ConflictDialog;
 import de.consistec.doubleganger.android.dialog.EditConflictDialog;
-import de.consistec.doubleganger.android.dialog.NoticeDialogListener;
-import de.consistec.doubleganger.android.dialog.NoticeEditDialogListener;
+import de.consistec.doubleganger.android.dialog.NoticeConflictDialogListener;
+import de.consistec.doubleganger.android.dialog.NoticeEditConflictDialogListener;
 import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.ResolvedChange;
@@ -20,12 +20,14 @@ import java.util.Map;
  * @company Consistec Engineering and Consulting GmbH
  * @date 20.03.13 10:13
  */
-public class ConflictResolver implements IConflictListener, NoticeDialogListener, NoticeEditDialogListener {
+public class ConflictResolver
+    implements IConflictListener, NoticeConflictDialogListener, NoticeEditConflictDialogListener {
 
     private HelloAndroidActivity ctx;
     private Map<String, Object> clientData;
     private Map<String, Object> serverData;
     private ResolvedChange resolvedChange;
+    private boolean userWantsToEdit = false;
 
     private ThreadEvent resultsReady = new ThreadEvent();
 
@@ -48,22 +50,24 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
             e.printStackTrace(System.err);
         }
 
-        showEditDialog(resolvedChange);
+        if (userWantsToEdit) {
+            showEditDialog();
 
-        try {
-            resultsReady.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace(System.err);
+            try {
+                resultsReady.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace(System.err);
+            }
         }
 
         return resolvedChange;
     }
 
-    private void showEditDialog(final ResolvedChange selectedChange) {
+    private void showEditDialog() {
         ctx.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Item[] selectedChangeItems = createSelectedChangeItems(selectedChange);
+                Item[] selectedChangeItems = createSelectedChangeItems(resolvedChange);
                 final EditConflictDialog dlg = new EditConflictDialog(ctx, ConflictResolver.this,
                     selectedChangeItems);
                 dlg.setThreadEvent(resultsReady);
@@ -76,6 +80,7 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
                     Item item = new Item();
                     item.setItemName(column);
                     item.setItemDesc(selectedChange.getRowData().get(column).toString());
+                    item.setItemValue(selectedChange.getRowData().get(column));
                     items.add(item);
                 }
                 return items.toArray(new Item[0]);
@@ -102,6 +107,7 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
                     Item item = new Item();
                     item.setItemName(column);
                     item.setItemDesc(serverData.get(column).toString());
+                    item.setItemValue(serverData.get(column));
                     items.add(item);
                 }
                 return items.toArray(new Item[0]);
@@ -113,6 +119,7 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
                     Item item = new Item();
                     item.setItemName(column);
                     item.setItemDesc(clientData.get(column).toString());
+                    item.setItemValue(clientData.get(column));
                     items.add(item);
                 }
                 return items.toArray(new Item[0]);
@@ -121,31 +128,48 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
     }
 
     @Override
-    public void onDialogPositiveClick(final UserDecision decision) {
+    public void onConflictDialogPositiveClick(final UserDecision decision) {
         resolvedChange = new ResolvedChange(decision);
-        if (decision == UserDecision.CLIENT_CHANGE) {
-            resolvedChange.setRowData(clientData);
-        } else {
-            resolvedChange.setRowData(serverData);
+
+        switch (decision) {
+            case CLIENT_CHANGE:
+                resolvedChange.setRowData(clientData);
+                userWantsToEdit = false;
+                break;
+            case SERVER_CHANGE:
+                resolvedChange.setRowData(serverData);
+                userWantsToEdit = false;
+                break;
+            case EDIT_CLIENT_CHANGE:
+                resolvedChange.setRowData(clientData);
+                userWantsToEdit = true;
+                break;
+            case EDIT_SERVER_CHANGE:
+                resolvedChange.setRowData(serverData);
+                userWantsToEdit = true;
+                break;
+            default:
+                resolvedChange.setRowData(serverData);
+                break;
         }
     }
 
     @Override
-    public void onDialogNegativeClick(final UserDecision decision) {
+    public void onConflictDialogNegativeClick(final UserDecision decision) {
         // default configuration for the case the user stops the conflict handling
         resolvedChange = new ResolvedChange(UserDecision.SERVER_CHANGE);
         resolvedChange.setRowData(serverData);
     }
 
     @Override
-    public void onDialogPositiveClick(final ResolvedChange resolvedChange) {
+    public void onEditConflictDialogPositiveClick(final ResolvedChange resolvedChange) {
         UserDecision selectedDecision = this.resolvedChange.getDecision();
         this.resolvedChange = resolvedChange;
         this.resolvedChange.setSelectedDecision(selectedDecision);
     }
 
     @Override
-    public void onDialogNegativeClick(final ResolvedChange resolvedChange) {
+    public void onEditConflictDialogNegativeClick(final ResolvedChange resolvedChange) {
         // default configuration for the case the user stops the conflict handling
         this.resolvedChange = new ResolvedChange(UserDecision.SERVER_CHANGE);
         this.resolvedChange.setRowData(serverData);

@@ -33,5 +33,13 @@ public enum UserDecision {
      * The user decided neither to hold the client change values nor
      * to take the server change values but he edited the changes.
      */
-    USER_EDIT;
+    USER_EDIT,
+    /**
+     * The user wants edit the client change and then use it.
+     */
+    EDIT_CLIENT_CHANGE,
+    /**
+     * The user wants edit the server change and then use it.
+     */
+    EDIT_SERVER_CHANGE;
 }

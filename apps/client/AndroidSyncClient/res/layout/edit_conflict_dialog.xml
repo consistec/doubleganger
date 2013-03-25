@@ -14,7 +14,7 @@
 
     <ListView android:id="@+id/selectedChangeListView"
               android:layout_width="match_parent"
-              android:layout_height="400px"/>
+              android:layout_height="300px"/>
 
     <Button
             android:layout_width="fill_parent"

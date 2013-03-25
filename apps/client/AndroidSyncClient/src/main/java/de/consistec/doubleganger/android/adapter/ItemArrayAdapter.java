@@ -75,6 +75,21 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
             holder.columnView = (TextView) view.findViewById(R.id.column);
             holder.columnValueView = (TextView) view.findViewById(R.id.columnValue);
 
+            if ("id".equals(t.getItemName())) {
+
+                holder.columnValueView.setEnabled(false);
+                holder.columnValueView.setClickable(false);
+//                holder.columnView.setClickable(false);
+//
+//                if (holder.columnView instanceof EditText) {
+//
+//                    EditText ed = (EditText) holder.columnView;
+//                    ed.setActivated(false);
+//                    ed.setEditableFactory(Editable.Factory.getInstance());
+//
+//                }
+            }
+
             view.setTag(holder);
         } else {
             view = convertView;
@@ -94,6 +109,7 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
                     System.out.println("Position: " + position);
                     System.out.println("holder value: " + holder.columnValueView.getText());
                     t.setItemDesc(columnValue.getText().toString());
+                    t.setItemValue(columnValue.getText());
 
 //                    System.out.println("Items-length: " + items.length);
 //                    items[position].setItemDesc(columnValue.getText().toString());

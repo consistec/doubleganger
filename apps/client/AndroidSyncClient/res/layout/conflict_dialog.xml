@@ -14,8 +14,14 @@
 
     <ListView android:id="@+id/clientListView"
               android:layout_width="match_parent"
-              android:layout_height="200px"/>
+              android:layout_height="150px"/>
 
+    <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/editAnduseClientChange"
+            android:id="@+id/editAnduseClientBtn"
+            />
     <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -32,8 +38,14 @@
 
     <ListView android:id="@+id/serverListView"
               android:layout_width="match_parent"
-              android:layout_height="200px"/>
+              android:layout_height="150px"/>
 
+    <Button
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/editAnduseServerChange"
+            android:id="@+id/editAnduseServerBtn"
+            />
     <Button
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

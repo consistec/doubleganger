@@ -6,4 +6,6 @@
     <string name="useClientChange">use client change</string>
     <string name="useServerChange">use server change</string>
     <string name="useSelectedChange">use change</string>
+    <string name="editAnduseClientChange">edit and use client change</string>
+    <string name="editAnduseServerChange">edit and use server change</string>
 </resources>

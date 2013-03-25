@@ -1,6 +1,6 @@
 package de.consistec.doubleganger.android.dialog;
 
-import de.consistec.doubleganger.common.data.ResolvedChange;
+import de.consistec.doubleganger.common.conflict.UserDecision;
 
 /**
  * The activity that creates an instance of this dialog fragment must
@@ -9,12 +9,11 @@ import de.consistec.doubleganger.common.data.ResolvedChange;
  *
  * @author marcel
  * @company Consistec Engineering and Consulting GmbH
- * @date 21.03.13 11:12
+ * @date 21.03.13 10:15
  */
-public interface NoticeEditDialogListener {
+public interface NoticeConflictDialogListener {
+    void onConflictDialogPositiveClick(UserDecision userDecision);
 
-    void onDialogPositiveClick(ResolvedChange resolvedChange);
-
-    void onDialogNegativeClick(ResolvedChange resolvedChange);
+    void onConflictDialogNegativeClick(UserDecision userDecision);
 }
 

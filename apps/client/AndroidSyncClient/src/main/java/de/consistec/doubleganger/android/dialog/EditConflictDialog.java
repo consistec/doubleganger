@@ -28,7 +28,7 @@ public class EditConflictDialog extends Dialog {
     private EditText mEditText;
     private UserDecision decision;
     // Use this instance of the interface to deliver action events
-    private NoticeEditDialogListener mListener;
+    private NoticeEditConflictDialogListener mListener;
     private ThreadEvent threadEvent;
     private ItemArrayAdapter selectedChangeAdapter;
     private Item[] selectedChangeItems;
@@ -71,13 +71,13 @@ public class EditConflictDialog extends Dialog {
             Map<String, Object> rowData = new HashMap<String, Object>();
             for (int i = 0; i < selectedChangeAdapter.getCount(); i++) {
                 Item item = (Item) selectedChangeAdapter.getItem(i);
-                rowData.put(item.getItemName(), item.getItemDesc());
+                rowData.put(item.getItemName(), item.getItemValue());
             }
 
             ResolvedChange resolvedChange = new ResolvedChange(UserDecision.USER_EDIT);
             resolvedChange.setRowData(rowData);
 
-            mListener.onDialogPositiveClick(resolvedChange);
+            mListener.onEditConflictDialogPositiveClick(resolvedChange);
             if (threadEvent != null) {
                 threadEvent.signal();
             }

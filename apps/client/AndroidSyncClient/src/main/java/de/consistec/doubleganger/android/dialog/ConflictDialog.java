@@ -25,9 +25,11 @@ public class ConflictDialog extends Dialog {
     private EditText mEditText;
     private UserDecision decision;
     // Use this instance of the interface to deliver action events
-    private NoticeDialogListener mListener;
+    private NoticeConflictDialogListener mListener;
     private ThreadEvent threadEvent;
 
+    private Button useClientButton;
+    private Button useServerButton;
 
     public ConflictDialog(final Context context, ConflictResolver conflictResolver, Item[] clientValues,
                           Item[] serverValues
@@ -42,11 +44,17 @@ public class ConflictDialog extends Dialog {
         ListView clientListView = (ListView) findViewById(R.id.clientListView);
         ListView serverListView = (ListView) findViewById(R.id.serverListView);
 
-        Button useClientButton = (Button) findViewById(R.id.useClientBtn);
-        Button useServerButton = (Button) findViewById(R.id.useServerBtn);
+        useClientButton = (Button) findViewById(R.id.useClientBtn);
+        useServerButton = (Button) findViewById(R.id.useServerBtn);
 
         useClientButton.setOnClickListener(new UseClientButtonClickListener());
         useServerButton.setOnClickListener(new UseServerButtonClickListener());
+
+        Button editAnduseClientButton = (Button) findViewById(R.id.editAnduseClientBtn);
+        Button editAnduseServerButton = (Button) findViewById(R.id.editAnduseServerBtn);
+
+        editAnduseClientButton.setOnClickListener(new UseClientButtonClickListener());
+        editAnduseServerButton.setOnClickListener(new UseServerButtonClickListener());
 
         ItemArrayAdapter customClientAdapter = new ItemArrayAdapter(context,
             ((HelloAndroidActivity) context).getLayoutConflictResourceId(), clientValues);
@@ -74,7 +82,12 @@ public class ConflictDialog extends Dialog {
         @Override
         public void onClick(View arg0) {
 
-            mListener.onDialogPositiveClick(UserDecision.CLIENT_CHANGE);
+            if (arg0 == useClientButton) {
+                mListener.onConflictDialogPositiveClick(UserDecision.CLIENT_CHANGE);
+            } else {
+                mListener.onConflictDialogPositiveClick(UserDecision.EDIT_CLIENT_CHANGE);
+            }
+
             if (threadEvent != null) {
                 threadEvent.signal();
             }
@@ -87,7 +100,12 @@ public class ConflictDialog extends Dialog {
         @Override
         public void onClick(View arg0) {
 
-            mListener.onDialogPositiveClick(decision = UserDecision.SERVER_CHANGE);
+            if (arg0 == useServerButton) {
+                mListener.onConflictDialogPositiveClick(decision = UserDecision.SERVER_CHANGE);
+            } else {
+                mListener.onConflictDialogPositiveClick(decision = UserDecision.EDIT_SERVER_CHANGE);
+            }
+
             if (threadEvent != null) {
                 threadEvent.signal();
             }
