@@ -22,6 +22,7 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashSet;
@@ -69,7 +70,7 @@ public class JSONSerializationAdapter implements ISerializationAdapter<String> {
     public SyncData deserializeChangeList(final String serializedObject) throws
         SerializationException {
 
-        return deserializeChangeList(serializedObject, 1);
+        return deserializeChangeList(serializedObject, 0);
     }
 
     @Override

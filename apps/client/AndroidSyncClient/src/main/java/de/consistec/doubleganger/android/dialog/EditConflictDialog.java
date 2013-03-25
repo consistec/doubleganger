@@ -7,6 +7,7 @@ import de.consistec.doubleganger.android.adapter.Item;
 import de.consistec.doubleganger.android.adapter.ItemArrayAdapter;
 import de.consistec.doubleganger.android.conflict.ConflictResolver;
 import de.consistec.doubleganger.common.conflict.UserDecision;
+import de.consistec.doubleganger.common.data.ResolvedChange;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -14,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author marcel
@@ -25,7 +28,7 @@ public class EditConflictDialog extends Dialog {
     private EditText mEditText;
     private UserDecision decision;
     // Use this instance of the interface to deliver action events
-    private NoticeDialogListener mListener;
+    private NoticeEditDialogListener mListener;
     private ThreadEvent threadEvent;
     private ItemArrayAdapter selectedChangeAdapter;
     private Item[] selectedChangeItems;
@@ -42,12 +45,13 @@ public class EditConflictDialog extends Dialog {
 
         ListView selectedChangeListView = (ListView) findViewById(R.id.selectedChangeListView);
 
+
         Button selectedChangeButton = (Button) findViewById(R.id.useSelectedChangeBtn);
 
         selectedChangeButton.setOnClickListener(new SelectedChangeButtonClickListener());
 
         selectedChangeAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutResourceId(), selectedChangeItems);
+            ((HelloAndroidActivity) context).getLayoutEditConflictResourceId(), selectedChangeItems);
 
         selectedChangeListView.setAdapter(selectedChangeAdapter);
 
@@ -64,10 +68,16 @@ public class EditConflictDialog extends Dialog {
         @Override
         public void onClick(View arg0) {
 
-            for (Item item : selectedChangeItems) {
-                System.out.println(item);
+            Map<String, Object> rowData = new HashMap<String, Object>();
+            for (int i = 0; i < selectedChangeAdapter.getCount(); i++) {
+                Item item = (Item) selectedChangeAdapter.getItem(i);
+                rowData.put(item.getItemName(), item.getItemDesc());
             }
-            mListener.onDialogPositiveClick(UserDecision.CLIENT_CHANGE);
+
+            ResolvedChange resolvedChange = new ResolvedChange(UserDecision.USER_EDIT);
+            resolvedChange.setRowData(rowData);
+
+            mListener.onDialogPositiveClick(resolvedChange);
             if (threadEvent != null) {
                 threadEvent.signal();
             }

@@ -49,10 +49,10 @@ public class ConflictDialog extends Dialog {
         useServerButton.setOnClickListener(new UseServerButtonClickListener());
 
         ItemArrayAdapter customClientAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutResourceId(), clientValues);
+            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), clientValues);
 
         ItemArrayAdapter customServerAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutResourceId(), serverValues);
+            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), serverValues);
 
         clientListView.setAdapter(customClientAdapter);
         serverListView.setAdapter(customServerAdapter);

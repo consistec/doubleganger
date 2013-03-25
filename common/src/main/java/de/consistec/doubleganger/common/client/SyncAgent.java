@@ -78,6 +78,9 @@ public class SyncAgent {
 
     private long phaseTime;
 
+    private SyncDataHolder dataHolder;
+    private SyncData clientChangesToApply;
+
     /**
      * Instantiates a new sync agent.
      * Before objects will be initialized, we check if both providers have been initialized.
@@ -192,8 +195,8 @@ public class SyncAgent {
             // transaction phase 1 client
             clientProvider.beginTransaction();
             SyncData clientData = clientProvider.getChanges();
-            SyncDataHolder dataHolder = clientProvider.resolveConflicts(serverData, clientData);
-            SyncData clientChangesToApply = dataHolder.getClientSyncData();
+            dataHolder = clientProvider.resolveConflicts(serverData, clientData);
+            clientChangesToApply = dataHolder.getClientSyncData();
             int currentRevision = clientProvider.applyChanges(dataHolder.getServerSyncData());
             clientProvider.commit();
             clientChangesToApply.setRevision(currentRevision);

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+    <TextView android:id="@+id/column"
+              android:textSize="10sp"
+              android:textStyle="bold"
+              android:textColor="#FFFF00"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"/>
+
+    <EditText android:id="@+id/columnValue"
+              android:textSize="8sp"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"/>
+</LinearLayout>

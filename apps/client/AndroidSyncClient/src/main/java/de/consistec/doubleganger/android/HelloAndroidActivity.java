@@ -58,9 +58,6 @@ public class HelloAndroidActivity extends Activity {
     private static final Config CONF = Config.getInstance();
     private TextView textView;
     private EditText editText;
-    private int layoutResourceId;
-    private int columnResourceId;
-    private int columnValueResourceId;
 
 
     // configuring log4j logger
@@ -100,16 +97,12 @@ public class HelloAndroidActivity extends Activity {
         });
     }
 
-    public int getLayoutResourceId() {
+    public int getLayoutConflictResourceId() {
         return R.layout.conflict_row_view;
     }
 
-    public int getColumnResourceId() {
-        return R.id.column;
-    }
-
-    public int getColumnValueResourceId() {
-        return R.id.columnValue;
+    public int getLayoutEditConflictResourceId() {
+        return R.layout.edit_conflict_row_view;
     }
 
     private class HelloAndroidActivityProgressListener implements ISyncProgressListener {

@@ -12,6 +12,7 @@ import de.consistec.doubleganger.common.conflict.UserDecision;
 public class ResolvedChange extends Change {
 
     private UserDecision decision;
+    private UserDecision selectedDecision;
 
     /**
      * Constructor of ResolvedChange which takes an UserDecision.
@@ -29,5 +30,23 @@ public class ResolvedChange extends Change {
      */
     public UserDecision getDecision() {
         return decision;
+    }
+
+    /**
+     * The users cached decision if he edits the change.
+     *
+     * @return UserDecision - enum for the users decision.
+     */
+    public UserDecision getSelectedDecision() {
+        return selectedDecision;
+    }
+
+    /**
+     * Sets the decision selected from user.
+     *
+     * @param selectedDecision - the decision to cache.
+     */
+    public void setSelectedDecision(final UserDecision selectedDecision) {
+        this.selectedDecision = selectedDecision;
     }
 }

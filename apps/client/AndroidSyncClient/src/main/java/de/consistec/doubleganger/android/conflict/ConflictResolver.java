@@ -6,6 +6,7 @@ import de.consistec.doubleganger.android.adapter.Item;
 import de.consistec.doubleganger.android.dialog.ConflictDialog;
 import de.consistec.doubleganger.android.dialog.EditConflictDialog;
 import de.consistec.doubleganger.android.dialog.NoticeDialogListener;
+import de.consistec.doubleganger.android.dialog.NoticeEditDialogListener;
 import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.ResolvedChange;
@@ -19,7 +20,7 @@ import java.util.Map;
  * @company Consistec Engineering and Consulting GmbH
  * @date 20.03.13 10:13
  */
-public class ConflictResolver implements IConflictListener, NoticeDialogListener {
+public class ConflictResolver implements IConflictListener, NoticeDialogListener, NoticeEditDialogListener {
 
     private HelloAndroidActivity ctx;
     private Map<String, Object> clientData;
@@ -134,5 +135,19 @@ public class ConflictResolver implements IConflictListener, NoticeDialogListener
         // default configuration for the case the user stops the conflict handling
         resolvedChange = new ResolvedChange(UserDecision.SERVER_CHANGE);
         resolvedChange.setRowData(serverData);
+    }
+
+    @Override
+    public void onDialogPositiveClick(final ResolvedChange resolvedChange) {
+        UserDecision selectedDecision = this.resolvedChange.getDecision();
+        this.resolvedChange = resolvedChange;
+        this.resolvedChange.setSelectedDecision(selectedDecision);
+    }
+
+    @Override
+    public void onDialogNegativeClick(final ResolvedChange resolvedChange) {
+        // default configuration for the case the user stops the conflict handling
+        this.resolvedChange = new ResolvedChange(UserDecision.SERVER_CHANGE);
+        this.resolvedChange.setRowData(serverData);
     }
 }

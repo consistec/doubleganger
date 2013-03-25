@@ -22,6 +22,7 @@ package de.consistec.doubleganger.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
@@ -38,7 +39,6 @@ import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
 import de.consistec.doubleganger.common.conflict.ConflictStrategyFactory;
 import de.consistec.doubleganger.common.conflict.IConflictStrategy;
-import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.data.MDEntry;
 import de.consistec.doubleganger.common.data.ResolvedChange;
@@ -90,7 +90,8 @@ public class ClientHashProcessor {
      * {@link de.consistec.doubleganger.common.conflict.ConflictStrategy ConflictStrategy} is FIRE_EVENT.
      */
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
-        IConflictListener conflictListener) {
+                               IConflictListener conflictListener
+    ) {
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
@@ -267,27 +268,40 @@ public class ClientHashProcessor {
                 break;
             case FIRE_EVENT:
                 ResolvedChange resolvedChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
-                if (resolvedChange.getDecision() == UserDecision.CLIENT_CHANGE) {
-                    // server change must not applied to client db
-                    // client change stays in list to send to server
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
-                } else if (resolvedChange.getDecision() == UserDecision.SERVER_CHANGE) {
-                    // client change must not applied to server db
-                    dataHolder.getClientSyncData().getChanges().remove(clientChange);
-                    // server change already applied to client db
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
-                } else {
-                    // change client change with resolved change to apply to server db
-                    dataHolder.getClientSyncData().getChanges().remove(clientChange);
-                    dataHolder.getClientSyncData().getChanges().add(resolvedChange);
-                    // change server change with resolved change to apply to client db
-                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
-                    dataHolder.getServerSyncData().getChanges().add(resolvedChange);
-                }
+//                if (resolvedChange.getDecision() == UserDecision.CLIENT_CHANGE) {
+//                    // server change must not applied to client db
+//                    // client change stays in list to send to server
+//                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
+//                } else if (resolvedChange.getDecision() == UserDecision.SERVER_CHANGE) {
+//                    // client change must not applied to server db
+//                    dataHolder.getClientSyncData().getChanges().remove(clientChange);
+//                    // server change already applied to client db
+//                    dataHolder.getServerSyncData().getChanges().remove(serverChange);
+//                } else {
+                // user edited selected change
+//                    if (resolvedChange.getSelectedDecision() == UserDecision.CLIENT_CHANGE) {
+                // change client change with resolved change to apply to server db
+                dataHolder.getClientSyncData().getChanges().remove(clientChange);
+                resolvedChange.setMdEntry(clientChange.getMdEntry());
+                dataHolder.getClientSyncData().getChanges().add(resolvedChange);
+
+                // change server change with resolved change to apply to client db
+                dataHolder.getServerSyncData().getChanges().remove(serverChange);
+//                    resolvedChange.setMdEntry(serverChange.getMdEntry());
+//                    dataHolder.getServerSyncData().getChanges().add(resolvedChange);
+//                    } else {
+//                        // change server change with resolved change to apply to client db
+//                        dataHolder.getServerSyncData().getChanges().remove(serverChange);
+//                        resolvedChange.setMdEntry(serverChange.getMdEntry());
+//                        dataHolder.getServerSyncData().getChanges().add(resolvedChange);
+//                        dataHolder.getClientSyncData().getChanges().remove(clientChange);
+//                    }
+//                }
                 break;
             default:
                 throw new IllegalStateException(String.format("Unknown conflict strategy %s", conflictStrategy.name()));
         }
+
     }
 
     /**
@@ -312,7 +326,8 @@ public class ClientHashProcessor {
     }
 
     private ResolvedChange resolveConflictsFireEvent(ConflictHandlingData data,
-        IConflictStrategy conflictHandlingStrategy)
+                                                     IConflictStrategy conflictHandlingStrategy
+    )
         throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
 
         if (null == conflictListener) {
