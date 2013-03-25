@@ -5,6 +5,7 @@ import de.consistec.doubleganger.android.R;
 import de.consistec.doubleganger.android.ThreadEvent;
 import de.consistec.doubleganger.android.adapter.Item;
 import de.consistec.doubleganger.android.adapter.ItemArrayAdapter;
+import de.consistec.doubleganger.android.adapter.ItemFactory;
 import de.consistec.doubleganger.android.conflict.ConflictResolver;
 import de.consistec.doubleganger.common.conflict.UserDecision;
 
@@ -56,11 +57,32 @@ public class ConflictDialog extends Dialog {
         editAnduseClientButton.setOnClickListener(new UseClientButtonClickListener());
         editAnduseServerButton.setOnClickListener(new UseServerButtonClickListener());
 
+        final Item[] clientItems;
+        if (clientValues.length == 0) {
+            clientItems = new Item[1];
+            clientItems[0] = ItemFactory.createDeletedItem();
+            editAnduseClientButton.setEnabled(false);
+            editAnduseClientButton.setClickable(false);
+        } else {
+            clientItems = clientValues;
+        }
+
         ItemArrayAdapter customClientAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), clientValues);
+            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), clientItems);
+
+
+        final Item[] serverItems;
+        if (serverValues.length == 0) {
+            serverItems = new Item[1];
+            serverItems[0] = ItemFactory.createDeletedItem();
+            editAnduseServerButton.setEnabled(false);
+            editAnduseServerButton.setClickable(false);
+        } else {
+            serverItems = serverValues;
+        }
 
         ItemArrayAdapter customServerAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), serverValues);
+            ((HelloAndroidActivity) context).getLayoutConflictResourceId(), serverItems);
 
         clientListView.setAdapter(customClientAdapter);
         serverListView.setAdapter(customServerAdapter);

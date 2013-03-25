@@ -76,12 +76,20 @@ public class ConflictResolver
 
             private Item[] createSelectedChangeItems(final ResolvedChange selectedChange) {
                 List<Item> items = new ArrayList<Item>(selectedChange.getRowData().size());
+                boolean selectedDataExists = false;
                 for (String column : selectedChange.getRowData().keySet()) {
-                    Item item = new Item();
-                    item.setItemName(column);
-                    item.setItemDesc(selectedChange.getRowData().get(column).toString());
-                    item.setItemValue(selectedChange.getRowData().get(column));
-                    items.add(item);
+                    if (selectedChange.getRowData().get(column) != null) {
+                        selectedDataExists = true;
+                        Item item = new Item();
+                        item.setItemName(column);
+                        item.setItemDesc(selectedChange.getRowData().get(column).toString());
+                        item.setItemValue(selectedChange.getRowData().get(column));
+                        items.add(item);
+                    }
+                }
+
+                if (!selectedDataExists) {
+                    items.clear();
                 }
                 return items.toArray(new Item[0]);
             }
@@ -103,24 +111,39 @@ public class ConflictResolver
 
             private Item[] createServerItems(final Map<String, Object> serverData) {
                 List<Item> items = new ArrayList<Item>(serverData.size());
+                boolean serverDataExists = false;
                 for (String column : serverData.keySet()) {
-                    Item item = new Item();
-                    item.setItemName(column);
-                    item.setItemDesc(serverData.get(column).toString());
-                    item.setItemValue(serverData.get(column));
-                    items.add(item);
+                    if (serverData.get(column) != null) {
+                        serverDataExists = true;
+                        Item item = new Item();
+                        item.setItemName(column);
+                        serverDataExists = true;
+                        item.setItemDesc(serverData.get(column).toString());
+                        item.setItemValue(serverData.get(column));
+                        items.add(item);
+                    }
+                }
+                if (!serverDataExists) {
+                    items.clear();
                 }
                 return items.toArray(new Item[0]);
             }
 
             private Item[] createClientItems(final Map<String, Object> clientData) {
                 List<Item> items = new ArrayList<Item>(serverData.size());
+                boolean clientDataExists = false;
                 for (String column : clientData.keySet()) {
-                    Item item = new Item();
-                    item.setItemName(column);
-                    item.setItemDesc(clientData.get(column).toString());
-                    item.setItemValue(clientData.get(column));
-                    items.add(item);
+                    if (clientData.get(column) != null) {
+                        clientDataExists = true;
+                        Item item = new Item();
+                        item.setItemName(column);
+                        item.setItemDesc(clientData.get(column).toString());
+                        item.setItemValue(clientData.get(column));
+                        items.add(item);
+                    }
+                }
+                if (!clientDataExists) {
+                    items.clear();
                 }
                 return items.toArray(new Item[0]);
             }

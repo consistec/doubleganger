@@ -4,6 +4,7 @@ import de.consistec.doubleganger.android.HelloAndroidActivity;
 import de.consistec.doubleganger.android.R;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,15 +19,7 @@ import android.widget.TextView;
 public class ItemArrayAdapter extends ArrayAdapter<Item> {
 
     private final int resourceId;
-//    private Item[] items;
-//    private Context context;
 
-//    public ItemArrayAdapter(final Context context, final int textViewResourceId, Item[] items) {
-//
-//        this.resourceId = textViewResourceId;
-//        this.items = items;
-//        this.context = context;
-//    }
 
     public ItemArrayAdapter(final Context context, final int textViewResourceId) {
         super(context, textViewResourceId);
@@ -39,21 +32,6 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
 
         resourceId = textViewResourceId;
     }
-
-//    @Override
-//    public int getCount() {
-//        return items.length;
-//    }
-//
-//    @Override
-//    public Object getItem(final int i) {
-//        return items[i];
-//    }
-//
-//    @Override
-//    public long getItemId(final int i) {
-//        return i;
-//    }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
@@ -79,15 +57,10 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
 
                 holder.columnValueView.setEnabled(false);
                 holder.columnValueView.setClickable(false);
-//                holder.columnView.setClickable(false);
-//
-//                if (holder.columnView instanceof EditText) {
-//
-//                    EditText ed = (EditText) holder.columnView;
-//                    ed.setActivated(false);
-//                    ed.setEditableFactory(Editable.Factory.getInstance());
-//
-//                }
+            }
+
+            if ("deleted".equals(t.getItemValue())) {
+                holder.columnView.setTextColor(Color.RED);
             }
 
             view.setTag(holder);
@@ -103,16 +76,10 @@ public class ItemArrayAdapter extends ArrayAdapter<Item> {
         holder.columnValueView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-//                    final int position = v.getId();
                     final TextView columnValue = (TextView) v;
 
-                    System.out.println("Position: " + position);
-                    System.out.println("holder value: " + holder.columnValueView.getText());
                     t.setItemDesc(columnValue.getText().toString());
                     t.setItemValue(columnValue.getText());
-
-//                    System.out.println("Items-length: " + items.length);
-//                    items[position].setItemDesc(columnValue.getText().toString());
                 }
             }
         });

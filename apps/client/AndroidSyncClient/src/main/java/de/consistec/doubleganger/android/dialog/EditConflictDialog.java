@@ -5,6 +5,7 @@ import de.consistec.doubleganger.android.R;
 import de.consistec.doubleganger.android.ThreadEvent;
 import de.consistec.doubleganger.android.adapter.Item;
 import de.consistec.doubleganger.android.adapter.ItemArrayAdapter;
+import de.consistec.doubleganger.android.adapter.ItemFactory;
 import de.consistec.doubleganger.android.conflict.ConflictResolver;
 import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.ResolvedChange;
@@ -50,8 +51,16 @@ public class EditConflictDialog extends Dialog {
 
         selectedChangeButton.setOnClickListener(new SelectedChangeButtonClickListener());
 
+        final Item[] selectedItems;
+        if (selectedChangeItems.length == 0) {
+            selectedItems = new Item[1];
+            selectedItems[0] = ItemFactory.createDeletedItem();
+        } else {
+            selectedItems = selectedChangeItems;
+        }
+
         selectedChangeAdapter = new ItemArrayAdapter(context,
-            ((HelloAndroidActivity) context).getLayoutEditConflictResourceId(), selectedChangeItems);
+            ((HelloAndroidActivity) context).getLayoutEditConflictResourceId(), selectedItems);
 
         selectedChangeListView.setAdapter(selectedChangeAdapter);
 

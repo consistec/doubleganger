@@ -268,7 +268,8 @@ public class ClientHashProcessor {
 
                 // only add to client sync data if the user selected to use user change
                 // if the user selected to use server change than we don't need to apply to server
-                if (resolvedChange.getDecision() != UserDecision.SERVER_CHANGE) {
+                if (resolvedChange.getDecision() != UserDecision.SERVER_CHANGE &&
+                    resolvedChange.getDecision() != UserDecision.EDIT_SERVER_CHANGE) {
                     resolvedChange.setMdEntry(clientChange.getMdEntry());
                     dataHolder.getClientSyncData().addChange(resolvedChange);
                 }

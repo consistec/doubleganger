@@ -18,13 +18,15 @@
 
     <Button
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50px"
+            android:textSize="10sp"
             android:text="@string/editAnduseClientChange"
             android:id="@+id/editAnduseClientBtn"
             />
     <Button
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50px"
+            android:textSize="10sp"
             android:text="@string/useClientChange"
             android:id="@+id/useClientBtn"
             />
@@ -42,13 +44,15 @@
 
     <Button
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50px"
+            android:textSize="10sp"
             android:text="@string/editAnduseServerChange"
             android:id="@+id/editAnduseServerBtn"
             />
     <Button
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50px"
+            android:textSize="10sp"
             android:text="@string/useServerChange"
             android:id="@+id/useServerBtn"
             />
