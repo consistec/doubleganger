@@ -26,6 +26,7 @@ import static de.consistec.doubleganger.common.SyncDirection.BIDIRECTIONAL;
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.CLIENT;
 import static de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory.AdapterPurpose.SERVER;
 import static de.consistec.doubleganger.common.conflict.ConflictStrategy.SERVER_WINS;
+import static de.consistec.doubleganger.impl.adapter.DummyDataSource.SupportedDatabases.POSTGRESQL;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.TableSyncStrategies;
@@ -39,7 +40,7 @@ import de.consistec.doubleganger.common.server.IServerSyncProvider;
 import de.consistec.doubleganger.common.server.ServerSyncProvider;
 import de.consistec.doubleganger.impl.TestDatabase;
 import de.consistec.doubleganger.impl.TestScenario;
-import de.consistec.doubleganger.impl.adapter.it_postgres.PostgresDatabase;
+import de.consistec.doubleganger.impl.adapter.DummyDataSource;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -77,8 +78,8 @@ public class RepeatSyncTest {
     private TestDatabase clientDb, serverDb;
 
     public RepeatSyncTest() {
-        serverDb = new PostgresDatabase(SERVER);
-        clientDb = new PostgresDatabase(CLIENT);
+        serverDb = new TestDatabase(POSTGRESQL, SERVER, false);
+        clientDb = new TestDatabase(POSTGRESQL, CLIENT, false);
     }
 
     @BeforeClass
@@ -89,8 +90,6 @@ public class RepeatSyncTest {
 
     @Before
     public void setUp() throws IOException, SQLException {
-        Config.getInstance().init(getClass().getResourceAsStream(clientDb.getConfigFile()));
-
         MockitoAnnotations.initMocks(this);
     }
 
@@ -102,9 +101,6 @@ public class RepeatSyncTest {
 
     @Before
     public void init() throws SyncException, ContextException, SQLException, IOException {
-
-        Config.getInstance().init(getClass().getResourceAsStream(serverDb.getConfigFile()));
-
         clientDb.init();
         clientDb.dropTables(tableNames);
         clientDb.executeQueries(createQueries);

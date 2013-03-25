@@ -105,7 +105,7 @@ public final class DBMapperUtil {
      * @param dataRow the data row
      * @return true if it still exists
      */
-    public static boolean dataRowExists(Map<String, Object> dataRow) {
+    public static boolean dataRowHasValues(Map<String, Object> dataRow) {
         for (Object value : dataRow.values()) {
             if (value != null) {
                 return true;

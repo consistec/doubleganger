@@ -9,15 +9,15 @@ package de.consistec.doubleganger.common.conflict;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
@@ -33,6 +33,7 @@ import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.data.ResolvedChange;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
+import de.consistec.doubleganger.common.util.DBMapperUtil;
 import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
@@ -141,9 +142,9 @@ public class DefaultConflictStrategy implements IConflictStrategy {
                                      final ConflictHandlingData data
     ) throws DatabaseAdapterException, NoSuchAlgorithmException {
 
-        if (rowHasData(clientData)) {
+        if (DBMapperUtil.dataRowHasValues(clientData)) {
 
-            if (!rowHasData(change.getRowData())) {
+            if (!DBMapperUtil.dataRowHasValues(change.getRowData())) {
                 adapter.deleteRow(data.getRemoteEntry().getPrimaryKey(), data.getRemoteEntry().getTableName());
                 adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
                     data.getRemoteEntry().getPrimaryKey(),
@@ -157,7 +158,7 @@ public class DefaultConflictStrategy implements IConflictStrategy {
                     new HashCalculator().getHash(change.getRowData()), data.getRemoteEntry().getTableName());
             }
         } else {
-            if (rowHasData(change.getRowData())) {
+            if (DBMapperUtil.dataRowHasValues(change.getRowData())) {
                 adapter.insertDataRow(change.getRowData(), data.getRemoteEntry().getTableName());
                 adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
                     data.getRemoteEntry().getPrimaryKey(),
@@ -170,17 +171,6 @@ public class DefaultConflictStrategy implements IConflictStrategy {
                     data.getRemoteEntry().getTableName());
             }
         }
-    }
-
-    private boolean rowHasData(Map<String, Object> clientData) {
-        if (clientData.size() > 0) {
-            for (Object obj : clientData.values()) {
-                if (obj != null) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private void logConflictInfo(final String conflict, final Change remoteChange, final int localRev,

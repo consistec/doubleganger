@@ -18,7 +18,7 @@ public class PooledTestDatabase extends TestDatabase {
     private DataSource pooledClientDataSource;
 
     public PooledTestDatabase(TestDatabase db) {
-        super(db.getConfigFile(), db.getSupportedDb(), db.getAdapterPurpose());
+        super(db.getSupportedDb(), db.getAdapterPurpose(), false);
     }
 
     public void initPooledDB() throws SQLException, IOException {
