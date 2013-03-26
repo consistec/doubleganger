@@ -51,6 +51,7 @@ public class AndroidSerializationTest extends InstrumentationTestCase {
     private static final String TEST_COLUMN4 = "column4";
     private static final String TEST_COLUMN5 = "column5";
 
+
     public void testSerialization() throws SerializationException {
         SyncData changeList = new SyncData();
         MDEntry entry = new MDEntry(1, true, 1, TEST_TABLE_NAME, "");
@@ -72,7 +73,7 @@ public class AndroidSerializationTest extends InstrumentationTestCase {
         changeList.addChange(new Change(entry, rowData));
 
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
-        String jsonChangeList = adapter.serializeChangeList(changeList);
+        String jsonChangeList = adapter.serializeChangeList(changeList.getChanges());
         SyncData deserializedChangeList = adapter.deserializeChangeList(jsonChangeList);
 
         assertEquals(changeList, deserializedChangeList);
