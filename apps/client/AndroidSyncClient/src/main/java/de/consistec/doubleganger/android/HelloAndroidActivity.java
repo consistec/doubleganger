@@ -21,7 +21,6 @@ package de.consistec.doubleganger.android;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.android.adapter.GingerbreadSQLiteDatabaseAdapter;
 import de.consistec.doubleganger.android.adapter.ICSSQLiteDatabaseAdapter;
 import de.consistec.doubleganger.android.conflict.ConflictResolver;
@@ -33,14 +32,13 @@ import de.consistec.doubleganger.common.exception.SyncException;
 
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.io.IOException;
 import java.io.InputStream;
 import org.slf4j.Logger;
@@ -58,7 +56,6 @@ public class HelloAndroidActivity extends Activity {
     private static final Config CONF = Config.getInstance();
     private TextView textView;
     private EditText editText;
-
 
     // configuring log4j logger
     static {
@@ -123,19 +120,18 @@ public class HelloAndroidActivity extends Activity {
         @Override
         public void onClick(View arg0) {
             textView.setText("");
-            RadioButton gingerbreadRb = (RadioButton) findViewById(R.id.osGingerbreadRadioButton);
-            RadioButton icsRb = (RadioButton) findViewById(R.id.osICSRadioButton);
 
-            if (gingerbreadRb.isChecked()) {
+            if (isGingerbread()) {
                 initializeConfigGingerbread();
-            } else if (icsRb.isChecked()) {
-                initializeConfigICS();
             } else {
-                Toast.makeText(HelloAndroidActivity.this, "Please choose an OS", Toast.LENGTH_LONG).show();
-                return;
+                initializeConfigICS();
             }
 
             synchronize();
+        }
+
+        private boolean isGingerbread() {
+            return Build.VERSION.SDK_INT <= Build.VERSION_CODES.GINGERBREAD_MR1;
         }
 
         private void initializeConfigGingerbread() {
