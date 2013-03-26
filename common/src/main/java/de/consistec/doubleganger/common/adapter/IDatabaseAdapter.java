@@ -22,12 +22,12 @@ package de.consistec.doubleganger.common.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.common.data.schema.Column;
 import de.consistec.doubleganger.common.data.schema.ISQLConverter;
 import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.doubleganger.common.util.HashCalculator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -56,6 +56,13 @@ import java.util.Properties;
  * @since 0.0.1-SNAPSHOT
  */
 public interface IDatabaseAdapter {
+
+    /**
+     * The SAMD algorithm needs a hash function. Define it here.
+     * <p/>
+     * @return the hash calculator
+     */
+    HashCalculator getHashCalculator();
 
     /**
      * Creates connection to destination database and sets Connection.TRANSACTION_SERIALIZABLE attribute on it.

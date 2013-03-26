@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.client;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
@@ -47,9 +46,9 @@ import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.i18n.Errors;
 import de.consistec.doubleganger.common.i18n.Warnings;
+import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -86,12 +85,11 @@ public class ClientHashProcessor {
      *
      * @param adapter Database adapter object.
      * @param conflictListener ConflictListener for resolving conflicts when
-     * @param strategies Special synchronization strategies for tables.
      * {@link de.consistec.doubleganger.common.conflict.ConflictStrategy ConflictStrategy} is FIRE_EVENT.
+     * @param strategies Special synchronization strategies for tables.
      */
     public ClientHashProcessor(IDatabaseAdapter adapter, TableSyncStrategies strategies,
-                               IConflictListener conflictListener
-    ) {
+        IConflictListener conflictListener) {
         this.adapter = adapter;
         this.strategies = strategies;
         this.conflictListener = conflictListener;
@@ -129,8 +127,6 @@ public class ClientHashProcessor {
             }
         } catch (DatabaseAdapterException e) {
             throw new SyncException(e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new SyncException(e);
         } catch (SQLException e) {
             throw new SyncException(e);
         }
@@ -145,23 +141,26 @@ public class ClientHashProcessor {
      * @param serverChanges the server changes
      * @throws SyncException the sync exception
      */
-    public void applyChangesFromServerOnClient(List<Change> serverChanges)
-        throws SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
+    public void applyChangesFromServerOnClient(List<Change> serverChanges) throws SyncException,
+        DatabaseAdapterException {
 
         LOGGER.debug("applyChangesFromServerOnClient called");
+
+        HashCalculator hashCalculator = adapter.getHashCalculator();
 
         for (final Change remoteChange : serverChanges) {
 
             final MDEntry remoteEntry = remoteChange.getMdEntry();
             LOGGER.debug("processing: {}", remoteEntry.toString());
 
-            applyServerChange(remoteChange);
+
+            final String hash = hashCalculator.calculateHash(remoteChange, CONF.isSqlTriggerOnClientActivated());
+            applyServerChange(remoteChange, hash);
         }
         LOGGER.debug("applyChangesFromServerOnClient finished");
     }
 
-    private void applyServerChange(final Change serverChange) throws DatabaseAdapterException,
-        NoSuchAlgorithmException {
+    private void applyServerChange(final Change serverChange, final String hash) throws DatabaseAdapterException {
 
         final MDEntry remoteEntry = serverChange.getMdEntry();
         final Object pKey = remoteEntry.getPrimaryKey();
@@ -169,14 +168,17 @@ public class ClientHashProcessor {
         final int rev = remoteEntry.getRevision();
         final Map<String, Object> remoteRowData = serverChange.getRowData();
 
+//        // this basically boils down to:
+//        if (remoteEntry.dataRowExists()) {
+//            // SERVER ADD or MOD
+//            adapter.insertOrUpdateDataRow(remoteRowData, pKey, tableName);
+//        } else {
+//            adapter.deleteRowOrDoNothing(pKey, tableName);
+//        }
+//        adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
+
         // SERVER ADD, MOD OR DEL
         if (remoteEntry.dataRowExists()) {
-            final String hash;
-            try {
-                hash = serverChange.calculateHash();
-            } catch (NoSuchAlgorithmException e) {
-                throw new DatabaseAdapterException(e);
-            }
             adapter.getRowForPrimaryKey(pKey, tableName, new DatabaseAdapterCallback<ResultSet>() {
                 @Override
                 public void onSuccess(final ResultSet result) throws DatabaseAdapterException, SQLException {
@@ -232,21 +234,18 @@ public class ClientHashProcessor {
     }
 
     private void resolveConflict(final Change serverChange, final Change clientChange, SyncDataHolder dataHolder)
-        throws DatabaseAdapterException, NoSuchAlgorithmException, SQLException, SyncException {
+        throws DatabaseAdapterException, SQLException, SyncException {
 
         MDEntry remoteEntry = serverChange.getMdEntry();
-
-        ConflictHandlingData data = new ConflictHandlingData(clientChange, serverChange);
-
         TableSyncStrategy tableSyncStrategy = strategies.getSyncStrategyForTable(remoteEntry.getTableName());
 
         ConflictStrategy conflictStrategy = tableSyncStrategy.getConflictStrategy();
-        LOGGER.info("Conflict Action: {}", conflictStrategy.name());
-
         SyncDirection syncDirection = tableSyncStrategy.getDirection();
-        LOGGER.info("Sync Direction: {}", syncDirection.name());
+        LOGGER.info("Conflict Action: {}. Sync Direction: {}", conflictStrategy.name(), syncDirection.name());
 
         IConflictStrategy conflictHandlingStrategy = ConflictStrategyFactory.newInstance(syncDirection);
+
+        ConflictHandlingData data = new ConflictHandlingData(clientChange, serverChange);
 
         switch (conflictStrategy) {
             case CLIENT_WINS:
@@ -263,8 +262,6 @@ public class ClientHashProcessor {
                 ResolvedChange resolvedChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 // exchange client change with resolved change to apply to server db
                 dataHolder.getClientSyncData().removeChange(clientChange);
-//                resolvedChange.setMdEntry(clientChange.getMdEntry());
-//                dataHolder.getClientSyncData().addChange(resolvedChange);
 
                 // only add to client sync data if the user selected to use user change
                 // if the user selected to use server change than we don't need to apply to server
@@ -303,9 +300,7 @@ public class ClientHashProcessor {
     }
 
     private ResolvedChange resolveConflictsFireEvent(ConflictHandlingData data,
-                                                     IConflictStrategy conflictHandlingStrategy
-    )
-        throws SQLException, SyncException, NoSuchAlgorithmException, DatabaseAdapterException {
+        IConflictStrategy conflictHandlingStrategy) throws SQLException, SyncException, DatabaseAdapterException {
 
         if (null == conflictListener) {
             throw new SyncException(read(Errors.COMMON_NO_CONFLICT_LISTENER_FOUND));

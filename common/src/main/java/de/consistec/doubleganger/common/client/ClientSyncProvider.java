@@ -251,8 +251,7 @@ public final class ClientSyncProvider extends AbstractSyncProvider implements IC
      * @throws SyncException
      */
     @Override
-    public int applyChanges(SyncData serverData) throws
-        SyncException {
+    public int applyChanges(SyncData serverData) throws SyncException {
 
         if (adapter == null) {
             throw new IllegalStateException(read(Errors.DATA_NULLABLE_DATABASEADAPTER));

@@ -32,14 +32,12 @@ import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
-import de.consistec.doubleganger.common.data.Change;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.i18n.Infos;
 import de.consistec.doubleganger.common.util.DBMapperUtil;
 import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
@@ -85,7 +83,6 @@ public class ClientTableSynchronizer {
      * @throws SQLException
      */
     public void synchronizeClientTables() throws DatabaseAdapterException {
-
         LOGGER.debug("synchronizeClientTables called");
 
         LOGGER.debug("Searching for modifications and updating metadata accordingly.");
@@ -100,6 +97,7 @@ public class ClientTableSynchronizer {
     }
 
     private void searchAndProcessChangedRows(final String table) throws DatabaseAdapterException {
+        final HashCalculator hashCalculator = adapter.getHashCalculator();
 
         final List<String> columns = adapter.getColumnNamesFromTable(table);
         Collections.sort(columns);
@@ -120,12 +118,11 @@ public class ClientTableSynchronizer {
                         }
 
                         final Object primaryKey = allRows.getObject(adapter.getPrimaryKeyColumn(table).getName());
-                        final String hash = new HashCalculator().getHash(rowData);
+                        final String hash = hashCalculator.calculateHash(rowData);
 
                         adapter.getRowForPrimaryKey(primaryKey, mdTable, new DatabaseAdapterCallback<ResultSet>() {
                             @Override
                             public void onSuccess(ResultSet result) throws DatabaseAdapterException {
-                                Change change = new Change();
                                 try {
                                     if (result.next()) {
                                         if (!DBMapperUtil.rowHasSameHash(result, hash)) {
@@ -150,8 +147,6 @@ public class ClientTableSynchronizer {
 
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new DatabaseAdapterException(e);
                 }
             }
         });
@@ -168,13 +163,11 @@ public class ClientTableSynchronizer {
             public void onSuccess(ResultSet deletedRows) throws DatabaseAdapterException {
                 try {
                     while (deletedRows.next()) {
-                        if (DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
-                            continue;
+                        if (!DBMapperUtil.rowIsAlreadyDeleted(deletedRows)) {
+                            LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
+                            adapter.updateMdRow(deletedRows.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
+                                deletedRows.getObject(PK_COLUMN_NAME), MDV_DELETED_VALUE, table);
                         }
-
-                        LOGGER.info(Infos.COMMON_FOUND_DELETED_ROW_ON_CLIENT);
-                        adapter.updateMdRow(deletedRows.getInt(REV_COLUMN_NAME), FLAG_MODIFIED,
-                            deletedRows.getObject(PK_COLUMN_NAME), MDV_DELETED_VALUE, table);
                     }
                 } catch (SQLException e) {
                     throw new DatabaseAdapterException(e);
