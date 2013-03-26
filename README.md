@@ -69,7 +69,7 @@ The server has two ways for detecting changes:
 * A good starting point to get information about basic ideas and some details about the synchronization algorithm is the [doubleganger wiki](TODO).
 * An example for the integration of doubleganger into your own code is given in the [doubleganger tutorial](TODO:link to tutorial).
 * There's is [JavaDoc](TODO:link) available.
-* If you have questions or sugestions that are not covered by these documents, you're very welcome to contact us via the [mailing list](TODO:link)
+* If you have questions or suggestions that are not covered by these documents, you're very welcome to contact us via the [mailing list](TODO:link)
 
 ## Download
 
