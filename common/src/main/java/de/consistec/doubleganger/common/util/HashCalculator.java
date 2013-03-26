@@ -22,7 +22,11 @@ package de.consistec.doubleganger.common.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
+
+import de.consistec.doubleganger.common.ConfigConstants;
+import de.consistec.doubleganger.common.data.Change;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -52,20 +56,24 @@ public class HashCalculator {
     /**
      * Instantiates a new HashCalculator.
      *
-     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws NoSuchAlgorithmException exception if the hashcalculator can't find the right algorithm
      */
     public HashCalculator() throws NoSuchAlgorithmException {
-        this("MD5");
+        this(null);
     }
 
     /**
      * Instantiates a new HashCalculator with the given algorithm.
      *
      * @param algorithm Hash algorithm
-     * @throws NoSuchAlgorithmException the no such algorithm exception
+     * @throws NoSuchAlgorithmException exception if the hashcalculator can't find the right algorithm
      */
     public HashCalculator(String algorithm) throws NoSuchAlgorithmException {
-        this.md = MessageDigest.getInstance(algorithm);
+        if (algorithm == null || "".equals(algorithm)) {
+            this.md = MessageDigest.getInstance(ConfigConstants.DEFAULT_HASH_ALGORITHM);
+        } else {
+            this.md = MessageDigest.getInstance(algorithm);
+        }
     }
 
     /**
@@ -89,16 +97,34 @@ public class HashCalculator {
     }
 
     /**
-     * Returns hash of given bytes.
-     *
-     * @param bytes Data for calculation.
-     * @return Hash value of provided bytes
+     * Computes the doubleganger hash value for this change, considering triggers as deactivated.
+     * <p/>
+     * @param change the change
+     * @return hash value as string
+     * @throws NoSuchAlgorithmException
      */
-    public String getHash(byte[] bytes) {
-        if (bytes == null) {
+    public String calculateHash(Change change) {
+        return calculateHash(change, false);
+    }
+
+    /**
+     * Computes the doubleganger hash value for this change, or returns the default value if triggers are activated.
+     * <p/>
+     * @param change the change
+     * @param isTriggerActivated are triggers activated?
+     * @return hash value as string or default value if triggers are activated
+     * @throws NoSuchAlgorithmException
+     */
+    public String calculateHash(Change change, boolean isTriggerActivated) {
+        if (change == null) {
             return null;
         }
-        return getHex(md.digest(bytes));
+
+        if (isTriggerActivated) {
+            return MDV_MODIFIED_VALUE;
+        } else {
+            return calculateHash(change.getRowData());
+        }
     }
 
     /**
@@ -110,7 +136,7 @@ public class HashCalculator {
      * @param rowData Data rows for calculation.
      * @return Hash value of the row.
      */
-    public String getHash(Map<String, Object> rowData) {
+    public String calculateHash(Map<String, Object> rowData) {
         if (rowData == null) {
             return null;
         }
@@ -127,6 +153,19 @@ public class HashCalculator {
         }
         return getHash(hashBuilder.toString().getBytes());
 
+    }
+
+    /**
+     * Returns hash of given bytes.
+     *
+     * @param bytes Data for calculation.
+     * @return Hash value of provided bytes
+     */
+    private String getHash(byte[] bytes) {
+        if (bytes == null) {
+            return null;
+        }
+        return getHex(md.digest(bytes));
     }
 
     @Override

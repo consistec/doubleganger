@@ -25,10 +25,7 @@ package de.consistec.doubleganger.common.data;
 
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 
-import de.consistec.doubleganger.common.util.HashCalculator;
-
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -134,17 +131,6 @@ public class Change implements Serializable {
             + ", rowData= "
             + rowDataString
             + " }";
-    }
-
-    /**
-     * Computes the doubleganger hash value for this change.
-     * <p/>
-     *
-     * @return hash value as string
-     * @throws NoSuchAlgorithmException
-     */
-    public String calculateHash() throws NoSuchAlgorithmException {
-        return new HashCalculator().getHash(rowData);
     }
 
     @Override

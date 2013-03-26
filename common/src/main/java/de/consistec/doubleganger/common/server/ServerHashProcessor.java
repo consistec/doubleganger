@@ -24,7 +24,6 @@ package de.consistec.doubleganger.common.server;
  */
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
-import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.Config;
@@ -37,9 +36,9 @@ import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapt
 import de.consistec.doubleganger.common.i18n.Errors;
 import de.consistec.doubleganger.common.i18n.Infos;
 import de.consistec.doubleganger.common.i18n.Warnings;
+import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -125,6 +124,8 @@ public class ServerHashProcessor {
             throw new ServerStatusException(ServerStatus.CLIENT_NOT_UPTODATE, read(Errors.COMMON_UPDATE_NECESSARY));
         }
 
+        final HashCalculator hashCalculator = adapter.getHashCalculator();
+
         for (final Change remoteChange : clientChanges) {
 
             final MDEntry remoteEntry = remoteChange.getMdEntry();
@@ -132,16 +133,8 @@ public class ServerHashProcessor {
             final Object primaryKey = remoteEntry.getPrimaryKey();
             final String tableName = remoteEntry.getTableName();
             final String mdTableName = tableName + CONF.getMdTableSuffix();
-            final String hash;
-            if (CONF.isSqlTriggerOnServerActivated()) {
-                hash = MDV_MODIFIED_VALUE;
-            } else {
-                try {
-                    hash = remoteChange.calculateHash();
-                } catch (NoSuchAlgorithmException ex) {
-                    throw new DatabaseAdapterException(ex);
-                }
-            }
+
+            final String hash = hashCalculator.calculateHash(remoteChange, CONF.isSqlTriggerOnServerActivated());
 
             LOGGER.debug("processing: {}", remoteEntry.toString());
 
@@ -155,7 +148,8 @@ public class ServerHashProcessor {
                                 public void onSuccess(final ResultSet dataRst) throws DatabaseAdapterException {
                                     LOGGER.debug("call processResultSets ...");
                                     try {
-                                        processResultSets(hashRst, dataRst, nextRev, hash, remoteEntry, remoteRowData);
+                                        processResultSets(hashRst, dataRst, nextRev, hash, remoteEntry,
+                                            remoteRowData);
                                     } catch (SQLException e) {
                                         throw new DatabaseAdapterException(e);
                                     }
@@ -171,6 +165,16 @@ public class ServerHashProcessor {
 
     private void processResultSets(ResultSet hashRst, ResultSet data, int nextRev, String hash, MDEntry remoteEntry,
         Map<String, Object> remoteRowData) throws SQLException, DatabaseAdapterException {
+
+//        // this basically boils down to:
+//        if (remoteEntry.dataRowExists()) {
+//            // SERVER ADD or MOD
+//            adapter.insertOrUpdateDataRow(remoteRowData, pKey, tableName);
+//        } else {
+//            LOGGER.info(Infos.COMMON_CLIENT_DELETED_CASE_DETECTED);
+//            adapter.deleteRowOrDoNothing(pKey, tableName);
+//        }
+//        adapter.insertOrUpdateMdRow(rev, FLAG_PROCESSED, pKey, hash, tableName);
 
         LOGGER.debug("processResultSets called");
 

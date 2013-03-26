@@ -74,6 +74,11 @@ public final class ConfigConstants {
      */
     public static final SyncDirection DEFAULT_SYNC_DIRECTION = SyncDirection.BIDIRECTIONAL;
     /**
+     * Default hash algorithm.<br/>
+     * Value: {@value}
+     */
+    public static final String DEFAULT_HASH_ALGORITHM = "MD5";
+    /**
      * Key prefix for common options.
      * <p/>
      * Value: {@value}
@@ -110,6 +115,12 @@ public final class ConfigConstants {
      */
     public static final String OPTIONS_PROXY_PROVIDER = ".proxy_provider";
     // -------------- common framework options
+    /**
+     * Key for the hash algorithm.
+     * <p/>
+     * Value: {@value}
+     */
+    public static final String OPTIONS_COMMON_HASH_ALGORITHM = OPTIONS_COMMON_PREFIX + ".hash_algorithm";
     /**
      * Key for conflict {@link Config.getGlobalConflictStrategy() }.
      * <p/>

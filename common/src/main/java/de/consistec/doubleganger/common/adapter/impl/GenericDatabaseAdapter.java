@@ -32,6 +32,7 @@ import static de.consistec.doubleganger.common.util.PropertiesUtil.defaultIfNull
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
 
 import de.consistec.doubleganger.common.Config;
+import de.consistec.doubleganger.common.ConfigConstants;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.Column;
@@ -47,9 +48,11 @@ import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapt
 import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
 import de.consistec.doubleganger.common.i18n.DBAdapterWarnings;
 import de.consistec.doubleganger.common.util.CollectionsUtil;
+import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -84,8 +87,7 @@ import org.slf4j.cal10n.LocLogger;
  * Tests for these databases are provided in test jar package. One can launch it choosing appropriate maven profile.
  * <p/>
  * Descendant class, which require more configuration options, can add this options to framework's config file but
- * they have to be preceded with {@code framework.server.db_adapter.} or
- * {@code framework.server.db_adapter.framework.client.db_adapter.}
+ * they have to be preceded with {@code doubleganger.server.db_adapter.} or {@code doubleganger.client.db_adapter.}
  * prefix (for server and client providers accordingly).<br/>
  * Names for new options <b style="style: color:red">should</b> be a {@code public static final String}
  * fields in the class.
@@ -291,6 +293,11 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * Used to obtain metadata from jdbc connection.
      */
     protected String schemaOfConnection = "PUBLIC"; //NOSONAR
+    /**
+     * Hash method for the SAMD algorithm.
+     * <p/>
+     */
+    protected HashCalculator hashCalculator; //NOSONAR
 
     /**
      * Do not create adapter instances directly!.
@@ -345,6 +352,21 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public Connection getConnection() {
         return connection;
+    }
+
+    @Override
+    public HashCalculator getHashCalculator() {
+        if (this.hashCalculator == null) {
+            String hashAlgorithm = ("".equals(CONF.getHashAlgorithm()))
+                ? ConfigConstants.DEFAULT_HASH_ALGORITHM
+                : CONF.getHashAlgorithm();
+            try {
+                this.hashCalculator = new HashCalculator(hashAlgorithm);
+            } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException("Unable to load the HashCalculator for algorithm " + hashAlgorithm, ex);
+            }
+        }
+        return this.hashCalculator;
     }
 
     /**

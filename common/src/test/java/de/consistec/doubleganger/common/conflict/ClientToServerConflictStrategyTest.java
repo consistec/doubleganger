@@ -22,7 +22,6 @@ package de.consistec.doubleganger.common.conflict;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static org.junit.Assert.assertTrue;
 
@@ -38,7 +37,6 @@ import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Map;
 import org.junit.Before;
@@ -86,7 +84,7 @@ public class ClientToServerConflictStrategyTest {
     }
 
     @Test
-    public void resolveByClientWinsStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException {
+    public void resolveByClientWinsStrategy() throws DatabaseAdapterException {
 
         Config confInstance = Config.getInstance();
         confInstance.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
@@ -99,7 +97,7 @@ public class ClientToServerConflictStrategyTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void resolveByServerWinsStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException {
+    public void resolveByServerWinsStrategy() throws DatabaseAdapterException {
 
         Config confInstance = Config.getInstance();
         confInstance.setGlobalConflictStrategy(ConflictStrategy.SERVER_WINS);
@@ -112,7 +110,7 @@ public class ClientToServerConflictStrategyTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void resolveByFireEventStrategy() throws DatabaseAdapterException, NoSuchAlgorithmException, SyncException {
+    public void resolveByFireEventStrategy() throws DatabaseAdapterException, SyncException {
 
         Config confInstance = Config.getInstance();
         confInstance.setGlobalConflictStrategy(ConflictStrategy.FIRE_EVENT);
@@ -126,8 +124,7 @@ public class ClientToServerConflictStrategyTest {
             new IConflictListener() {
                 @Override
                 public ResolvedChange resolve(final Map<String, Object> serverData,
-                                              final Map<String, Object> clientData
-                ) {
+                    final Map<String, Object> clientData) {
                     return null;
                 }
             });

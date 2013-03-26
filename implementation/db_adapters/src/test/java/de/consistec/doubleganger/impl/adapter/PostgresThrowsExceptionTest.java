@@ -52,7 +52,6 @@ import org.mockito.MockitoAnnotations;
  * @company consistec Engineering and Consulting GmbH
  * @date 11.01.13 14:22
  */
-@Ignore
 public class PostgresThrowsExceptionTest {
 
     private static final SQLException TRANSACTION_EXCEPTION = new SQLException("test transaction aborted exception",
