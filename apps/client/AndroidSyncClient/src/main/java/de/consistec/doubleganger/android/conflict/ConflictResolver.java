@@ -3,6 +3,7 @@ package de.consistec.doubleganger.android.conflict;
 import de.consistec.doubleganger.android.HelloAndroidActivity;
 import de.consistec.doubleganger.android.ThreadEvent;
 import de.consistec.doubleganger.android.adapter.Item;
+import de.consistec.doubleganger.android.adapter.ItemFactory;
 import de.consistec.doubleganger.android.dialog.ConflictDialog;
 import de.consistec.doubleganger.android.dialog.EditConflictDialog;
 import de.consistec.doubleganger.android.dialog.NoticeConflictDialogListener;
@@ -11,8 +12,6 @@ import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.data.ResolvedChange;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,7 +41,7 @@ public class ConflictResolver
         this.clientData = clientData;
         this.serverData = serverData;
 
-        showDialog(clientData, serverData);
+        showConflictDialog(clientData, serverData);
 
         try {
             resultsReady.await();
@@ -51,7 +50,7 @@ public class ConflictResolver
         }
 
         if (userWantsToEdit) {
-            showEditDialog();
+            showEditConflictDialog();
 
             try {
                 resultsReady.await();
@@ -63,89 +62,32 @@ public class ConflictResolver
         return resolvedChange;
     }
 
-    private void showEditDialog() {
+    private void showEditConflictDialog() {
         ctx.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Item[] selectedChangeItems = createSelectedChangeItems(resolvedChange);
+                Item[] selectedChangeItems = ItemFactory.createChangeItems(resolvedChange.getRowData());
+
                 final EditConflictDialog dlg = new EditConflictDialog(ctx, ConflictResolver.this,
                     selectedChangeItems);
                 dlg.setThreadEvent(resultsReady);
                 dlg.show();
             }
-
-            private Item[] createSelectedChangeItems(final ResolvedChange selectedChange) {
-                List<Item> items = new ArrayList<Item>(selectedChange.getRowData().size());
-                boolean selectedDataExists = false;
-                for (String column : selectedChange.getRowData().keySet()) {
-                    if (selectedChange.getRowData().get(column) != null) {
-                        selectedDataExists = true;
-                        Item item = new Item();
-                        item.setItemName(column);
-                        item.setItemDesc(selectedChange.getRowData().get(column).toString());
-                        item.setItemValue(selectedChange.getRowData().get(column));
-                        items.add(item);
-                    }
-                }
-
-                if (!selectedDataExists) {
-                    items.clear();
-                }
-                return items.toArray(new Item[0]);
-            }
         });
     }
 
-    private void showDialog(final Map<String, Object> clientData, final Map<String, Object> serverData) {
+    private void showConflictDialog(final Map<String, Object> clientData, final Map<String, Object> serverData) {
 
         ctx.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Item[] clientItems = createClientItems(clientData);
-                Item[] serverItems = createServerItems(serverData);
+                Item[] clientItems = ItemFactory.createChangeItems(clientData);
+                Item[] serverItems = ItemFactory.createChangeItems(serverData);
+
                 final ConflictDialog dlg = new ConflictDialog(ctx, ConflictResolver.this,
                     clientItems, serverItems);
                 dlg.setThreadEvent(resultsReady);
                 dlg.show();
-            }
-
-            private Item[] createServerItems(final Map<String, Object> serverData) {
-                List<Item> items = new ArrayList<Item>(serverData.size());
-                boolean serverDataExists = false;
-                for (String column : serverData.keySet()) {
-                    if (serverData.get(column) != null) {
-                        serverDataExists = true;
-                        Item item = new Item();
-                        item.setItemName(column);
-                        serverDataExists = true;
-                        item.setItemDesc(serverData.get(column).toString());
-                        item.setItemValue(serverData.get(column));
-                        items.add(item);
-                    }
-                }
-                if (!serverDataExists) {
-                    items.clear();
-                }
-                return items.toArray(new Item[0]);
-            }
-
-            private Item[] createClientItems(final Map<String, Object> clientData) {
-                List<Item> items = new ArrayList<Item>(serverData.size());
-                boolean clientDataExists = false;
-                for (String column : clientData.keySet()) {
-                    if (clientData.get(column) != null) {
-                        clientDataExists = true;
-                        Item item = new Item();
-                        item.setItemName(column);
-                        item.setItemDesc(clientData.get(column).toString());
-                        item.setItemValue(clientData.get(column));
-                        items.add(item);
-                    }
-                }
-                if (!clientDataExists) {
-                    items.clear();
-                }
-                return items.toArray(new Item[0]);
             }
         });
     }

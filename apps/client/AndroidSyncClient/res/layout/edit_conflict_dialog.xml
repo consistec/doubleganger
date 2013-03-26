@@ -18,7 +18,8 @@
 
     <Button
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50px"
+            android:textSize="10sp"
             android:text="@string/useSelectedChange"
             android:id="@+id/useSelectedChangeBtn"
             />

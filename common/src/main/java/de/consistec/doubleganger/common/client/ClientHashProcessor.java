@@ -263,16 +263,15 @@ public class ClientHashProcessor {
                 ResolvedChange resolvedChange = resolveConflictsFireEvent(data, conflictHandlingStrategy);
                 // exchange client change with resolved change to apply to server db
                 dataHolder.getClientSyncData().removeChange(clientChange);
-//                resolvedChange.setMdEntry(clientChange.getMdEntry());
-//                dataHolder.getClientSyncData().addChange(resolvedChange);
 
-                // only add to client sync data if the user selected to use user change
-                // if the user selected to use server change than we don't need to apply to server
-                if (resolvedChange.getDecision() != UserDecision.SERVER_CHANGE &&
-                    resolvedChange.getDecision() != UserDecision.EDIT_SERVER_CHANGE) {
+                // if the user selected server change than set mdentry to server change
+                if (resolvedChange.getDecision() == UserDecision.USER_EDIT
+                    && resolvedChange.getSelectedDecision() == UserDecision.EDIT_SERVER_CHANGE) {
+                    resolvedChange.setMdEntry(serverChange.getMdEntry());
+                } else {
                     resolvedChange.setMdEntry(clientChange.getMdEntry());
-                    dataHolder.getClientSyncData().addChange(resolvedChange);
                 }
+                dataHolder.getClientSyncData().addChange(resolvedChange);
 
                 // delete server change it is not needed anymore
                 dataHolder.getServerSyncData().removeChange(serverChange);

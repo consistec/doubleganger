@@ -13,7 +13,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 
 /**
@@ -23,8 +22,6 @@ import android.widget.ListView;
  */
 public class ConflictDialog extends Dialog {
 
-    private EditText mEditText;
-    private UserDecision decision;
     // Use this instance of the interface to deliver action events
     private NoticeConflictDialogListener mListener;
     private ThreadEvent threadEvent;
@@ -36,8 +33,6 @@ public class ConflictDialog extends Dialog {
                           Item[] serverValues
     ) {
         super(context);
-
-        this.decision = UserDecision.SERVER_CHANGE;
 
         setContentView(R.layout.conflict_dialog);
         setTitle("Resolve following conflicts ...");
@@ -91,10 +86,6 @@ public class ConflictDialog extends Dialog {
         mListener = conflictResolver;
     }
 
-    public UserDecision getDecision() {
-        return decision;
-    }
-
     public void setThreadEvent(final ThreadEvent threadEvent) {
         this.threadEvent = threadEvent;
     }
@@ -123,9 +114,9 @@ public class ConflictDialog extends Dialog {
         public void onClick(View arg0) {
 
             if (arg0 == useServerButton) {
-                mListener.onConflictDialogPositiveClick(decision = UserDecision.SERVER_CHANGE);
+                mListener.onConflictDialogPositiveClick(UserDecision.SERVER_CHANGE);
             } else {
-                mListener.onConflictDialogPositiveClick(decision = UserDecision.EDIT_SERVER_CHANGE);
+                mListener.onConflictDialogPositiveClick(UserDecision.EDIT_SERVER_CHANGE);
             }
 
             if (threadEvent != null) {

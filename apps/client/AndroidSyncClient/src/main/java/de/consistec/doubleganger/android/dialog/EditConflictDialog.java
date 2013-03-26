@@ -14,7 +14,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +25,6 @@ import java.util.Map;
  */
 public class EditConflictDialog extends Dialog {
 
-    private EditText mEditText;
-    private UserDecision decision;
     // Use this instance of the interface to deliver action events
     private NoticeEditConflictDialogListener mListener;
     private ThreadEvent threadEvent;
@@ -38,8 +35,6 @@ public class EditConflictDialog extends Dialog {
     public EditConflictDialog(final Context context, ConflictResolver conflictResolver, Item[] selectedChangeItems
     ) {
         super(context);
-
-        this.decision = UserDecision.SERVER_CHANGE;
 
         setContentView(R.layout.edit_conflict_dialog);
         setTitle("edit your selected change ...");
@@ -79,7 +74,7 @@ public class EditConflictDialog extends Dialog {
 
             Map<String, Object> rowData = new HashMap<String, Object>();
             for (int i = 0; i < selectedChangeAdapter.getCount(); i++) {
-                Item item = (Item) selectedChangeAdapter.getItem(i);
+                Item item = selectedChangeAdapter.getItem(i);
                 rowData.put(item.getItemName(), item.getItemValue());
             }
 
