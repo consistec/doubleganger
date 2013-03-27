@@ -46,6 +46,7 @@ import java.util.Properties;
 public class DumbDbAdapter implements IDatabaseAdapter {
 
     public Connection connection;
+    public HashCalculator hashCalculator;
 
     private DumbDbAdapter() {
     }
@@ -198,5 +199,10 @@ public class DumbDbAdapter implements IDatabaseAdapter {
 
     @Override
     public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
+    }
+
+    @Override
+    public void setHashCalculator(HashCalculator hashCalculator) {
+        this.hashCalculator = hashCalculator;
     }
 }

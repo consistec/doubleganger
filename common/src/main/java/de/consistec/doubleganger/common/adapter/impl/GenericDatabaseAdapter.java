@@ -32,7 +32,6 @@ import static de.consistec.doubleganger.common.util.PropertiesUtil.defaultIfNull
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
 
 import de.consistec.doubleganger.common.Config;
-import de.consistec.doubleganger.common.ConfigConstants;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.Column;
@@ -52,7 +51,6 @@ import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -356,17 +354,12 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     @Override
     public HashCalculator getHashCalculator() {
-        if (this.hashCalculator == null) {
-            String hashAlgorithm = ("".equals(CONF.getHashAlgorithm()))
-                ? ConfigConstants.DEFAULT_HASH_ALGORITHM
-                : CONF.getHashAlgorithm();
-            try {
-                this.hashCalculator = new HashCalculator(hashAlgorithm);
-            } catch (NoSuchAlgorithmException ex) {
-                throw new RuntimeException("Unable to load the HashCalculator for algorithm " + hashAlgorithm, ex);
-            }
-        }
         return this.hashCalculator;
+    }
+
+    @Override
+    public void setHashCalculator(HashCalculator hashCalculator) {
+        this.hashCalculator = hashCalculator;
     }
 
     /**

@@ -58,13 +58,6 @@ import java.util.Properties;
 public interface IDatabaseAdapter {
 
     /**
-     * The SAMD algorithm needs a hash function. Define it here.
-     * <p/>
-     * @return the hash calculator
-     */
-    HashCalculator getHashCalculator();
-
-    /**
      * Creates connection to destination database and sets Connection.TRANSACTION_SERIALIZABLE attribute on it.
      * <p/>
      *
@@ -83,6 +76,20 @@ public interface IDatabaseAdapter {
      * @throws DatabaseAdapterInstantiationException
      */
     void init(Connection connection) throws DatabaseAdapterInstantiationException;
+
+    /**
+     * Returns the hash function for the SAMD algorithm.
+     * <p/>
+     * @return the hash calculator
+     */
+    HashCalculator getHashCalculator();
+
+    /**
+     * The SAMD algorithm needs a hash function: define it here.
+     * <p/>
+     * @param hashCalculator the hash calculator
+     */
+    void setHashCalculator(HashCalculator hashCalculator);
 
     /**
      * Returns a schema sql converter for the current database.
