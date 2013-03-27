@@ -428,27 +428,16 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
     @Override
     public void applySchema(Schema schema) throws DatabaseAdapterException {
 
-        Statement stmt = null; //NOSONAR
         try {
-            stmt = connection.createStatement();
             removeExistentTablesFromSchema(schema);
             String sqlSchema = getSchemaConverter().toSQL(schema);
 
             LOGGER.debug("applying schema: {}", sqlSchema);
 
             String[] tableScripts = sqlSchema.split(";");
-            for (String tableSql : tableScripts) {
-                stmt.addBatch(tableSql);
-            }
-            stmt.executeBatch();
-        } catch (BatchUpdateException e) {
-            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
-        } catch (SQLException e) {
-            throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_APPLY_DB_SCHEMA), e);
+            executeBatch(tableScripts);
         } catch (SchemaConverterException e) {
             throw new DatabaseAdapterException(read(DBAdapterErrors.CANT_CONVERT_SCHEMA_TO_SQL), e);
-        } finally {
-            closeStatements(stmt);
         }
     }
 
@@ -587,12 +576,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     @Override
     public int getNextRevision() throws DatabaseAdapterException {
-
-        // CALCULATE REVISION
         int rev = getLastRevision() + 1;
-
         LOGGER.debug("next revision is {} ", rev);
-
         return rev;
     }
 
@@ -603,7 +588,6 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         Statement stmt = null; //NOSONAR
         ResultSet rst = null; //NOSONAR
         try {
-            // CALCULATE REVISION
             String mdTable;
             stmt = connection.createStatement();
 
