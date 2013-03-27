@@ -11,8 +11,6 @@
     <name>AndroidSyncClient</name>
 
     <properties>
-        <android.compile.version>4.0.1.2</android.compile.version>
-        <android.sdk.version>15</android.sdk.version>
         <android.test.skip>true</android.test.skip>
         <android.emulator.name>TestDevice</android.emulator.name>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,7 +107,7 @@
                 <configuration>
                     <extractDuplicates>true</extractDuplicates>
                     <emma>
-                        <enable>true</enable>
+                        <enable>false</enable>
                         <classFolders>${project.basedir}/target/classes/</classFolders>
                         <outputMetaFile>${project.basedir}/target/emma/coverage.em</outputMetaFile>
                     </emma>
@@ -224,6 +222,25 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>android-10</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <android.sdk.version>10</android.sdk.version>
+                <android.compile.version>2.3.3</android.compile.version>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>android-15</id>
+            <properties>
+                <android.sdk.version>15</android.sdk.version>
+                <android.compile.version>4.0.1.2</android.compile.version>
+            </properties>
+        </profile>
+
         <profile>
             <id>androidTest</id>
             <properties>

@@ -9,20 +9,19 @@ package de.consistec.doubleganger.common;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory;
@@ -48,19 +47,16 @@ import org.slf4j.cal10n.LocLogger;
 public abstract class AbstractSyncProvider {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(AbstractSyncProvider.class.getCanonicalName());
-
     /**
      * database adapter only for test classes.
      */
     protected IDatabaseAdapter dbAdapter;
-
     /**
      * External data source provides external jdbc connections for database adapter.
      * <p>When this field has {@code null} value, adapter should be using its own connection.</p>
      */
     private DataSource ds;
     private TableSyncStrategies strategies;
-
 
     /**
      * Constructs provider object which uses database adapter with adapter internal jdbc connection.
@@ -107,7 +103,6 @@ public abstract class AbstractSyncProvider {
         this.ds = ds;
         this.dbAdapter = dbAdapter;
     }
-
 
     /**
      * Return collection of synchronization strategies for monitored tables.
@@ -170,9 +165,8 @@ public abstract class AbstractSyncProvider {
      * @param autocommit true o'Lr false
      * @return Adapter object.
      */
-    protected IDatabaseAdapter prepareDbAdapter(DatabaseAdapterFactory.AdapterPurpose purpose, boolean autocommit
-    ) throws
-        DatabaseAdapterInstantiationException {
+    protected IDatabaseAdapter prepareDbAdapter(DatabaseAdapterFactory.AdapterPurpose purpose, boolean autocommit)
+        throws DatabaseAdapterInstantiationException {
 
         if (dbAdapter != null) {
             return dbAdapter;
@@ -183,8 +177,7 @@ public abstract class AbstractSyncProvider {
             if (getDs() == null) {
                 adapter = DatabaseAdapterFactory.newInstance(purpose);
             } else {
-                adapter = DatabaseAdapterFactory.newInstance(purpose,
-                    getDs().getConnection());
+                adapter = DatabaseAdapterFactory.newInstance(purpose, getDs().getConnection());
             }
 
             adapter.getConnection().setAutoCommit(autocommit);

@@ -22,12 +22,12 @@ package de.consistec.doubleganger.common.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.consistec.doubleganger.common.data.schema.Column;
 import de.consistec.doubleganger.common.data.schema.ISQLConverter;
 import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
+import de.consistec.doubleganger.common.util.HashCalculator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -76,6 +76,20 @@ public interface IDatabaseAdapter {
      * @throws DatabaseAdapterInstantiationException
      */
     void init(Connection connection) throws DatabaseAdapterInstantiationException;
+
+    /**
+     * Returns the hash function for the SAMD algorithm.
+     * <p/>
+     * @return the hash calculator
+     */
+    HashCalculator getHashCalculator();
+
+    /**
+     * The SAMD algorithm needs a hash function: define it here.
+     * <p/>
+     * @param hashCalculator the hash calculator
+     */
+    void setHashCalculator(HashCalculator hashCalculator);
 
     /**
      * Returns a schema sql converter for the current database.

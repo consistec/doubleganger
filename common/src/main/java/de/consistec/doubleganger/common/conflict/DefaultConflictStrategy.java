@@ -22,10 +22,11 @@ package de.consistec.doubleganger.common.conflict;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
+import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_DELETED_VALUE;
 
+import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.IConflictListener;
 import de.consistec.doubleganger.common.adapter.IDatabaseAdapter;
 import de.consistec.doubleganger.common.client.ConflictHandlingData;
@@ -37,7 +38,6 @@ import de.consistec.doubleganger.common.util.DBMapperUtil;
 import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import org.slf4j.cal10n.LocLogger;
 
@@ -49,6 +49,7 @@ import org.slf4j.cal10n.LocLogger;
 public class DefaultConflictStrategy implements IConflictStrategy {
 
     private static final LocLogger LOGGER = LoggingUtil.createLogger(DefaultConflictStrategy.class.getCanonicalName());
+    private final boolean isTriggerActivated = Config.getInstance().isSqlTriggerOnClientActivated();
 
     @Override
     public void resolveByClientWinsStrategy(final IDatabaseAdapter adapter, final ConflictHandlingData data) throws
@@ -77,13 +78,13 @@ public class DefaultConflictStrategy implements IConflictStrategy {
             adapter.updateMdRow(remoteRevision, FLAG_MODIFIED, remotePK, localMdv, remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client DEL, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, MDV_DELETED_VALUE, remoteTableName);
         }
     }
 
     @Override
     public void resolveByServerWinsStrategy(final IDatabaseAdapter adapter, final ConflictHandlingData data) throws
-        DatabaseAdapterException, NoSuchAlgorithmException {
+        DatabaseAdapterException {
 
         int remotePK = ((Integer) data.getRemoteEntry().getPrimaryKey()).intValue();
         int localRevision = data.getLocalEntry().getRevision();
@@ -91,41 +92,41 @@ public class DefaultConflictStrategy implements IConflictStrategy {
         String remoteTableName = data.getRemoteEntry().getTableName();
         int remoteRevision = data.getRemoteEntry().getRevision();
 
+        HashCalculator hashCalculator = adapter.getHashCalculator();
+
         if (ConflictType.CLIENT_ADD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client ADD, Server ADD", data.getRemoteChange(), localRevision, localMod);
             adapter.updateDataRow(data.getRemoteChange().getRowData(), remotePK, remoteTableName);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
-                remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK,
+                hashCalculator.calculateHash(data.getRemoteChange(), isTriggerActivated), remoteTableName);
         } else if (ConflictType.CLIENT_ADD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo(" Client ADD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, MDV_DELETED_VALUE, remoteTableName);
             adapter.deleteRow(remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client MOD, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
-                remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK,
+                hashCalculator.calculateHash(data.getRemoteChange(), isTriggerActivated), remoteTableName);
             adapter.updateDataRow(data.getRemoteChange().getRowData(), remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_MOD_SERVER_DEL.isTheCase(data)) {
             logConflictInfo(" Client MOD, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, MDV_DELETED_VALUE, remoteTableName);
             adapter.deleteRow(remotePK, remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_ADD_OR_SERVER_MOD.isTheCase(data)) {
             logConflictInfo("Client DEL, Server ADD", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, data.getRemoteChange().calculateHash(),
-                remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK,
+                hashCalculator.calculateHash(data.getRemoteChange(), isTriggerActivated), remoteTableName);
             adapter.insertDataRow(data.getRemoteChange().getRowData(), remoteTableName);
         } else if (ConflictType.CLIENT_DEL_SERVER_DEL.isTheCase(data)) {
             logConflictInfo("Client DEL, Server DEL", data.getRemoteChange(), localRevision, localMod);
-            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, null, remoteTableName);
+            adapter.updateMdRow(remoteRevision, FLAG_PROCESSED, remotePK, MDV_DELETED_VALUE, remoteTableName);
         }
     }
 
     @Override
     public ResolvedChange resolveByFireEvent(final IDatabaseAdapter adapter, final ConflictHandlingData data,
-                                             final Map<String, Object> clientData,
-                                             final IConflictListener conflictListener
-    ) throws
-        SyncException, DatabaseAdapterException, NoSuchAlgorithmException {
+        final Map<String, Object> clientData, final IConflictListener conflictListener) throws SyncException,
+        DatabaseAdapterException {
 
         ResolvedChange resolved = conflictListener.resolve(data.getRemoteChange().getRowData(), clientData);
 
@@ -138,9 +139,9 @@ public class DefaultConflictStrategy implements IConflictStrategy {
     }
 
     private void applyResolvedChange(ResolvedChange change, final IDatabaseAdapter adapter,
-                                     final Map<String, Object> clientData,
-                                     final ConflictHandlingData data
-    ) throws DatabaseAdapterException, NoSuchAlgorithmException {
+        final Map<String, Object> clientData, final ConflictHandlingData data) throws DatabaseAdapterException {
+
+        HashCalculator hashCalculator = adapter.getHashCalculator();
 
         if (DBMapperUtil.dataRowHasValues(clientData)) {
 
@@ -155,14 +156,14 @@ public class DefaultConflictStrategy implements IConflictStrategy {
                     data.getRemoteEntry().getTableName());
                 adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
                     data.getRemoteEntry().getPrimaryKey(),
-                    new HashCalculator().getHash(change.getRowData()), data.getRemoteEntry().getTableName());
+                    hashCalculator.calculateHash(change, isTriggerActivated), data.getRemoteEntry().getTableName());
             }
         } else {
             if (DBMapperUtil.dataRowHasValues(change.getRowData())) {
                 adapter.insertDataRow(change.getRowData(), data.getRemoteEntry().getTableName());
                 adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_MODIFIED,
                     data.getRemoteEntry().getPrimaryKey(),
-                    new HashCalculator().getHash(change.getRowData()), data.getRemoteEntry().getTableName());
+                    hashCalculator.calculateHash(change, isTriggerActivated), data.getRemoteEntry().getTableName());
 
             } else {
                 adapter.updateMdRow(data.getRemoteEntry().getRevision(), FLAG_PROCESSED,
@@ -174,8 +175,7 @@ public class DefaultConflictStrategy implements IConflictStrategy {
     }
 
     private void logConflictInfo(final String conflict, final Change remoteChange, final int localRev,
-                                 final boolean exists
-    ) {
+        final boolean exists) {
 
         StringBuilder builder = new StringBuilder("\n/*---------------------  Conflict info   ---------------------");
         builder.append("\n * Conflict: ");
@@ -190,5 +190,4 @@ public class DefaultConflictStrategy implements IConflictStrategy {
 
         LOGGER.debug(builder.toString());
     }
-
 }

@@ -223,7 +223,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         IDatabaseAdapter adapter = null;
 
         try {
-
             adapter = prepareServerDbAdapter();
             ServerTableSynchronizer tableSynchronizer = new ServerTableSynchronizer(adapter);
             ServerHashProcessor hashProcessor = new ServerHashProcessor(adapter);
@@ -327,7 +326,6 @@ public final class ServerSyncProvider extends AbstractSyncProvider implements IS
         IDatabaseAdapter adapter = null;
 
         try {
-
             adapter = prepareServerDbAdapter();
             ServerChangesEnumerator changesEnumerator = new ServerChangesEnumerator(adapter, getStrategies());
             ServerTableSynchronizer tableSynchronizer = new ServerTableSynchronizer(adapter);

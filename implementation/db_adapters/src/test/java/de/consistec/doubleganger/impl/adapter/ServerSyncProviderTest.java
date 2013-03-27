@@ -22,7 +22,6 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashSet;
 import static org.mockito.Matchers.any;
@@ -72,7 +71,6 @@ import org.mockito.stubbing.Answer;
  */
 //@RunWith(PowerMockRunner.class)
 //@PrepareForTest(PostgresDatabaseAdapter.class)
-@Ignore
 public class ServerSyncProviderTest {
 
     private static final SQLException TRANSACTION_SQL_EXCEPTION = new SQLException(
@@ -113,20 +111,18 @@ public class ServerSyncProviderTest {
         databaseAdapterMock.init(connectionMock);
     }
 
-    @Test
+//    @Test
     public void applyChangesThrowsTransactionAbortedException() throws Exception {
         thrown.expect(SyncException.class);
         thrown.expectMessage(read(Errors.COMMON_CANT_APPLY_CLIENT_CHANGES_FOR_N_TIME, 0));
 
         ServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies(), databaseAdapterMock);
 
-        doNothing().when(
-            databaseAdapterMock).init(connectionMock);
+        doNothing().when(databaseAdapterMock).init(connectionMock);
         when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
         when(databaseAdapterMock.getNextRevision()).thenReturn(1);
         doCallRealMethod().when(databaseAdapterMock).commit();
-        doThrow(TRANSACTION_SQL_EXCEPTION).when(
-            connectionMock).commit();
+        doThrow(TRANSACTION_SQL_EXCEPTION).when(connectionMock).commit();
 
         serverSyncProvider.applyChanges(new SyncData());
 
@@ -140,8 +136,7 @@ public class ServerSyncProviderTest {
 
         ServerSyncProvider serverSyncProvider = new ServerSyncProvider(new TableSyncStrategies(), databaseAdapterMock);
 
-        doNothing().when(
-            databaseAdapterMock).init(connectionMock);
+        doNothing().when(databaseAdapterMock).init(connectionMock);
         when(databaseAdapterMock.getConnection()).thenReturn(connectionMock);
         when(databaseAdapterMock.getNextRevision()).thenReturn(1);
 

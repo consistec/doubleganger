@@ -23,6 +23,7 @@ package de.consistec.doubleganger.common;
  * #L%
  */
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_CONFLICT_STRATEGY;
+import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_HASH_ALGORITHM;
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_IS_SQL_TRIGGER_ACTIVATED;
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_MD_TABLE_SUFFIX;
 import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR;
@@ -32,6 +33,7 @@ import static de.consistec.doubleganger.common.ConfigConstants.DEFAULT_SYNC_DIRE
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAPTER_CLASS;
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_CLIENT_DB_ADAP_GROUP;
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_CONFLICT_ACTION;
+import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_HASH_ALGORITHM;
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED;
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED;
 import static de.consistec.doubleganger.common.ConfigConstants.OPTIONS_COMMON_MD_TABLE_SUFFIX;
@@ -99,6 +101,7 @@ public final class Config {
     private ConflictStrategy globalConflictStrategy;
     private SyncDirection globalSyncDirection;
     private int syncRetryNumber;
+    private String hashAlgorithm;
 
     /**
      * It's singleton so no direct instance creation allowed.
@@ -449,6 +452,25 @@ public final class Config {
     }
 
     /**
+     * Returns the value of the hash algorithm (Default: "MD5").
+     *
+     * @return String hashAlgorithm
+     */
+    public String getHashAlgorithm() {
+        return hashAlgorithm;
+    }
+
+    /**
+     * Sets the global hash algorithm (see {@link Secrity.getProviders()} for options).
+     * <p/>
+     *
+     * @param hashAlgorithm the hash algorithm (default "MD5")
+     */
+    public void setHashAlgorithm(String hashAlgorithm) {
+        this.hashAlgorithm = hashAlgorithm;
+    }
+
+    /**
      * Returns a single instance of Config class.
      * If there is no instance yet, it will be created.
      * <p/>
@@ -473,18 +495,13 @@ public final class Config {
      */
     private void prepareCommonConfig(final Properties props) {
 
+        hashAlgorithm = PropertiesUtil.defaultIfNull(DEFAULT_HASH_ALGORITHM, PropertiesUtil.readString(props,
+            OPTIONS_COMMON_HASH_ALGORITHM, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_HASH_ALGORITHM, hashAlgorithm);
+
         mdTableSuffix = PropertiesUtil.defaultIfNull(DEFAULT_MD_TABLE_SUFFIX, PropertiesUtil.readString(props,
             OPTIONS_COMMON_MD_TABLE_SUFFIX, false));
         LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_MD_TABLE_SUFFIX, mdTableSuffix);
-
-        isSqlTriggerOnServerActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
-            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED, false));
-        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED,
-            isSqlTriggerOnServerActivated);
-        isSqlTriggerOnClientActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
-            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED, false));
-        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED,
-            isSqlTriggerOnClientActivated);
 
         retryNumberOfApplyChangesOnTransactionError = PropertiesUtil.defaultIfNull(
             DEFAULT_NR_APPLY_CHANGES_ON_TRANS_ERR,
@@ -542,6 +559,16 @@ public final class Config {
      * @param props
      */
     private void prepareAdaptersConfig(final Properties props) {
+
+        isSqlTriggerOnServerActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
+            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_SERVER_ACTIVATED,
+            isSqlTriggerOnServerActivated);
+        isSqlTriggerOnClientActivated = PropertiesUtil.defaultIfNull(DEFAULT_IS_SQL_TRIGGER_ACTIVATED,
+            PropertiesUtil.readBoolean(props, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED, false));
+        LOGGER.info(Infos.CONFIG_OPTION_LOADED, OPTIONS_COMMON_IS_SQL_TRIGGER_ON_CLIENT_ACTIVATED,
+            isSqlTriggerOnClientActivated);
+
 
         for (String key : props.stringPropertyNames()) {
 

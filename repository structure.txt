@@ -2,7 +2,7 @@ The project repository is split into several (maven) modules:
 
 * common: contains sources and interfaces of the synchronization framework
 
-* dev:
+* devtools:
     * checkstyle
     * logging: uses AspectJ for generating verbose logging when needed
 

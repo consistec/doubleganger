@@ -37,7 +37,6 @@ import de.consistec.doubleganger.common.util.DBMapperUtil;
 import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -126,6 +125,8 @@ public class ServerTableSynchronizer {
     private void searchAndProcessChangedRows(final int rev, final String table) throws DatabaseAdapterException {
         final String mdTable = table + CONF.getMdTableSuffix();
 
+        final HashCalculator hashCalculator = adapter.getHashCalculator();
+
         final List<String> columns = adapter.getColumnNamesFromTable(table);
         adapter.getAllRowsFromTable(table, new DatabaseAdapterCallback<ResultSet>() {
             @Override
@@ -140,7 +141,7 @@ public class ServerTableSynchronizer {
                         final Object primaryKey = allRows.getObject(adapter.getPrimaryKeyColumn(table).getName());
 
                         LOGGER.debug("calculate hash value from following row data: <{}>", rowData);
-                        final String hash = new HashCalculator().getHash(rowData);
+                        final String hash = hashCalculator.calculateHash(rowData);
 
                         adapter.getRowForPrimaryKey(primaryKey, mdTable, new DatabaseAdapterCallback<ResultSet>() {
                             @Override
@@ -165,8 +166,6 @@ public class ServerTableSynchronizer {
 
                     }
                 } catch (SQLException e) {
-                    throw new DatabaseAdapterException(e);
-                } catch (NoSuchAlgorithmException e) {
                     throw new DatabaseAdapterException(e);
                 }
             }

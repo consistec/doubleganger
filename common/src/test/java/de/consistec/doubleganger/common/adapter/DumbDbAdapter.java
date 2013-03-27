@@ -27,6 +27,7 @@ import de.consistec.doubleganger.common.data.schema.ISQLConverter;
 import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.TransactionAbortedException;
+import de.consistec.doubleganger.common.util.HashCalculator;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -45,6 +46,7 @@ import java.util.Properties;
 public class DumbDbAdapter implements IDatabaseAdapter {
 
     public Connection connection;
+    public HashCalculator hashCalculator;
 
     private DumbDbAdapter() {
     }
@@ -100,6 +102,11 @@ public class DumbDbAdapter implements IDatabaseAdapter {
 
     @Override
     public Schema getSchema() throws DatabaseAdapterException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public HashCalculator getHashCalculator() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -192,5 +199,10 @@ public class DumbDbAdapter implements IDatabaseAdapter {
 
     @Override
     public void createMDTableOnClient(final String tableName) throws DatabaseAdapterException {
+    }
+
+    @Override
+    public void setHashCalculator(HashCalculator hashCalculator) {
+        this.hashCalculator = hashCalculator;
     }
 }

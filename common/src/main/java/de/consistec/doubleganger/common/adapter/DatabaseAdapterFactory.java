@@ -9,32 +9,34 @@ package de.consistec.doubleganger.common.adapter;
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
+ * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public 
+ *
+ * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.Preconditions.checkNotNull;
 
 import de.consistec.doubleganger.common.Config;
+import de.consistec.doubleganger.common.ConfigConstants;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.doubleganger.common.i18n.Errors;
 import de.consistec.doubleganger.common.i18n.Infos;
 import de.consistec.doubleganger.common.i18n.Warnings;
+import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -165,8 +167,15 @@ public final class DatabaseAdapterFactory {
             } else {
                 instance.init(connection);
             }
+            String hashFunction = adapterConfig.getProperty(ConfigConstants.OPTIONS_COMMON_HASH_ALGORITHM);
+            if ("".equals(hashFunction)) {
+                hashFunction = ConfigConstants.DEFAULT_HASH_ALGORITHM;
+            }
+            instance.setHashCalculator(new HashCalculator(hashFunction));
 
             return instance;
+        } catch (NoSuchAlgorithmException ex) {
+            throw new DatabaseAdapterInstantiationException(ex);
         } catch (IllegalArgumentException ex) {
             throw new DatabaseAdapterInstantiationException(ex);
         } catch (InvocationTargetException ex) {
