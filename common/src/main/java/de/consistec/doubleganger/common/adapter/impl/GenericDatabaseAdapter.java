@@ -51,7 +51,6 @@ import de.consistec.doubleganger.common.util.HashCalculator;
 import de.consistec.doubleganger.common.util.LoggingUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
 
-import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
