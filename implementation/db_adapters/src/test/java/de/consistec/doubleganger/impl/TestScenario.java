@@ -22,6 +22,7 @@ package de.consistec.doubleganger.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.conflict.ConflictStrategy.FIRE_EVENT;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
@@ -33,6 +34,7 @@ import de.consistec.doubleganger.common.TableSyncStrategies;
 import de.consistec.doubleganger.common.TableSyncStrategy;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory;
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
+import de.consistec.doubleganger.common.conflict.UserDecision;
 import de.consistec.doubleganger.common.exception.ContextException;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.i18n.Errors;
@@ -71,11 +73,13 @@ public class TestScenario {
     private String[] expectedFlatServerResultSets, expectedFlatClientResultSets;
     private String expectedErrorMsg;
     private Class expectedExceptionClass;
+    private UserInformation userInformation;
 
     public TestScenario(String name, SyncDirection direction, ConflictStrategy strategy) {
         this.name = name;
         this.direction = direction;
         this.strategy = strategy;
+        this.userInformation = new UserInformation(UserDecision.SERVER_CHANGE, null);
     }
 
     public String getName() {
@@ -104,6 +108,10 @@ public class TestScenario {
 
     public void setServerDatabase(TestDatabase db) {
         this.serverDb = db;
+    }
+
+    public UserInformation getUserInformation() {
+        return userInformation;
     }
 
     /**
@@ -301,7 +309,14 @@ public class TestScenario {
 
     @Override
     public String toString() {
-        return name + " - " + direction + ", " + strategy;
+        String userAction = "";
+        String selectedChange = "";
+
+        if (userInformation != null) {
+            userAction = (userInformation.getUserAction() == null) ? "no action" : userInformation.getUserAction().name();
+            selectedChange = (userInformation.getSelectedChange() == null) ? "no selected change" : userInformation.getSelectedChange().name();
+        }
+        return name + " - " + direction + ", " + strategy + ", " + userAction + ", " + selectedChange;
     }
 
     public String getLongDescription() {
@@ -315,5 +330,28 @@ public class TestScenario {
         result += "\n\tdirection=" + direction + ", \n\tstrategy=" + strategy;
         result += ", \n\texpectedServerState=" + expectedServerState + ", \n\texpectedClientState=" + expectedClientState;
         return result;
+    }
+
+    public TestScenario addUserDecision(final UserDecision userAction, final UserDecision selectedChange) {
+        userInformation = new UserInformation(userAction, selectedChange);
+        return this;
+    }
+
+    public static class UserInformation {
+        private UserDecision userAction;
+        private UserDecision selectedChange;
+
+        public UserInformation(final UserDecision userAction, final UserDecision selectedChange) {
+            this.userAction = userAction;
+            this.selectedChange = selectedChange;
+        }
+
+        public UserDecision getUserAction() {
+            return userAction;
+        }
+
+        public UserDecision getSelectedChange() {
+            return selectedChange;
+        }
     }
 }

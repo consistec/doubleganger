@@ -264,14 +264,25 @@ public class ClientHashProcessor {
                 // exchange client change with resolved change to apply to server db
                 dataHolder.getClientSyncData().removeChange(clientChange);
 
-                // if the user selected server change than set mdentry to server change
-                if (resolvedChange.getDecision() == UserDecision.USER_EDIT
-                    && resolvedChange.getSelectedDecision() == UserDecision.EDIT_SERVER_CHANGE) {
+                resolvedChange.setMdEntry(clientChange.getMdEntry());
+
+                // if the user selected server change then set mdentry also to server change
+                // because client change could be deleted
+                if ((resolvedChange.getDecision() == UserDecision.USER_EDIT
+                    && resolvedChange.getSelectedDecision() == UserDecision.EDIT_SERVER_CHANGE
+                    || resolvedChange.getDecision() == UserDecision.SERVER_CHANGE)) {
                     resolvedChange.setMdEntry(serverChange.getMdEntry());
                 } else {
                     resolvedChange.setMdEntry(clientChange.getMdEntry());
                 }
-                dataHolder.getClientSyncData().addChange(resolvedChange);
+
+                // if user selected deleted server change then
+                // don't add it to client list
+                if (resolvedChange.getDecision() != UserDecision.SERVER_CHANGE
+                    || (resolvedChange.getDecision() == UserDecision.SERVER_CHANGE
+                    && serverChange.getMdEntry().dataRowExists())) {
+                    dataHolder.getClientSyncData().addChange(resolvedChange);
+                }
 
                 // delete server change it is not needed anymore
                 dataHolder.getServerSyncData().removeChange(serverChange);
