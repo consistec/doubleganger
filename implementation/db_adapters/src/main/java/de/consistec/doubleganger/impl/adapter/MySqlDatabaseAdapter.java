@@ -22,20 +22,20 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.PK_COLUMN_NAME;
-import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
+import de.consistec.doubleganger.common.adapter.impl.ConnectionDataHolder;
+import de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector;
 import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.ISQLConverter;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
-import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
-import de.consistec.doubleganger.common.util.PropertiesUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
 import de.consistec.doubleganger.impl.data.schema.CreateSchemaToMySQLConverter;
 
@@ -54,18 +54,6 @@ import org.slf4j.LoggerFactory;
 public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
 
     /**
-     * Host property name.
-     */
-    public static final String PROPS_HOST = "host";
-    /**
-     * Port property name.
-     */
-    public static final String PROPS_PORT = "port";
-    /**
-     * Database property name.
-     */
-    public static final String PROPS_DB_NAME = "db_name";
-    /**
      * Default jdbc driver class for mySQL.
      * <p/>
      * Value: {@value}.
@@ -76,6 +64,12 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      * Value: {@value}.
      */
     public static final String MYSQL_CONFIG_FILE = "/config_mysql.properties";
+
+    /**
+     * Defines the prefix of the mysql url.
+     */
+    public static final String URL_PATTERN_PREFIX = "jdbc:mysql://";
+
     /**
      * Default port on which database server is listening.
      * <p/>
@@ -84,48 +78,23 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     public static final int DEFAULT_PORT = 3306;
     private static final String SYNC_USER = "mysql";
     private static final Logger LOGGER = LoggerFactory.getLogger(MySqlDatabaseAdapter.class.getCanonicalName());
-    private static final String HOST_REGEXP = "H_O_S_T";
-    private static final String PORT_REGEXP = "P_O_R_T";
-    private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
-    private static final String URL_PATTERN = "jdbc:mysql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
     private static final String TRIGGERS_FILE_PATH = "/sql/mysql_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
-    private Integer port;
-    private String host;
-    private String databaseName;
+
+    private DatabaseAdapterConnector initializer;
 
     /**
      * Do not let direct object creation.
      */
     public MySqlDatabaseAdapter() {
         LOGGER.debug("created new {}", getClass().getCanonicalName());
+        initializer = new DatabaseAdapterConnector(DEFAULT_DRIVER, DEFAULT_PORT);
     }
 
     @Override
     public void init(Properties adapterConfig) throws DatabaseAdapterInstantiationException {
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_DRIVER_NAME))) {
-            driverName = DEFAULT_DRIVER;
-        } else {
-            driverName = adapterConfig.getProperty(PROPS_DRIVER_NAME);
-        }
-
-        username = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_USERNAME, false);
-        password = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_URL))) {
-            if (!StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_PORT))) {
-                port = PropertiesUtil.readNumber(adapterConfig, PROPS_PORT, true, Integer.class);
-            }
-
-            host = PropertiesUtil.readString(adapterConfig, PROPS_HOST, true);
-            databaseName = PropertiesUtil.readString(adapterConfig, PROPS_DB_NAME, true);
-            connectionUrl = createUrl(host, port, databaseName);
-
-            LOGGER.debug("MySQL connection URL is {}", connectionUrl);
-        }
-
-        createConnection();
+        ConnectionDataHolder connectionData = initializer.init(adapterConfig, URL_PATTERN_PREFIX);
+        connection = initializer.createConnection(connectionData);
     }
 
     @Override
@@ -151,6 +120,7 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
     /**
      * Creates a trigger to update the F flag in the metadata on every change in the data table ON THE SERVER.
      * <p/>
+     *
      * @param tableName the table's name
      * @return sql query for the triggers
      */
@@ -179,31 +149,6 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
         return queries;
     }
 
-    /**
-     * Creates jdbc url string for mySQL.
-     * <p/>
-     *
-     * @param phost Server host address (preferably ip).
-     * @param pport Port on which server is listing.
-     * @param pdbName Database name to connect to.
-     * @return Jdbc url string for mySQL driver.
-     */
-    private static String createUrl(String phost, Integer pport, String pdbName) {  //NOSONAR
-
-        if (StringUtil.isNullOrEmpty(phost)) {
-            throw new IllegalArgumentException(read(DBAdapterErrors.HOSTNAME_IS_EMPTY));
-        }
-        if (StringUtil.isNullOrEmpty(pdbName)) {
-            throw new IllegalArgumentException(read(DBAdapterErrors.DATABASE_NAME_EMPTY));
-        }
-
-        String result = URL_PATTERN.replaceAll(HOST_REGEXP, phost);
-        result = result.replaceAll(PORT_REGEXP, String.valueOf((pport == null) ? DEFAULT_PORT : pport));
-        result = result.replaceAll(DB_NAME_REGEXP, pdbName);
-
-        return result;
-    }
-
     @Override
     public ISQLConverter getSchemaConverter() {
         return new CreateSchemaToMySQLConverter();
@@ -222,13 +167,18 @@ public class MySqlDatabaseAdapter extends GenericDatabaseAdapter {
      */
     @Override
     public String toString() {
+        Integer port = initializer.getPort();
+        String host = initializer.getHost();
+        String databaseName = initializer.getDatabaseName();
+
         StringBuilder builder = new StringBuilder(getClass().getSimpleName());
         builder.append("{ port=");
         builder.append(port == null ? "null" : port);
         builder.append(",\n host=");
         builder.append(StringUtil.isNullOrEmpty(host) ? "null or empty" : host);
         builder.append(",\n databaseName=");
-        builder.append(StringUtil.isNullOrEmpty(databaseName) ? "null or empty" : databaseName);
+        builder.append(
+            StringUtil.isNullOrEmpty(databaseName) ? "null or empty" : databaseName);
         builder.append(" }");
         return builder.toString();
     }

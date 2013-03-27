@@ -22,9 +22,11 @@ package de.consistec.doubleganger.client;
  * #L%
  */
 
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DB_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
+
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.SyncContext;
-import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.conflict.ConflictStrategy;
 import de.consistec.doubleganger.common.exception.ContextException;
 import de.consistec.doubleganger.common.exception.SyncException;
@@ -156,18 +158,18 @@ public class TestSyncClient {
 
         if (!retrySync) {
             Properties clientDbProps = CONF.getClientDatabaseProperties();
-            String oldClientDbUrl = clientDbProps.getProperty(GenericDatabaseAdapter.PROPS_URL);
+            String oldClientDbUrl = clientDbProps.getProperty(PROPS_URL);
             if (!StringUtil.isNullOrEmpty(oldClientDbUrl)) {
 
-                clientDbProps.put(GenericDatabaseAdapter.PROPS_URL, oldClientDbUrl + "_" + clientThreadNumber);
+                clientDbProps.put(PROPS_URL, oldClientDbUrl + "_" + clientThreadNumber);
                 CONF.setClientDatabaseProperties(clientDbProps);
 
             } else {
 
                 // if using PostgreSQL adapter
                 if (PostgresDatabaseAdapter.class.equals(CONF.getClientDatabaseAdapter())) {
-                    String oldDbName = clientDbProps.getProperty(PostgresDatabaseAdapter.PROPS_DB_NAME);
-                    clientDbProps.put(PostgresDatabaseAdapter.PROPS_DB_NAME, oldDbName + "_" + clientThreadNumber);
+                    String oldDbName = clientDbProps.getProperty(PROPS_DB_NAME);
+                    clientDbProps.put(PROPS_DB_NAME, oldDbName + "_" + clientThreadNumber);
                 }
 
             }

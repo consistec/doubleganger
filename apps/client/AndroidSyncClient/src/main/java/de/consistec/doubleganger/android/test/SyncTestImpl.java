@@ -21,8 +21,14 @@ package de.consistec.doubleganger.android.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DRIVER_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_PASSWORD;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_USERNAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
+
 import de.consistec.doubleganger.common.Config;
-import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
+import de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector;
 import de.consistec.doubleganger.common.exception.ContextException;
 import de.consistec.doubleganger.common.exception.SyncException;
 
@@ -135,20 +141,20 @@ public class SyncTestImpl {
 
                 PathClassLoader pathLoad = AccessController.doPrivileged(new SyncTestClassLoader());
 
-                Class.forName(CONF.getClientDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME,
+                Class.forName(CONF.getClientDatabaseProperties().getProperty(DatabaseAdapterConnector.PROPS_DRIVER_NAME,
                     "SQLite.JDBCDriver"), true, pathLoad);
 
                 clientConnection = DriverManager.getConnection(CONF.getClientDatabaseProperties().getProperty(
-                    GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:/sdcard/client.sl3"));
+                    DatabaseAdapterConnector.PROPS_URL, "jdbc:sqlite:/sdcard/client.sl3"));
 
             } else if (Build.VERSION.SDK_INT >= 14) {
 
                 // ICS
-                Class.forName(CONF.getClientDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME,
+                Class.forName(CONF.getClientDatabaseProperties().getProperty(DatabaseAdapterConnector.PROPS_DRIVER_NAME,
                     "org.sqldroid.SQLDroidDriver"));
 
                 clientConnection = DriverManager.getConnection(CONF.getClientDatabaseProperties().getProperty(
-                    GenericDatabaseAdapter.PROPS_URL, "jdbc:sqldroid:/sdcard/client.sl3"));
+                    DatabaseAdapterConnector.PROPS_URL, "jdbc:sqldroid:/sdcard/client.sl3"));
 
             } else {
                 throw new UnsupportedOperationException("Platform not supported");
@@ -170,13 +176,13 @@ public class SyncTestImpl {
                 serverConnection = null;
             }
 
-            Class.forName(CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_DRIVER_NAME,
+            Class.forName(CONF.getServerDatabaseProperties().getProperty(PROPS_DRIVER_NAME,
                 "org.postgresql.Driver"));
             serverConnection = DriverManager.getConnection(
-                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_URL,
-                "jdbc:postgresql://10.0.2.2/server"),
-                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_SYNC_USERNAME, "syncuser"),
-                CONF.getServerDatabaseProperties().getProperty(GenericDatabaseAdapter.PROPS_SYNC_PASSWORD, "syncuser"));
+                CONF.getServerDatabaseProperties().getProperty(PROPS_URL,
+                    "jdbc:postgresql://10.0.2.2/server"),
+                CONF.getServerDatabaseProperties().getProperty(PROPS_SYNC_USERNAME, "syncuser"),
+                CONF.getServerDatabaseProperties().getProperty(PROPS_SYNC_PASSWORD, "syncuser"));
 
             return serverConnection;
 
@@ -224,12 +230,12 @@ public class SyncTestImpl {
             Statement stmt = getServerConnection().createStatement();
             stmt.execute(
                 "create table categories (\"categoryid\" INTEGER NOT NULL PRIMARY KEY ,\"categoryname\" "
-                + "VARCHAR (30000),\"description\" VARCHAR (30000))");
+                    + "VARCHAR (30000),\"description\" VARCHAR (30000))");
             stmt.close();
             stmt = getServerConnection().createStatement();
             stmt.execute(
                 "create table items (\"itemid\" INTEGER NOT NULL PRIMARY KEY ,\"itemname\" "
-                + "VARCHAR (30000),\"description\" VARCHAR (30000))");
+                    + "VARCHAR (30000),\"description\" VARCHAR (30000))");
             stmt.close();
 
             // todo: replace sync() with the current synchronization method

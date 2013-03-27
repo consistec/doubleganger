@@ -22,6 +22,7 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_MODIFIED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_MODIFIED_VALUE;
@@ -30,6 +31,8 @@ import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 
 import de.consistec.doubleganger.common.Config;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterCallback;
+import de.consistec.doubleganger.common.adapter.impl.ConnectionDataHolder;
+import de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector;
 import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.data.schema.Schema;
 import de.consistec.doubleganger.common.exception.SchemaConverterException;
@@ -38,7 +41,6 @@ import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapt
 import de.consistec.doubleganger.common.exception.database_adapter.TransactionAbortedException;
 import de.consistec.doubleganger.common.exception.database_adapter.UniqueConstraintException;
 import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
-import de.consistec.doubleganger.common.util.PropertiesUtil;
 import de.consistec.doubleganger.common.util.StringUtil;
 
 import java.sql.BatchUpdateException;
@@ -62,18 +64,6 @@ import org.slf4j.LoggerFactory;
 public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
     /**
-     * Host property name.
-     */
-    public static final String PROPS_HOST = "host";
-    /**
-     * Port property name.
-     */
-    public static final String PROPS_PORT = "port";
-    /**
-     * Database property name.
-     */
-    public static final String PROPS_DB_NAME = "db_name";
-    /**
      * Default jdbc driver class for PostgreSQL.
      * <p/>
      * Value: {@value}.
@@ -90,6 +80,12 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      * Value: {@value}.
      */
     public static final int DEFAULT_PORT = 5432;
+
+    /**
+     * Defines the prefix of the postgres url.
+     */
+    public static final String URL_PATTERN_PREFIX = "jdbc:postgresql://";
+
     /**
      * 40001 means psql error code SERIALIZATION FAILURE.
      * all transaction failures begin with 40...
@@ -104,50 +100,28 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     private static final String UNIQUE_CONSTRAINT_EXCEPTION = "23505";
     private static final String RELATION_ALREADY_EXIST = "42P07";
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDatabaseAdapter.class.getCanonicalName());
-    private static final String HOST_REGEXP = "H_O_S_T";
-    private static final String PORT_REGEXP = "P_O_R_T";
-    private static final String DB_NAME_REGEXP = "D_B_N_A_M_E";
-    private static final String URL_PATTERN = "jdbc:postgresql://" + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
+
     private static final String CREATE_LANGUAGE_FILE_PATH = "/sql/postgres_create_language.sql";
     private static final String CREATE_POSTGRES_TRIGGERS_FILE_PATH = "/sql/postgres_create_triggers.sql";
     private static final Config CONF = Config.getInstance();
     private static final String SYNC_USER = "syncuser";
-    private Integer port;
-    private String host;
-    private String databaseName;
+
+    private DatabaseAdapterConnector initializer;
+
 
     /**
      * Do not let direct object creation.
      */
     public PostgresDatabaseAdapter() {
         LOGGER.debug("created new {}", getClass().getCanonicalName());
+
+        initializer = new DatabaseAdapterConnector(DEFAULT_DRIVER, DEFAULT_PORT);
     }
 
     @Override
     public void init(Properties adapterConfig) throws DatabaseAdapterInstantiationException {
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_DRIVER_NAME))) {
-            driverName = DEFAULT_DRIVER;
-        } else {
-            driverName = adapterConfig.getProperty(PROPS_DRIVER_NAME);
-        }
-
-        username = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_USERNAME, false);
-        password = PropertiesUtil.readString(adapterConfig, PROPS_SYNC_PASSWORD, false);
-
-        if (StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_URL))) {
-            if (!StringUtil.isNullOrEmpty(adapterConfig.getProperty(PROPS_PORT))) {
-                port = PropertiesUtil.readNumber(adapterConfig, PROPS_PORT, true, Integer.class);
-            }
-
-            host = PropertiesUtil.readString(adapterConfig, PROPS_HOST, true);
-            databaseName = PropertiesUtil.readString(adapterConfig, PROPS_DB_NAME, true);
-            connectionUrl = createUrl(host, port, databaseName);
-
-            LOGGER.debug("PostgreSQL connection URL is {}", connectionUrl);
-        }
-
-        createConnection();
+        ConnectionDataHolder connectionData = initializer.init(adapterConfig, URL_PATTERN_PREFIX);
+        connection = initializer.createConnection(connectionData);
     }
 
     @Override
@@ -161,7 +135,8 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
 
     @Override
     public void getRowForPrimaryKey(final Object primaryKey, final String tableName,
-        final DatabaseAdapterCallback<ResultSet> callback) throws DatabaseAdapterException {
+                                    final DatabaseAdapterCallback<ResultSet> callback
+    ) throws DatabaseAdapterException {
         try {
             super.getRowForPrimaryKey(primaryKey, tableName, callback);
         } catch (DatabaseAdapterException ex) {
@@ -380,31 +355,6 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
     }
 
     /**
-     * Creates jdbc url string for PostgreSQL.
-     * <p/>
-     *
-     * @param phost Server host address (preferably ip).
-     * @param pport Port on which server is listing.
-     * @param pdbName Database name to connect to.
-     * @return Jdbc url string for postgreSQL driver.
-     */
-    private static String createUrl(String phost, Integer pport, String pdbName) {  //NOSONAR
-
-        if (StringUtil.isNullOrEmpty(phost)) {
-            throw new IllegalArgumentException(read(DBAdapterErrors.HOSTNAME_IS_EMPTY));
-        }
-        if (StringUtil.isNullOrEmpty(pdbName)) {
-            throw new IllegalArgumentException(read(DBAdapterErrors.DATABASE_NAME_EMPTY));
-        }
-
-        String result = URL_PATTERN.replaceAll(HOST_REGEXP, phost);
-        result = result.replaceAll(PORT_REGEXP, String.valueOf((pport == null) ? DEFAULT_PORT : pport));
-        result = result.replaceAll(DB_NAME_REGEXP, pdbName);
-
-        return result;
-    }
-
-    /**
      * Brief description of object's state.
      * <p/>
      * E.g.
@@ -417,6 +367,10 @@ public class PostgresDatabaseAdapter extends GenericDatabaseAdapter {
      */
     @Override
     public String toString() {
+        Integer port = initializer.getPort();
+        String host = initializer.getHost();
+        String databaseName = initializer.getDatabaseName();
+
         StringBuilder builder = new StringBuilder(getClass().getSimpleName());
         builder.append("{ port=");
         builder.append(port == null ? "null" : port);

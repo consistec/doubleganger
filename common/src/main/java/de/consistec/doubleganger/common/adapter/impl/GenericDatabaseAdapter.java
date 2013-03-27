@@ -22,11 +22,17 @@ package de.consistec.doubleganger.common.adapter.impl;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.FLAG_PROCESSED;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.MDV_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.PK_COLUMN_NAME;
 import static de.consistec.doubleganger.common.MdTableDefaultValues.REV_COLUMN_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DRIVER_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SCHEMA;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_PASSWORD;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_USERNAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
 import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.defaultIfNull;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
@@ -53,7 +59,6 @@ import de.consistec.doubleganger.common.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -62,8 +67,6 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Marker;
-import org.slf4j.MarkerFactory;
 import org.slf4j.cal10n.LocLogger;
 
 /**
@@ -98,53 +101,6 @@ import org.slf4j.cal10n.LocLogger;
 public class GenericDatabaseAdapter implements IDatabaseAdapter {
 
     /**
-     * This option specify jdbc driver class canonical name for a database.
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_DRIVER_NAME = "driver";
-    /**
-     * This option specify jdbc url for database.
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_URL = "url";
-    /**
-     * This option specify the username of the database to connect to.
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_SYNC_USERNAME = "user";
-    /**
-     * This option specify database user password.
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_SYNC_PASSWORD = "password";
-    /**
-     * This option specifies the database username of an external user (unknown to the doubleganger).
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_EXTERN_USERNAME = "extern.user";
-    /**
-     * This option specifies the database password of an external user (unknown to the doubleganger).
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_EXTERN_PASSWORD = "extern.password";
-    /**
-     * This option specify the database schema to connect to.
-     * <p/>
-     * Value: {@value}.
-     */
-    public static final String PROPS_SCHEMA = "schema";
-    /**
-     * SQLite database property file.
-     * Value: {@value}
-     */
-    public static final String SQLITE_CONFIG_FILE = "/config_sqlite.properties";
-    /**
      * Part of a description of table columns available in a catalog.
      * <p/>
      * COLUMN_NAME represents the columns name.
@@ -155,7 +111,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_NAME = "COLUMN_NAME";
     /**
@@ -171,7 +127,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String COLUMN_SIZE = "COLUMN_SIZE";
     /**
@@ -188,7 +144,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String NULLABLE = "NULLABLE";
     /**
@@ -200,7 +156,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DATA_TYPE = "DATA_TYPE";
     /**
@@ -212,7 +168,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String DECIMAL_DIGITS = "DECIMAL_DIGITS";
     /**
@@ -224,7 +180,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getColumnNamesFromTable((String catalog,
-     * String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
+     *      String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException
      */
     protected static final String TABLE_NAME = "TABLE_NAME";
     /**
@@ -236,7 +192,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      *
      * @see org.postgresql.jdbc2.AbstractJdbc2DatabaseMetaData.getPrimaryKeys(String catalog,
-     * String schema, String table) throws SQLException
+     *      String schema, String table) throws SQLException
      */
     protected static final String PK_NAME = "PK_NAME";
     /**
@@ -251,7 +207,7 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
      * <p/>
      */
     private static final LocLogger LOGGER = LoggingUtil.createLogger(GenericDatabaseAdapter.class.getCanonicalName());
-    private static final Marker FATAL_MARKER = MarkerFactory.getMarker("FATAL");
+
     private static final Config CONF = Config.getInstance();
     /**
      * Jdbc connection on which adapter operates.
@@ -341,7 +297,9 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         LOGGER.debug("driverName=\"{}\", connectionUrl=\"{}\", username=\"{}\", password=\"{}\"",
             driverName, connectionUrl, username, password);
 
-        createConnection();
+        DatabaseAdapterConnector connector = new DatabaseAdapterConnector();
+        ConnectionDataHolder data = new ConnectionDataHolder(username, password, connectionUrl, driverName);
+        connection = connector.createConnection(data);
 
         LOGGER.debug("{} adapter initialized", getClass().getCanonicalName());
     }
@@ -361,38 +319,38 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
         this.hashCalculator = hashCalculator;
     }
 
-    /**
-     * Creates database connection.
-     *
-     * @throws DatabaseAdapterInstantiationException
-     */
-    protected void createConnection() throws DatabaseAdapterInstantiationException {
-        try {
-            Class.forName(driverName);
-
-            LOGGER.debug("create connection to {} ", connectionUrl);
-
-            if (StringUtil.isNullOrEmpty(password) || StringUtil.isNullOrEmpty(username)) {
-                connection = DriverManager.getConnection(connectionUrl);
-            } else {
-                connection = DriverManager.getConnection(connectionUrl, username, password);
-            }
-        } catch (ClassNotFoundException e) {
-            String msg = read(DBAdapterErrors.CANT_LOAD_JDBC_DRIVER, driverName);
-            LOGGER.error(FATAL_MARKER, msg, e);
-            throw new DatabaseAdapterInstantiationException(msg, e);
-        } catch (Exception e) {
-            String msg = read(DBAdapterErrors.CANT_CREATE_ADAPTER_INSTANCE, getClass().getCanonicalName());
-            LOGGER.error(FATAL_MARKER, msg, e);
-            throw new DatabaseAdapterInstantiationException(msg, e);
-        }
-
-        try {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-        } catch (SQLException e) {
-            LOGGER.warn(read(DBAdapterWarnings.CANT_SET_TRANS_ISOLATION_LEVEL, "TRANSACTION_SERIALIZABLE"), e);
-        }
-    }
+//    /**
+//     * Creates database connection.
+//     *
+//     * @throws DatabaseAdapterInstantiationException
+//     */
+//    protected void createConnection() throws DatabaseAdapterInstantiationException {
+//        try {
+//            Class.forName(driverName);
+//
+//            LOGGER.debug("create connection to {} ", connectionUrl);
+//
+//            if (StringUtil.isNullOrEmpty(password) || StringUtil.isNullOrEmpty(username)) {
+//                connection = DriverManager.getConnection(connectionUrl);
+//            } else {
+//                connection = DriverManager.getConnection(connectionUrl, username, password);
+//            }
+//        } catch (ClassNotFoundException e) {
+//            String msg = read(DBAdapterErrors.CANT_LOAD_JDBC_DRIVER, driverName);
+//            LOGGER.error(FATAL_MARKER, msg, e);
+//            throw new DatabaseAdapterInstantiationException(msg, e);
+//        } catch (Exception e) {
+//            String msg = read(DBAdapterErrors.CANT_CREATE_ADAPTER_INSTANCE, getClass().getCanonicalName());
+//            LOGGER.error(FATAL_MARKER, msg, e);
+//            throw new DatabaseAdapterInstantiationException(msg, e);
+//        }
+//
+//        try {
+//            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+//        } catch (SQLException e) {
+//            LOGGER.warn(read(DBAdapterWarnings.CANT_SET_TRANS_ISOLATION_LEVEL, "TRANSACTION_SERIALIZABLE"), e);
+//        }
+//    }
 
     @Override
     public void commit() throws DatabaseAdapterException {
@@ -908,8 +866,8 @@ public class GenericDatabaseAdapter implements IDatabaseAdapter {
             String tmpPkName = tableName + "." + getPrimaryKeyColumn(tableName).getName();
             deletedRows = deleteStmt.executeQuery(
                 String.format("select %s, %s, %s, %s from %s left join %s on %s.%s = %s where %s is null",
-                REV_COLUMN_NAME, PK_COLUMN_NAME, MDV_COLUMN_NAME, FLAG_COLUMN_NAME,
-                mdTable, tableName, mdTable, PK_COLUMN_NAME, tmpPkName, tmpPkName));
+                    REV_COLUMN_NAME, PK_COLUMN_NAME, MDV_COLUMN_NAME, FLAG_COLUMN_NAME,
+                    mdTable, tableName, mdTable, PK_COLUMN_NAME, tmpPkName, tmpPkName));
             callback.onSuccess(deletedRows);
 
         } catch (SQLException e) {

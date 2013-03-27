@@ -22,13 +22,28 @@ package de.consistec.doubleganger.impl.adapter;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
+
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.DB_NAME_REGEXP;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.HOST_REGEXP;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PORT_REGEXP;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DB_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DRIVER_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_EXTERN_PASSWORD;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_EXTERN_USERNAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_HOST;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_PORT;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_PASSWORD;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_USERNAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
+import static de.consistec.doubleganger.common.i18n.MessageReader.read;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
 import static de.consistec.doubleganger.common.util.PropertiesUtil.readString;
 import static de.consistec.doubleganger.common.util.StringUtil.isNullOrEmpty;
 
 import de.consistec.doubleganger.common.ConfigConstants;
 import de.consistec.doubleganger.common.adapter.DatabaseAdapterFactory;
+import de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector;
+import de.consistec.doubleganger.common.i18n.DBAdapterErrors;
 import de.consistec.doubleganger.common.util.StringUtil;
 
 import java.io.IOException;
@@ -56,6 +71,12 @@ import org.powermock.reflect.Whitebox;
  * @since 0.0.1-SNAPSHOT
  */
 public class DummyDataSource implements DataSource {
+
+    /**
+     * SQLite database property file.
+     * Value: {@value}
+     */
+    public static final String SQLITE_CONFIG_FILE = "/config_sqlite.properties";
 
     private SupportedDatabases dbType;
     private DatabaseAdapterFactory.AdapterPurpose conType;
@@ -118,37 +139,41 @@ public class DummyDataSource implements DataSource {
     }
 
     private Connection createPostgres(String username, String password) throws Exception {
-        String driver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
+        String driver = readString(properties, propertiesPrefix + PROPS_DRIVER_NAME, false);
         if (isNullOrEmpty(driver)) {
             driver = "org.postgresql.Driver";
         }
-        String url = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, false);
+        String url = readString(properties, propertiesPrefix + PROPS_URL, false);
 
         if (isNullOrEmpty(url)) {
-            String host = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_HOST, true);
-            String dbName = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_DB_NAME, true);
-            String tmpPort = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PORT, false);
+            String host = readString(properties, propertiesPrefix + PROPS_HOST, true);
+            String dbName = readString(properties, propertiesPrefix + PROPS_DB_NAME, true);
+            String tmpPort = readString(properties, propertiesPrefix + PROPS_PORT, false);
 
-            url = Whitebox.<String>invokeMethod(PostgresDatabaseAdapter.class, "createUrl", host,
-                StringUtil.isNullOrEmpty(tmpPort) ? null : Integer.valueOf(tmpPort), dbName);
+            DatabaseAdapterConnector connector = new DatabaseAdapterConnector(PostgresDatabaseAdapter.DEFAULT_DRIVER,
+                PostgresDatabaseAdapter.DEFAULT_PORT);
+            url = createUrl(PostgresDatabaseAdapter.DEFAULT_PORT, host, tmpPort, dbName,
+                PostgresDatabaseAdapter.URL_PATTERN_PREFIX);
         }
         return buildConnection(driver, url, username, password);
     }
 
+
     private Connection createMySql(String username, String password) throws Exception {
-        String driver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, false);
+        String driver = readString(properties, propertiesPrefix + PROPS_DRIVER_NAME, false);
         if (isNullOrEmpty(driver)) {
             driver = "com.mysql.jdbc.Driver";
         }
-        String url = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, false);
+        String url = readString(properties, propertiesPrefix + PROPS_URL, false);
 
         if (isNullOrEmpty(url)) {
-            String host = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_HOST, true);
-            String dbName = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_DB_NAME, true);
-            String tmpPort = readString(properties, propertiesPrefix + PostgresDatabaseAdapter.PROPS_PORT, false);
+            String host = readString(properties, propertiesPrefix + PROPS_HOST, true);
+            String dbName = readString(properties, propertiesPrefix + PROPS_DB_NAME, true);
+            String tmpPort = readString(properties, propertiesPrefix + PROPS_PORT, false);
 
-            url = Whitebox.<String>invokeMethod(MySqlDatabaseAdapter.class, "createUrl", host,
-                StringUtil.isNullOrEmpty(tmpPort) ? null : Integer.valueOf(tmpPort), dbName);
+            DatabaseAdapterConnector connector = new DatabaseAdapterConnector();
+            url = createUrl(MySqlDatabaseAdapter.DEFAULT_PORT, host, tmpPort, dbName,
+                MySqlDatabaseAdapter.URL_PATTERN_PREFIX);
         }
         return buildConnection(driver, url, username, password);
     }
@@ -158,10 +183,35 @@ public class DummyDataSource implements DataSource {
         return createGeneric(username, password);
     }
 
+    /**
+     * Creates jdbc url string for any database.
+     * <p/>
+     *
+     * @param urlPatternPrefix - prefix for the url pattern (example: jdbc:mysql://)
+     * @return Jdbc url string for postgreSQL driver.
+     */
+    private String createUrl(Integer defaultPort, String host, String port, String databaseName, String urlPatternPrefix
+    ) {  //NOSONAR
+
+        if (StringUtil.isNullOrEmpty(host)) {
+            throw new IllegalArgumentException(read(DBAdapterErrors.HOSTNAME_IS_EMPTY));
+        }
+        if (StringUtil.isNullOrEmpty(databaseName)) {
+            throw new IllegalArgumentException(read(DBAdapterErrors.DATABASE_NAME_EMPTY));
+        }
+
+        String urlPattern = urlPatternPrefix + HOST_REGEXP + ":" + PORT_REGEXP + "/" + DB_NAME_REGEXP;
+        String result = urlPattern.replaceAll(HOST_REGEXP, host);
+        result = result.replaceAll(PORT_REGEXP, String.valueOf((port == null) ? defaultPort : port));
+        result = result.replaceAll(DB_NAME_REGEXP, databaseName);
+
+        return result;
+    }
+
     private Connection createGeneric(String username, String password) throws ClassNotFoundException,
         SQLException {
-        String dbDriver = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_DRIVER_NAME, true);
-        String dbUrl = readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_URL, true);
+        String dbDriver = readString(properties, propertiesPrefix + PROPS_DRIVER_NAME, true);
+        String dbUrl = readString(properties, propertiesPrefix + PROPS_URL, true);
         return buildConnection(dbDriver, dbUrl, username, password);
     }
 
@@ -176,19 +226,19 @@ public class DummyDataSource implements DataSource {
     }
 
     public String getSyncUserName() {
-        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_SYNC_USERNAME, false);
+        return readString(properties, propertiesPrefix + PROPS_SYNC_USERNAME, false);
     }
 
     public String getSyncUserPassword() {
-        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_SYNC_PASSWORD, false);
+        return readString(properties, propertiesPrefix + PROPS_SYNC_PASSWORD, false);
     }
 
     public String getExternUserName() {
-        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_EXTERN_USERNAME, false);
+        return readString(properties, propertiesPrefix + PROPS_EXTERN_USERNAME, false);
     }
 
     public String getExternUserPassword() {
-        return readString(properties, propertiesPrefix + GenericDatabaseAdapter.PROPS_EXTERN_PASSWORD, false);
+        return readString(properties, propertiesPrefix + PROPS_EXTERN_PASSWORD, false);
     }
 
     @Override
@@ -215,7 +265,7 @@ public class DummyDataSource implements DataSource {
                 filePath = PostgresDatabaseAdapter.POSTGRE_CONFIG_FILE;
                 break;
             case SQLITE:
-                filePath = GenericDatabaseAdapter.SQLITE_CONFIG_FILE;
+                filePath = SQLITE_CONFIG_FILE;
                 break;
             default:
                 throw new UnsupportedOperationException("Unsupported database");
@@ -269,5 +319,7 @@ public class DummyDataSource implements DataSource {
     public enum SupportedDatabases {
 
         POSTGRESQL, MYSQL, SQLITE;
-    };
+    }
+
+    ;
 }

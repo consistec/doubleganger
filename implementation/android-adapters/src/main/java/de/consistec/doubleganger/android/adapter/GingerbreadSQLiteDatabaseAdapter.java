@@ -22,6 +22,11 @@ package de.consistec.doubleganger.android.adapter;
  * #L%
  */
 
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DRIVER_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_PASSWORD;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_SYNC_USERNAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
+
 import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterInstantiationException;
 import de.consistec.doubleganger.common.util.PropertiesUtil;
@@ -39,10 +44,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Database adapter for SQLite on Gingerbread platform.
- *
+ * <p/>
  * Date: 06.07.12 13:17
- * @author  Markus Backes
  *
+ * @author Markus Backes
  */
 public class GingerbreadSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
 
@@ -84,7 +89,8 @@ public class GingerbreadSQLiteDatabaseAdapter extends GenericDatabaseAdapter {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
         } catch (SQLException e) {
             LOGGER.warn(
-                "could not enable TransactionIsolation level SERIALIZABLE. This could lead to strange sync behavior!", e);
+                "could not enable TransactionIsolation level SERIALIZABLE. This could lead to strange sync behavior!",
+                e);
         }
     }
 

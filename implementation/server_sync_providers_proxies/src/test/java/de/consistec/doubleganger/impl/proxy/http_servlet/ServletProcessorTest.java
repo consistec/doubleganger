@@ -23,7 +23,8 @@ package de.consistec.doubleganger.impl.proxy.http_servlet;
  * #L%
  */
 
-import static de.consistec.doubleganger.common.util.CollectionsUtil.newArrayList;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_DRIVER_NAME;
+import static de.consistec.doubleganger.common.adapter.impl.DatabaseAdapterConnector.PROPS_URL;
 import static de.consistec.doubleganger.common.util.CollectionsUtil.newHashMap;
 import static de.consistec.doubleganger.impl.proxy.http_servlet.SyncAction.APPLY_CHANGES;
 import static de.consistec.doubleganger.impl.proxy.http_servlet.SyncAction.GET_CHANGES;
@@ -45,7 +46,6 @@ import de.consistec.doubleganger.common.exception.SerializationException;
 import de.consistec.doubleganger.common.exception.SyncException;
 import de.consistec.doubleganger.common.exception.database_adapter.DatabaseAdapterException;
 import de.consistec.doubleganger.common.server.IServerSyncProvider;
-import de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter;
 import de.consistec.doubleganger.impl.adapter.JSONSerializationAdapter;
 
 import java.io.IOException;
@@ -54,7 +54,6 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.URLDecoder;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -93,10 +92,10 @@ public class ServletProcessorTest {
         // preparing framework to use sqlite database.
         config.setClientDatabaseAdapter(de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter.class);
         config.setServerDatabaseAdapter(de.consistec.doubleganger.common.adapter.impl.GenericDatabaseAdapter.class);
-        config.getClientDatabaseProperties().put(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqlite.JDBC");
-        config.getClientDatabaseProperties().put(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:target/client.sqlite");
-        config.getServerDatabaseProperties().put(GenericDatabaseAdapter.PROPS_DRIVER_NAME, "org.sqlite.JDBC");
-        config.getServerDatabaseProperties().put(GenericDatabaseAdapter.PROPS_URL, "jdbc:sqlite:target/server.sqlite");
+        config.getClientDatabaseProperties().put(PROPS_DRIVER_NAME, "org.sqlite.JDBC");
+        config.getClientDatabaseProperties().put(PROPS_URL, "jdbc:sqlite:target/client.sqlite");
+        config.getServerDatabaseProperties().put(PROPS_DRIVER_NAME, "org.sqlite.JDBC");
+        config.getServerDatabaseProperties().put(PROPS_URL, "jdbc:sqlite:target/server.sqlite");
     }
 
     @Test
@@ -180,7 +179,8 @@ public class ServletProcessorTest {
         JSONSerializationAdapter adapter = new JSONSerializationAdapter();
 
         Mockito.when(requestMock.getParameter(ACTION.name())).thenReturn(APPLY_CHANGES.getStringName());
-        Mockito.when(requestMock.getParameter(CHANGES.name())).thenReturn(adapter.serializeChangeList(syncData.getChanges()));
+        Mockito.when(requestMock.getParameter(CHANGES.name())).thenReturn(
+            adapter.serializeChangeList(syncData.getChanges()));
         Mockito.when(requestMock.getParameter(REVISION.name())).thenReturn("1");
         Mockito.when(providerMock.applyChanges((SyncData) anyObject())).thenReturn(1);
         Mockito.when(requestMock.getContentLength()).thenReturn(MOCK_LENGTH);
