@@ -54,15 +54,40 @@ doubleganger is a software *library*, not a complete application. This means tha
 
 For each synchronized table, doubleganger adds a meta table. These meta tables exist on client *and* server, though the format is not exactly the same.
 
-TODO Revision numbers
-
-TODO Client:
-
+### Change Tracking
 
 The server has two ways for detecting changes:
 
 1. If trigger support is enabled, a database trigger is installed which automatically sets a flag in the meta data tables for each row which is being updated.
 1. If trigger support is disabled, doubleganger scans all tables during a synchronization and computes a hash values for each row. That hash value is compared with the original hash value in the meta tables; if they differ, the row has been changed meanwhile.
+
+Comparison of the two methods
+   1. Hash based variant
+      * Pro
+         * No special database support like triggers is needed
+      * Cons
+         * performance: doubleganger needs to scan over the complete table for every sync. For large tables this means a good amount of work.
+   1. Trigger based change detection
+      * Pro
+         * gives much better synchronizsation performance than the hash based variant
+      * Cons
+         * needs trigger support in the database
+         * there's a slight overhead for each database accecss due to the triggers. If there are much more database updates than syncs, this might be relevant.
+
+### Revision Numbers
+
+During synchronization, the server needs to decide which data records from a table to send to the client.
+
+One way to achieve this would be to store server-side for each client and each data record the hash values of the last sync. So, the server could detect for each record whether the client already has the current version or needs an update. However, the memory requirement of this method grows linearly with the number of clients.
+
+Doubleganger chooses a different approach:
+   * similar to Subversion, doubleganger uses consecutive revision numbers
+      * the revision number is increment for each sync
+      * the client remembers the revision number of the last sync
+      * the server remembers for each record the revision number of the last change (in the meta table)
+      * at the beginning of a sync, the client sends its revision number to the server
+         * thus, the server can detect which records have changed since the last sync of that client
+   * Compared to approaches which store the synchronization time instead of a revision, this approach doesn't suffer from time zone or synchronization issues.
 
 ## Documentation and Usage
 
