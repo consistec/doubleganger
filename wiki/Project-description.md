@@ -1,1 +1,0 @@
-[[SyncBib-Einführung.pdf]]
