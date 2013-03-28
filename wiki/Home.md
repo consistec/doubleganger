@@ -11,8 +11,6 @@ Want to learn more about the theory behind the doubleganger framework?
 2. [User stories](Whitepaper:User-stories)
 3. [The synchronization process](Whitepaper:The-synchronization-process)
 
-An introduction to the framework is available in german as PDF: [[SyncBib-Einführung.pdf]].
-
 Tutorial
 ========
 
