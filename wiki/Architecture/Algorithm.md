@@ -1,4 +1,4 @@
-This doubleganger framework is originally based on [SAMD](Choi2010_A_Database_Synchronization_Algorithm_for_Mobile_Devices.pdf) (Synchronization Algorithm Based on Message Digest). This means several of its components refer to this technique. 
+This doubleganger framework is originally based on [SAMD](Choi2010_A_Database_Synchronization_Algorithm_for_Mobile_Devices.pdf) (Synchronization Algorithm Based on Message Digest). This means several of its components refer to this technique.
 
 | Component         | Function |
 |-------------------|----------|
@@ -10,17 +10,17 @@ This doubleganger framework is originally based on [SAMD](Choi2010_A_Database_Sy
 
 The following diagrams point at the differences:
 
- * [[SysML_SAMD_Abgleich_Hashes.pdf]]
- * [[SysML_SAMD_Enumeration.pdf]]
- * [[SysML_SAMD_Verarbeitung_Hasheintrag_Server.pdf]]
- * [[SysML_SAMD_Verarbeitung_Hasheintrag_Client.pdf]]
+ * [SysML SAMD Abgleich Hashes (PDF in german)](SysML_SAMD_Abgleich_Hashes.pdf)
+ * [SysML SAMD Enumeration (PDF in german)](SysML_SAMD_Enumeration.pdf)
+ * [SysML SAMD Verarbeitung Hasheintrag Server (PDF in german))](SysML_SAMD_Verarbeitung_Hasheintrag_Server.pdf)
+ * [SysML SAMD Verarbeitung Hasheintrag Client (PDF in german)](SysML_SAMD_Verarbeitung_Hasheintrag_Client.pdf)
 
 Table structure
 ===============
 
 To work with SAMD it is necessary to have the following table layout:
 
-[[SAMD_Table_Structure.pdf]]
+[SAMD Table Structure (PDF in german)](SAMD_Table_Structure.pdf)
 
 Data transfer
 =============
@@ -38,7 +38,7 @@ On data communication the hash is not getting transfered. So the server can deci
 
 Synchronization flow
 ====================
-[[SAMD_Ablauf.pdf]]
+[SAMD Ablauf (PDF in german)](SAMD_Ablauf.pdf)
 
 Hash calculation
 ================

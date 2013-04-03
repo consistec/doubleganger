@@ -16,11 +16,9 @@ DatabaseAdapter implementations are loaded with reflection from the classpath.
 Triggers
 ========
 
-MySQL: http://dev.mysql.com/doc/refman/5.0/en/triggers.html
-
-PostgreSQL: http://www.postgresql.org/docs/8.2/static/sql-createtrigger.html
-
-SQLite: http://www.sqlite.org/lang_createtrigger.html
+* [MySQL](http://dev.mysql.com/doc/refman/5.0/en/triggers.html)
+* [PostgreSQL](http://www.postgresql.org/docs/8.2/static/sql-createtrigger.html)
+* [SQLite](http://www.sqlite.org/lang_createtrigger.html)
 
 The triggers do not track the modifications made by the sync user (`syncuser`) during synchronization: only external modifications are marked as such. That is why we created an extern user for the test (`extern`).
 
@@ -52,8 +50,8 @@ Example in PostgreSQL
 ```bash
 CREATE OR REPLACE FUNCTION categories_update_flag() RETURNS trigger AS $BODY$
     BEGIN
-        IF (CURRENT_USER = 'syncuser') THEN 
-            RETURN NULL; 
+        IF (CURRENT_USER = 'syncuser') THEN
+            RETURN NULL;
         END IF;
 
         IF (TG_OP = 'INSERT') THEN

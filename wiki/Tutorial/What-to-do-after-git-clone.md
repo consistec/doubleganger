@@ -1,14 +1,14 @@
-After cloning the framework with [[git clone|3-Getting-the-doubleganger-framework]], you may want to run the server app and execute the client apps to see the synchronization framework in action.
+After cloning the framework with '[[git clone|3 Getting the doubleganger framework]]', you may want to run the server app and execute the client apps to see the synchronization framework in action.
 
 We will describe here how to setup each application project, starting with the SyncServer, since the client apps will only work if the server is running.
 
 This description assumes that you have already installed and configured the following for the SyncServer:
 
-- Maven 2 or higher, 
-- PostgreSQL 9.1 server or higher, 
+- Maven 2 or higher,
+- PostgreSQL 9.1 server or higher,
 - Tomcat 6 servlet container or higher.
 
-[apps-structure.png]
+[apps' structure](apps-structure.png "Structure of the apps' projects")
 
 First we need to setup the server and client database as described in [[a.) Create and initialize databases]].
 
@@ -59,31 +59,31 @@ doubleganger.use_sql_triggers=${use_sql_triggers}
 
 As we can see the property values in the properties file are references to properties in the maven pom.xml file. These values will be replaced during the Maven build through resource filtering.
 ```xml
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Which tables should be monitored and synchronised. Comma-separated list. -->
-        <db.sync_tables>categories</db.sync_tables>
-        <!--  Default db adapter class is de.consistec.doubleganger.common.adapter.GenericDatabaseAdapter -->
-        <db.adapter_class>de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter</db.adapter_class>
-        <!-- Options for generic adapter -->
-        <db.url></db.url>
-        <db.port>5432</db.port>
-        <db.driver></db.driver>
-        <db.name>server</db.name>
-        <db.user>syncuser</db.user>
-        <db.passwd>syncuser</db.passwd>
-        <postgres_schema>public</postgres_schema>
-        <!-- Option specific for PostgreSQL adapter from consistec GmbH -->
-        <db.host>localhost</db.host>
-        <!--<db.pooling>false</db.pooling>-->
-        <debug>false</debug>
-        <java.version>1.6</java.version>
-        <!-- sql trigger support for change tracking -->
-        <use_sql_triggers>false</use_sql_triggers>
-        <!-- deploy information -->
-        <deploy.name>SyncServer</deploy.name>
-        <display_build>${maven.build.timestamp}</display_build>
-    </properties>
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Which tables should be monitored and synchronised. Comma-separated list. -->
+    <db.sync_tables>categories</db.sync_tables>
+    <!--  Default db adapter class is de.consistec.doubleganger.common.adapter.GenericDatabaseAdapter -->
+    <db.adapter_class>de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter</db.adapter_class>
+    <!-- Options for generic adapter -->
+    <db.url></db.url>
+    <db.port>5432</db.port>
+    <db.driver></db.driver>
+    <db.name>server</db.name>
+    <db.user>syncuser</db.user>
+    <db.passwd>syncuser</db.passwd>
+    <postgres_schema>public</postgres_schema>
+    <!-- Option specific for PostgreSQL adapter from consistec GmbH -->
+    <db.host>localhost</db.host>
+    <!--<db.pooling>false</db.pooling>-->
+    <debug>false</debug>
+    <java.version>1.6</java.version>
+    <!-- sql trigger support for change tracking -->
+    <use_sql_triggers>false</use_sql_triggers>
+    <!-- deploy information -->
+    <deploy.name>SyncServer</deploy.name>
+    <display_build>${maven.build.timestamp}</display_build>
+</properties>
 ```
 
 The properties show that the PostgreSQL server runs on port 5432, the database name is 'server' and we want to connect with the 'syncuser'. For synchronization with postgres databases we need a special DatabaseAdapter called 'PostgresDatabaseAdapter' and we want to synchronize the table 'categories'.
@@ -189,52 +189,52 @@ The TestSyncClient is just like the ConsoleSyncClient the client side part of sy
 
 The JMeter tests can be found in the src/test/resources directory. The shell script `testsync.sh` will be called from the JMeter Test and start the TestSyncClient. There are two categories of JMeter tests:
 
- - load tests
- - performance tests
+ * load tests
+ * performance tests
 
 Each test creates a specific number of sync clients (threads) and each client has its own database. The difference between the load and performance tests is the use of server context. While the load tests have direct (local) connection to the SyncServer and each sync client creates its own SyncServer instance (one to one relation), the clients in the performance tests all connect to the same SyncServer instance through the Tomcat web server.
 
-[jmeter-tests-schema.jpg]
+[JMeter tests schema](jmeter-tests-schema.jpg "Schema for the JMeter tests")
 
-For each kind of test exists a configuration file: 
+For each kind of test exists a configuration file:
 
 - 'performance_config_postgre.properties' for the performance tests and
 - 'config_postgre.properties' for the load tests.
 
 The configuration values can be set again in the pom.xml file:
 ```xml
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jmeter_test_path>${pom.basedir}/target/test-classes/jmeter-tests/</jmeter_test_path>
-        <jmeter_sync_retries>15</jmeter_sync_retries>
-        <jmeter_apply_changes_retries>10</jmeter_apply_changes_retries>
-        <jmeter_parallel_syncs>5</jmeter_parallel_syncs>
-        <jmeter_parallel_syncs2>10</jmeter_parallel_syncs2>
-        <!-- postgresql-settings for tests -->
-        <postgres_server>localhost</postgres_server>
-        <postgres_port>5432</postgres_port>
-        <postgres_port_for_performance_test>5432</postgres_port_for_performance_test>
-        <postgres_connect_db>postgres</postgres_connect_db>
-        <postgres_admin>postgres</postgres_admin>
-        <postgres_admin_pwd>root</postgres_admin_pwd>
-        <postgres_server_dbname>server</postgres_server_dbname>
-        <postgres_client_dbname>client</postgres_client_dbname>
-        <postgres_sync_user>syncuser</postgres_sync_user>
-        <postgres_sync_pwd>syncuser</postgres_sync_pwd>
-        <postgres_synctables>categories</postgres_synctables>
-        <postgres_schema>public</postgres_schema>
-        <postgres_database_adapter>
-            de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter
-        </postgres_database_adapter>
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jmeter_test_path>${pom.basedir}/target/test-classes/jmeter-tests/</jmeter_test_path>
+    <jmeter_sync_retries>15</jmeter_sync_retries>
+    <jmeter_apply_changes_retries>10</jmeter_apply_changes_retries>
+    <jmeter_parallel_syncs>5</jmeter_parallel_syncs>
+    <jmeter_parallel_syncs2>10</jmeter_parallel_syncs2>
+    <!-- postgresql-settings for tests -->
+    <postgres_server>localhost</postgres_server>
+    <postgres_port>5432</postgres_port>
+    <postgres_port_for_performance_test>5432</postgres_port_for_performance_test>
+    <postgres_connect_db>postgres</postgres_connect_db>
+    <postgres_admin>postgres</postgres_admin>
+    <postgres_admin_pwd>root</postgres_admin_pwd>
+    <postgres_server_dbname>server</postgres_server_dbname>
+    <postgres_client_dbname>client</postgres_client_dbname>
+    <postgres_sync_user>syncuser</postgres_sync_user>
+    <postgres_sync_pwd>syncuser</postgres_sync_pwd>
+    <postgres_synctables>categories</postgres_synctables>
+    <postgres_schema>public</postgres_schema>
+    <postgres_database_adapter>
+        de.consistec.doubleganger.impl.adapter.PostgresDatabaseAdapter
+    </postgres_database_adapter>
 
-        <!--proxy provider settings-->
-        <proxy_provider>de.consistec.doubleganger.impl.proxy.http_servlet.HttpServerSyncProxy</proxy_provider>
+    <!--proxy provider settings-->
+    <proxy_provider>de.consistec.doubleganger.impl.proxy.http_servlet.HttpServerSyncProxy</proxy_provider>
 
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <java.version>1.6</java.version>
-        <deploy.name>SyncServer</deploy.name>
-    </properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <java.version>1.6</java.version>
+    <deploy.name>SyncServer</deploy.name>
+</properties>
 ```
 
 Change to TestSyncClient path and build it:
@@ -267,7 +267,7 @@ To open a Testplan go to File -> Open, select the test plan directory 'app/jmete
 AndroidSyncClient
 =================
 
-With the last client application exists a real smartphone (Android) synchronization app to synchronize data from your smartphone (SQLite database) to any server database. 
+With the last client application exists a real smartphone (Android) synchronization app to synchronize data from your smartphone (SQLite database) to any server database.
 
 To deploy the client app on your android device or an emulator you additionally need the Android SDK.  We  recommend you to download the latest version of the Android SDK Manager. After downloading install the Tools and the API 10 (Android 2.3.3 Gingerbread).
 

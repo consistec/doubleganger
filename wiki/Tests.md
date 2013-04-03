@@ -6,7 +6,7 @@ JMeter
 To run JMeter tests located under common/src/test/resources a SyncServer has to be started at localhost:8080.
 
  1. Open JMeter
- 2. File->Open-> ... choose jmx file (e.g. JMeter-Test-ADD.jmx)
+ 2. File -> Open -> ... choose jmx file (e.g. JMeter-Test-ADD.jmx)
  3. Hit start from toolbar
 
 JMeter plugin

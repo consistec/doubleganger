@@ -42,4 +42,4 @@ There are two transaction phases to ensure the consistensy on client and server 
 
 The following picture illustrates the synchronization process:
 
-[[synchronization.jpg]]
+![synchronization](synchronization.jpg "Synchronization process")

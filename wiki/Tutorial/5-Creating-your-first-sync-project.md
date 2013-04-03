@@ -57,7 +57,7 @@ Lets start with the implementation of the client application.
 -----------------------
 At first we create a normal maven project called 'SyncClient':
 
-[[new-project-client.png]]
+[new project for client](new-project-client.png "New project for the client")
 
 2) Dependencies
 -----------------------
@@ -280,7 +280,7 @@ Now we want to create the SyncServer Project.
 
 We create also a normal Maven project called SyncServer:
 
-[new-project-server.png]
+[new project for server](new-project-server.png "New project for the server")
 
 2) Dependencies
 ---------------
@@ -367,11 +367,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-/**
- * @author thorsten
- * @company consistec Engineering and Consulting GmbH
- * @date 18.03.13 11:04
- */
+
 public class ContextListener implements ServletContextListener {
     public static final String HTTP_PROCESSOR_CTX_ATTR = "HTTP_PROCESSOR";
     private ServletContext ctx;
@@ -416,11 +412,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-/**
- * @author thorsten
- * @company consistec Engineering and Consulting GmbH
- * @date 18.03.13 11:40
- */
+
 public class SyncServiceServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest req, HttpServletResponse resp)
         throws ServletException, IOException {
@@ -578,7 +570,7 @@ user@laptop:~/workspace/SyncClient$ mvn install
 [INFO] ------------------------------------------------------------------------
 ```
 
- * with the command: 'java -jar target/SyncClient.jar' you can start the SyncClient and the synchronization begins.
+ * start the SyncClient and let the synchronization begin:
 
 ```bash
 user@laptop:~/workspace/SyncClient$ java -jar target/SyncClient.jar
@@ -591,6 +583,6 @@ Synchronization finished!
 
 If everything works smoothly, you should get the same progress output from the server as depicted above.
 
-Lets look into our client database and we will see the new synchronized data from server:
+Let's look into our client database and we will see the new synchronized data from server:
 
-[[after-sync-postgres.png]]
+[after sync postgres](after-sync-postgres.png "PostgreSQL DB status after sync")
