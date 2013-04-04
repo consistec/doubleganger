@@ -1,6 +1,6 @@
 ---
 -- #%L
--- Project - doppelganger
+-- Project - doubleganger
 -- File - create_tables_postgresql_triggers.sql
 -- %%
 -- Copyright (C) 2011 - 2013 consistec GmbH

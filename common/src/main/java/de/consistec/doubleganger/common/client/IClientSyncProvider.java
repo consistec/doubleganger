@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.client;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - IClientSyncProvider.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

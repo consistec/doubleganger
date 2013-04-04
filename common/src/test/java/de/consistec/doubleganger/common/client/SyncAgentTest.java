@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.client;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - SyncAgentTest.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

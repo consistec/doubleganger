@@ -2,7 +2,7 @@ package de.consistec.doubleganger.logging;
 
 /*
  * #%L
- * doppelganger
+ * doubleganger
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH
  * %%

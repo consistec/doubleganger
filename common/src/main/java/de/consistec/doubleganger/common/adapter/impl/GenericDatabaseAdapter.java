@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.adapter.impl;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - GenericDatabaseAdapter.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

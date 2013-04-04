@@ -2,7 +2,7 @@ package de.consistec.doubleganger.impl.commands;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - RequestCommand.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

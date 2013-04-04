@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.conflict;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - ConflictStrategyFactory.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

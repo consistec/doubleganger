@@ -1,6 +1,6 @@
 ---
 -- #%L
--- Project - doppelganger
+-- Project - doubleganger
 -- File - drop_dbs_mysql.sql
 -- %%
 -- Copyright (C) 2011 - 2013 consistec GmbH

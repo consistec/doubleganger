@@ -103,6 +103,7 @@
                     </enumTypes>
                 </configuration>
             </plugin>
+
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -111,6 +112,36 @@
                     </classpathDependencyExcludes>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <thirdPartyFilename>${project.artifactId}_licenses.txt</thirdPartyFilename>
+                    <outputDirectory>${project.basedir}/target</outputDirectory>
+                    <useMissingFile>true</useMissingFile>
+                    <missingFile>
+                        ${project.basedir}/../../src/license/doubleganger_third-party.properties
+                    </missingFile>
+                    <!-- Ignore own modules -->
+                    <excludedGroups>de.consistec</excludedGroups>
+                    <!-- Third party licenses not allowed to use in doubleganger project separated by | -->
+                    <excludedLicenses>The GNU General Public License, Version 2</excludedLicenses>
+                    <!-- Using lib with excluded License will break build if failIfWarning is true-->
+                    <failIfWarning>false</failIfWarning>
+                    <excludedScopes>test</excludedScopes>
+                    <force>true</force>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-third-party</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
         </plugins>
     </build>
 </project>

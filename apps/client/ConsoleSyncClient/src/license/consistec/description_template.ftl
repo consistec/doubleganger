@@ -1,6 +1,6 @@
 <#--
  #%L
- Project - doppelganger
+ Project - doubleganger
  File - description_template.ftl
  %%
  Copyright (C) 2011 - 2012 consistec GmbH

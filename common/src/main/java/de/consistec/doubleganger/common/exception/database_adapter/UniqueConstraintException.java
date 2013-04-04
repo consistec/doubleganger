@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.exception.database_adapter;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - UniqueConstraintException.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

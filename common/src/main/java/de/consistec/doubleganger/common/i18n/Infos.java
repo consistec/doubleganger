@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.i18n;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - Infos.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

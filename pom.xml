@@ -33,8 +33,12 @@
 
     <properties>
         <project_name>doubleganger</project_name>
+        <!-- license information -->
+        <license.inceptionYear>2012</license.inceptionYear>
+        <license.organizationName>consistec GmbH</license.organizationName>
+        <license.projectName>doubleganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <license.licenseResolver>file://${project.basedir}/../src/license</license.licenseResolver>
+        <license.licenseResolver>file://${basedir}/src/license</license.licenseResolver>
 
         <fail_on_checkstyle_errors>true</fail_on_checkstyle_errors>
         <fail_on_checkstyle_violation>true</fail_on_checkstyle_violation>
@@ -319,9 +323,6 @@
                         <excludedScopes>test</excludedScopes>
                         <force>true</force>
                         <encoding>${project.build.sourceEncoding}</encoding>
-                        <inceptionYear>2012</inceptionYear>
-                        <organizationName>consistec GmbH</organizationName>
-                        <projectName>doubleganger</projectName>
                         <descriptionTemplate>
                             ${project.basedir}/src/license/consistec/description_template.ftl
                         </descriptionTemplate>
@@ -333,6 +334,7 @@
                         <canUpdateCopyright>true</canUpdateCopyright>
                     </configuration>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>

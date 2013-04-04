@@ -6,7 +6,7 @@ package de.consistec.doubleganger.impl;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - package-info.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

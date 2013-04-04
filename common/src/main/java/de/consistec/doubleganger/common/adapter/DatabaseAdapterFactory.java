@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.adapter;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - DatabaseAdapterFactory.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

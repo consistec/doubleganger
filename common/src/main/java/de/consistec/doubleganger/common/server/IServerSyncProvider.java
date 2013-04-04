@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.server;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - IServerSyncProvider.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

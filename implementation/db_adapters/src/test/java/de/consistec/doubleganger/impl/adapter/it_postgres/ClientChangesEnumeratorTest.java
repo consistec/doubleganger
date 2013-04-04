@@ -2,7 +2,7 @@ package de.consistec.doubleganger.impl.adapter.it_postgres;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - ClientChangesEnumeratorTest.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

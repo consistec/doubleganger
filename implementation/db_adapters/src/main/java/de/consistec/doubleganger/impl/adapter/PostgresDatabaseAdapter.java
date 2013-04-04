@@ -2,7 +2,7 @@ package de.consistec.doubleganger.impl.adapter;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - PostgresDatabaseAdapter.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

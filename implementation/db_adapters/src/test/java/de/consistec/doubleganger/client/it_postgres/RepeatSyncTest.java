@@ -2,7 +2,7 @@ package de.consistec.doubleganger.client.it_postgres;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - RepeatSyncTest.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

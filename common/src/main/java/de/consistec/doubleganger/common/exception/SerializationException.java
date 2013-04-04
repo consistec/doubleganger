@@ -2,7 +2,7 @@ package de.consistec.doubleganger.common.exception;
 
 /*
  * #%L
- * Project - doppelganger
+ * Project - doubleganger
  * File - SerializationException.java
  * %%
  * Copyright (C) 2011 - 2013 consistec GmbH

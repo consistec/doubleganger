@@ -14,9 +14,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <license.inceptionYear>2012</license.inceptionYear>
         <license.organizationName>consistec GmbH</license.organizationName>
-        <license.projectName>doppelganger</license.projectName>
+        <license.projectName>doubleganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
-        <license.licenseResolver>file://${basedir}/../src/license</license.licenseResolver>
+        <license.licenseResolver>file://${basedir}/src/license</license.licenseResolver>
     </properties>
 
     <build>
