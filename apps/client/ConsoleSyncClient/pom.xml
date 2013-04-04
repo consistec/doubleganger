@@ -15,6 +15,9 @@
         <maven.compiler.target>1.6</maven.compiler.target>
         <java.version>1.6</java.version>
         <!-- license information -->
+        <license.inceptionYear>2012</license.inceptionYear>
+        <license.organizationName>consistec GmbH</license.organizationName>
+        <license.projectName>doubleganger</license.projectName>
         <license.licenseName>gpl_v3</license.licenseName>
         <license.licenseResolver>file://${basedir}/src/license</license.licenseResolver>
     </properties>
@@ -136,18 +139,6 @@
                     <excludedScopes>test</excludedScopes>
                     <force>true</force>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <inceptionYear>2012</inceptionYear>
-                    <organizationName>consistec GmbH</organizationName>
-                    <projectName>doppelganger</projectName>
-                    <descriptionTemplate>
-                        ${basedir}/src/license/consistec/description_template.ftl
-                    </descriptionTemplate>
-                    <roots>
-                        <root>src/main/java</root>
-                        <root>src/test</root>
-                    </roots>
-                    <canUpdateDescription>true</canUpdateDescription>
-                    <canUpdateCopyright>true</canUpdateCopyright>
                 </configuration>
                 <executions>
                     <execution>
