@@ -131,6 +131,8 @@ For details about the usage of doubleganger in your project see the [doublegange
 
 doubleganger is licensed under [GPL Version 3](http://www.gnu.org/licenses/gpl.html). Commercial licenses are available upon [request](swd@consistec.de).
 
+For a list of third party licenses see the file [third-party-licenses](third-party-licenses) in the top level directory.
+
 ## Thanks
 
 The initial development of doubleganger has been funded by Saarland's Ministry of Economic Affairs and Science within the program **Technologieprogramm Saar**.
