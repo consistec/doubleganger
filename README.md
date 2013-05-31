@@ -100,6 +100,25 @@ Doubleganger chooses a different approach:
 
 Currently, we don't offer pre-build download. However, it's very easy to compile the code for yourself.
 
+## Repository Structure
+
+The project repository is split into several (maven) modules:
+
+* common: contains sources and interfaces of the synchronization framework
+* devtools:
+  * checkstyle
+  * logging: uses AspectJ for generating verbose logging when needed
+* implementation
+  * android-adapters: contains database adapters for Android 2.3 (for Android 4.0 you may use [SQLDroid](https://github.com/SQLDroid/SQLDroid) which we cannot provide due to license incompatibility with GPL)
+  * db_adapters: contains implementations of the database adapter interface for several data bases, in particular for MySQL and PostgreSQL
+  * server_sync_providers_proxies: example implementation of the proxy interface for http based data transmission using JSON for serialization
+* apps: contains example applications which use the synchronization framework
+  * jmeter: plugin and syncclient for JMeter based performance and load tests
+  * server: example implementation of a Java sync server; can be deployed on Tomcat and configured for several database backends
+  * client/AndroidSyncClient: example synchronization client for Android
+  * client/ConsoleSyncClient: console based synchronization client (e.g., for automated tests)
+* parent: empty maven project; most other maven projects inherit basic settings from here
+
 ## How to Build doubleganger
 
 doubleganger's build process is based on [Apache Maven](http://maven.apache.org/).
