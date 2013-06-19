@@ -95,10 +95,10 @@ Doubleganger chooses a different approach:
 
 ## Documentation and Usage
 
-* A good starting point to get information about basic ideas and some details about the synchronization algorithm is the [doubleganger wiki](TODO).
-* An example for the integration of doubleganger into your own code is given in the [doubleganger tutorial](TODO:link to tutorial).
-* There's is [JavaDoc](TODO:link) available.
-* If you have questions or suggestions that are not covered by these documents, you're very welcome to contact us via the [mailing list](TODO:link)
+* A good starting point to get information about basic ideas and some details about the synchronization algorithm is the [doubleganger wiki](https://github.com/consistec/doubleganger/wiki).
+* An example for the integration of doubleganger into your own code is given in the [doubleganger tutorial](https://github.com/consistec/doubleganger/wiki#tutorial).
+* You can generate JavaDoc using the [Maven Javadoc plugin](https://maven.apache.org/plugins/maven-javadoc-plugin/): `mvn javadoc:javadoc`. 
+* If you have questions or suggestions that are not covered by these documents, you're very welcome to contact us [per email](swd@consistec.de)
 
 ## Download
 
@@ -129,7 +129,7 @@ doubleganger's build process is based on [Apache Maven](http://maven.apache.org/
 
 The library can be built via the usual steps (mvn clean && mvn compile) and can be integrated easily into other Maven projects. Besides that, the generated JAR-File can also be used in non-Maven projects.
 
-For details about the usage of doubleganger in your project see the [doubleganger tutorial](TODO:link to tutorial).
+For details about the usage of doubleganger in your project see the [doubleganger tutorial](https://github.com/consistec/doubleganger/wiki#tutorial).
 
 ## License
 
