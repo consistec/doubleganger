@@ -141,8 +141,8 @@ For a list of third party licenses see the file [third-party-licenses](third-par
 
 The initial development of doubleganger has been funded by Saarland's Ministry of Economic Affairs and Science within the program **Technologieprogramm Saar**.
 
-![EFRE Logo](wiki/efre_logo.jpg)
+![EFRE Logo](https://github.com/consistec/doubleganger/wiki/efre_logo.jpg)
 
-![EU](wiki/eu_logo.jpg)
+![EU](https://github.com/consistec/doubleganger/wiki/eu_logo.jpg)
 
-![Staatskanzlei](wiki/staatskanzlei_logo.jpg)
+![Staatskanzlei](https://github.com/consistec/doubleganger/wiki/staatskanzlei_logo.jpg)
