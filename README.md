@@ -50,6 +50,10 @@ doubleganger is a software *library*, not a complete application. This means tha
    * Supports usage of triggers for efficient detection of server side changes
       * for PostgreSQL and MySQL
 
+## Project Status: In Development
+
+doubleganger development is work in progress. Basic features are implemented and a lot of tests scenarios work for us. However, there are still several open issues before we'd like to release a production ready version.
+
 ## How does it work?
 
 For each synchronized table, doubleganger adds a meta table. These meta tables exist on client *and* server, though the format is not exactly the same.
