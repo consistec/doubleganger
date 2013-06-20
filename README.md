@@ -145,4 +145,7 @@ The initial development of doubleganger has been funded by Saarland's Ministry o
 
 ![EU](https://github.com/consistec/doubleganger/wiki/eu_logo.jpg)
 
+EUROPÄISCHE UNION
+Europäischer Fonds für Regionale Entwicklung "Investition in Ihre Zukunft"
+
 ![Staatskanzlei](https://github.com/consistec/doubleganger/wiki/staatskanzlei_logo.jpg)
